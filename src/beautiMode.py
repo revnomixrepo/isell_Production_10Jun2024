@@ -7,21 +7,18 @@ Created on Wed Jan 16 16:48:13 2019
 import os
 import pandas as pd
 import numpy as np
-import openpyxl
 from openpyxl import Workbook
 from datetime import datetime
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.utils import coordinate_from_string, column_index_from_string
 
 
-defaultpath = r'E:\All_In_One_iSell'
-
 ddmmyy=datetime.now()
 dow = ddmmyy.strftime('%a')
 iseldt = ddmmyy.strftime('%d%b%Y')
 foldname = ddmmyy.strftime('%d_%b_%Y')
 
-def beautify(df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,finaladop):
+def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,finaladop):
     os.chdir(pth)
     df = pd.DataFrame(df)
     #=============================df to wb conv =============================================   
@@ -140,8 +137,6 @@ def beautify(df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,finaladop):
                                           'value' : 0,
                                          'format': border_form})
             
-    #        worksheet.set_column('{}7:{}186'.format(colnum,colnum), None, border_form)        
-            
         #========================= Rms Avail to Sell =====================================================
         elif colname == 'Rooms Avail To Sell Online':
             worksheet.conditional_format('{}7:{}{}'.format(colnum,colnum,rowlim),
@@ -155,8 +150,7 @@ def beautify(df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,finaladop):
                                           'criteria' : '>',
                                           'value' : 0,
                                          'format': border_form})
-        
-    #        worksheet.set_column('{}7:{}186'.format(colnum,colnum), None, border_form)         
+              
 #            print("Formatting {} column".format(colname))
             
          #========================= FTR name get from conditions =====================================================
@@ -338,7 +332,7 @@ def beautify(df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,finaladop):
     writer.save()
     workbook.close()
     
-def isellbeautify(df,htlname,pth2,name_win2,isellrange,glossary,ftr,pgdf,finaladop,acc_man):    
+def isellbeautify(defaultpath, df,htlname,pth2,name_win2,isellrange,glossary,ftr,pgdf,finaladop,acc_man):    
     try:
         os.chdir(pth2)
         os.mkdir(foldname)
@@ -356,13 +350,10 @@ def isellbeautify(df,htlname,pth2,name_win2,isellrange,glossary,ftr,pgdf,finalad
     #-------------final pth-----------------------------
     pth = pth_1 +'\\'+acc_man
 
-    
-#    pth = pth2 +'\\'+foldname
     df = pd.DataFrame(df)    
     df.fillna(value='N/A',inplace=True)
     df['Event'] = df['Event'].astype(str)
     df['Event'] = df['Event'].replace({'0':np.nan})
-#    df['Event'] = df['Event'].replace({0:np.nan})
     df['Recommended Rate'] = df['Recommended Rate'].astype(str)
     df['Recommended Rate'] = df['Recommended Rate'].replace({'N/A':np.nan})
     df['Recommended Rate']  = df['Recommended Rate'].astype(float)
@@ -370,7 +361,7 @@ def isellbeautify(df,htlname,pth2,name_win2,isellrange,glossary,ftr,pgdf,finalad
     df.rename(columns={'OTA_Sold':'OTA Sold','LowestRate':'Lowest Rate'},inplace=True)
     
         
-    beautify(df,'internal',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop) 
+    beautify(defaultpath, df,'internal',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop) 
     print("\tInternal iSell Dumped")
     
     if str(name_win2) != '0':
@@ -379,7 +370,7 @@ def isellbeautify(df,htlname,pth2,name_win2,isellrange,glossary,ftr,pgdf,finalad
             df.drop('SeasonalRate_y',axis=1,inplace=True)
         except:
             pass
-        beautify(df,'client',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop)  
+        beautify(defaultpath, df,'client',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop)  
         print("\tClient iSell Dumped !!!")
         
     else:
@@ -390,7 +381,7 @@ def isellbeautify(df,htlname,pth2,name_win2,isellrange,glossary,ftr,pgdf,finalad
                 df.drop('SeasonalRate_y',axis=1,inplace=True)
             except:
                 pass
-            beautify(df,'client',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop)  
+            beautify(defaultpath,df,'client',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop)  
             print("\tClient iSell Dumped !!!")
         else:
             df = df.iloc[:30,:]
@@ -399,7 +390,7 @@ def isellbeautify(df,htlname,pth2,name_win2,isellrange,glossary,ftr,pgdf,finalad
                 df.drop('SeasonalRate_y',axis=1,inplace=True)
             except:
                 pass
-            beautify(df,'client',36,htlname,pth,glossary,ftr,pgdf,finaladop) 
+            beautify(defaultpath,df,'client',36,htlname,pth,glossary,ftr,pgdf,finaladop) 
             print("\tClient iSell Dumped !!!")
             
  
