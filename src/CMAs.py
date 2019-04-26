@@ -6,7 +6,6 @@ from datetime import datetime
 
 
 def CM_TB(otadata,cmrate):
-#    otadata.to_csv(r'E:\My Hotels\All_In_One_Tool\InputData\otadata.csv')
     
     otadata.fillna(value=0,inplace=True)
     otadata = pd.DataFrame(otadata)
@@ -14,8 +13,6 @@ def CM_TB(otadata,cmrate):
     otadata.rename(columns={'Sold':'OTA_Sold','Revenue':'OTA Revenue'},inplace=True)      
     
     otadata3 = pd.DataFrame(otadata.loc[:,['Date','OTA_Sold']]) 
-    
-#    otadata4.to_csv(r'E:\My Hotels\All_In_One_Tool\InputData\otadata4.csv')
     otadata4 = otadata.loc[:,['Date','OTA Revenue','ADR OTB']]
     otadata4['OTA Revenue'] = otadata4['OTA Revenue'].astype(float)
     otadata4['ADR OTB'] = otadata4['ADR OTB'].astype(float)   
@@ -42,8 +39,7 @@ def CM_RezNext(cmdf,msrate,ftr,chnnel,isellrange):
     
     
     #==================Rooms Avail to Sell Online ============================
-    cmavail = pd.DataFrame(cmdf2.groupby('Date')['Inventory'].sum())
-#    cmavail.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\OTA_Data\17_Jan_2019\cmavail.csv')   
+    cmavail = pd.DataFrame(cmdf2.groupby('Date')['Inventory'].sum())   
     cmavail.reset_index(inplace=True)
     cmavail2 = pd.DataFrame(cmavail.loc[:,['Date','Inventory']])
     cmavail2.rename(columns = {'Inventory':'Rooms Avail To Sell Online'},inplace=True)
@@ -57,25 +53,19 @@ def CM_RezNext(cmdf,msrate,ftr,chnnel,isellrange):
     
     #====================merge Avail and FTR avail ===========================
     availdf = cmavail2.merge(ftravail2,on='Date',how='left')
-    availdf['Date'] = pd.to_datetime(availdf['Date'],format="%Y-%m-%d")
-    
+    availdf['Date'] = pd.to_datetime(availdf['Date'],format="%Y-%m-%d")    
     return(availdf,cmdf5)
-
-
-
 
 
 def CM_ResAvenue(cmdata,pcdata,ftr,isellrange):
     cmdata.drop('Unnamed: 0',axis=1,inplace=True)
     df2 = cmdata.T
     df2.reset_index(inplace=True)
-    #df2.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\CM_Availability\cmdata.csv')
-
+    
     new_header = df2.iloc[0] 
     df3 = df2[1:]
     df3.columns = new_header
     df4=pd.DataFrame(df3.rename(columns={'Rate Type':'Date'}))
-#    df4.to_csv(r'D:\Aditya Tawade\df4.csv')
     df4['Date']=pd.to_datetime(df4['Date'],format="%Y-%m-%d")
 
 
@@ -84,7 +74,6 @@ def CM_ResAvenue(cmdata,pcdata,ftr,isellrange):
     df6 = pd.DataFrame(df5.loc[:,['Date','Single']])
     df6.rename(columns={'Single':'Rate on CM' },inplace=True)
     df6.fillna(value=0,inplace=True)
-    #df6.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\CM_Availability\df6.csv')
     df6['Rate on CM'] = df6['Rate on CM'].astype(float)
     df6['Rate on CM'] = df6['Rate on CM'].astype(int)
     
@@ -102,8 +91,7 @@ def CM_ResAvenue(cmdata,pcdata,ftr,isellrange):
 
     ddf5=ddf4.rename(columns={'Room Type':'Date'})
     ddf5.fillna(value=0,inplace=True)
-#    ddf5.to_csv(r'E:\All_In_One_iSell\ddf5.csv')
-    
+
     colname = list(ddf5.columns)
     colname2 = colname[1:]
 
@@ -154,7 +142,6 @@ def CM_eZee(cmdata,ratepl,ftr,isellrange):
 
 def CM_UK(otadata,cmrate,msrate,isellrange):
     otadata = pd.DataFrame(otadata)
-    #otadata.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\CM_Availability\otadata.csv')
     otadata['Date'] = pd.to_datetime(otadata['Date'],format="%d/%m/%Y %H:%M:%S")
     otadata['Date'] = pd.to_datetime(otadata['Date'],format="%d-%b-%Y")
     otadata.rename(columns={'Avail':'Rooms Avail To Sell Online','Total':'OTA_Sold','Accomm':'OTA Revenue','ARR':'ADR OTB',},inplace=True)
@@ -169,9 +156,6 @@ def CM_UK(otadata,cmrate,msrate,isellrange):
     cmrate4 =  iSell_fun_02.merging(otadata4,cmrate3)    
     return(otadata3,cmrate4)
     
-
-
-
     
 def CM_Djubo(ttlsold,cap,isellrange):
     ttlsold = pd.DataFrame(ttlsold)
@@ -191,19 +175,15 @@ def CM_Djubo(ttlsold,cap,isellrange):
     ttlsold['No_of_Rooms'].fillna(value=0,inplace=True)
     ttlsold['Rooms Avail To Sell Online']=ttlsold['cap']-ttlsold['No_of_Rooms']
     ttlsold['Rooms Avail To Sell Online']=ttlsold['Rooms Avail To Sell Online'].astype('int')
-    #ttlsold.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\ttlsold4.csv')
     
     try:
         ttlsold['Date']=pd.to_datetime(ttlsold['Date'],format="%d-%b-%Y")
     except:
         ttlsold['Date']=pd.to_datetime(ttlsold['Date'])
      
-    #ttlsold.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\ttlsold44.csv')
-    
-    
-    #ttlsold2.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\ttlsold444.csv')
+
     ttlsold3 = ttlsold.loc[:,['Date','Rooms Avail To Sell Online']]
-    #ttlsold3.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\ttlsold5.csv')
+    
     try:
         ttlsold3['Date']=pd.to_datetime(ttlsold3['Date'],format="%d-%b-%Y")
     except:
@@ -272,8 +252,7 @@ def CM_Maximojo(cmdata,msrate,rateid,ftr,isellrange):
 def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):    
     df2 = cmdata.T
     df2.reset_index(inplace=True)
-    #
-    #df2.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\CM_Availability\df2.csv')
+    
     df2.rename(columns={np.nan:'Year','Room':'Day'},inplace=True)
     df2.dropna(axis=1,how='all',inplace=True)
 
@@ -287,7 +266,6 @@ def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):
         df2[cols] = df2[cols].astype(str)
 
     #==============================================================================
-    #df2['Date']=df2['mon_num']+'/'+df2['Day']+'/'+df2['Year']
     df2['Date']=df2['Day']+'-'+df2['month']+'-'+df2['Year']
 
     try:
@@ -323,7 +301,6 @@ def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):
     cm_df=pcdata.T
     cm_df2=pd.DataFrame(cm_df.iloc[:,0])
     cm_df3=pd.DataFrame(cm_df2)
-    #cm_df3.drop([0,1],axis=0,inplace=True)
 
     cm_df3.reset_index(inplace=True)
     cm_df3.rename(columns={'index':'Date',0:'Rate on CM'},inplace=True)
@@ -343,100 +320,6 @@ def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):
 
     return(df33,cm_df4)
 
-
-
-
-
-
-
-
-
-
-#def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):    
-#    df2 = cmdata.T
-#    df2.dropna(axis=1,how='all',inplace=True)    
-#    df2.reset_index(inplace=True)
-#    df2.columns = df2.iloc[0]
-#    df2.drop(0,axis=0,inplace=True)
-#    df2.rename(columns={np.nan:'Year','Room':'Day'},inplace=True)
-#    df2['month']=[i[:3] for i in df2['Unnamed: 0']]    
-#    df2['mon_num']=pd.to_datetime(df2.month, format='%b').dt.month    
-#    
-##    df2 = cmdata.T
-##    df2.reset_index(inplace=True)
-##    #
-##    #df2.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\CM_Availability\df2.csv')
-##    df2.rename(columns={np.nan:'Year','Room':'Day'},inplace=True)
-##    df2.dropna(axis=1,how='all',inplace=True)
-##
-##    df2['month']=[i[:3] for i in df2['index']]
-##    df2.to_csv(r'E:\iSell_Project\All_In_One_iSell\Testing\df2_test.csv')
-##    df2['mon_num']=pd.to_datetime(df2.month, format='%b').dt.month
-#    for cols in ['Day', 'mon_num', 'Year']:
-#        df2[cols] = df2[cols].astype(int)
-#    #==============================================================================
-#     
-#    for cols in ['Day', 'mon_num', 'Year']:
-#        df2[cols] = df2[cols].astype(str)
-#
-#    #==============================================================================
-#    #df2['Date']=df2['mon_num']+'/'+df2['Day']+'/'+df2['Year']
-#    df2['Date']=df2['Day']+'-'+df2['month']+'-'+df2['Year']
-#
-#    try:
-#        df2['Date'] = pd.to_datetime(df2['Date'],format='%d-%b-%Y')
-#    except:
-#        df2['Date'] = pd.to_datetime(df2['Date'])
-#        
-#    #--------------------FTR addition -------------------------------
-#    df2.to_csv(r'E:\iSell_Project\All_In_One_iSell\Testing\kk.csv') 
-##    df22 = df2.drop(['index','Day','Year','month','mon_num'],axis=1)
-#    df222 = df2.loc[:,['Date',ftr]] #FTR DF
-#        
-#
-#    c=['month','mon_num']
-#    df2.drop(c,axis=1,inplace=True)
-#
-#    loc1=df2.columns.get_loc('Year')
-#    loc2=df2.columns.get_loc('Date')
-#    rooms=list(df2.columns)
-#    rooms2=rooms[loc1+1:loc2]
-#    df2[rooms2].fillna(value=0,inplace=True)
-#    df2.replace(to_replace='NA',value=0,inplace=True)
-#    df2['Rooms Avail To Sell Online'] = df2[rooms2].sum(axis=1)
-#    df2['Date']=pd.to_datetime(df2['Date'])
-#    df2['Rooms Avail To Sell Online'] = df2['Rooms Avail To Sell Online'].astype(int)
-#    df3=df2.loc[:,['Date','Rooms Avail To Sell Online']]
-#    
-#    #-----------------Merging with FTR------------------------
-#    df33 = pd.merge(df3,df222, on='Date', how='left')
-#
-#    #---------------------PC Data----------------------------------------------
-#    pcdata=pd.DataFrame(pcdata)
-#    cm_df=pcdata.T
-#    cm_df2=pd.DataFrame(cm_df.iloc[:,0])
-#    cm_df3=pd.DataFrame(cm_df2)
-#    #cm_df3.drop([0,1],axis=0,inplace=True)
-#
-#    cm_df3.reset_index(inplace=True)
-#    cm_df3.rename(columns={'index':'Date',0:'Rate on CM'},inplace=True)
-#    cm_df3.drop([0,1],axis=0,inplace=True)
-#    cm_df3.reset_index(inplace=True)
-#    cm_df3.drop('index',axis=1,inplace=True)
-#    
-#    cm_df3['Rate on CM'].fillna(value=0,inplace=True)
-#    cm_df3['Rate on CM'] = cm_df3['Rate on CM'].astype(int)
-#
-#    try:
-#        cm_df3['Date']=pd.to_datetime(cm_df3['Date'],format='%d-%b-%Y')
-#    except:
-#        cm_df3['Date']=pd.to_datetime(cm_df3['Date'])
-#        
-#    cm_df4=iSell_fun_02.frame(cm_df3,isellrange)
-#
-#    return(df33,cm_df4)
-
-
         
 def CM_Staah(cmdata,msrate,ftr,isellrange):
     cm2=pd.DataFrame(cmdata[cmdata.isnull().all(axis=1)])
@@ -448,11 +331,7 @@ def CM_Staah(cmdata,msrate,ftr,isellrange):
     ll=list(cmdata2.columns)
     cmdata1[ll[0]] = cmdata1[ll[0]].map(lambda x: x.strip())#strip 1st column
     
-    #cmdata1 = pd.
-
-
     msratecode =msrate
-    
     cmshaped=iSell_fun_02.cmreshape(cmdata1)
     cmfin11 = cmshaped.loc[:,['Date',msratecode]]
     cmfin111 = cmfin11.rename(columns={cmfin11.columns[1]:'Rate on CM'})
@@ -473,18 +352,15 @@ def CM_Staah(cmdata,msrate,ftr,isellrange):
     return(availframe2,msrateframe)
 
 
-
-
 def CM_Avails(cmdata,msrate,ftr,chman,pcdata,ratepl,isellrange):
-    #print("I am here !!!")
+    
     if chman == 'Staah':
         dfa,dfb = CM_Staah(cmdata,msrate,ftr,isellrange)
+        
     elif chman == 'AxisRooms':
         print("AxisRooms - CM Availability and Rate Fetch")
         dfa,dfb = CM_AxisRooms(cmdata,pcdata,ftr,isellrange)  
-#        dfa.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\dfa.csv')
-#        dfb.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\dfb.csv')
-#        print("AxisRooms - CM Availability and Rate Fetch - DONE")
+        
     elif chman == 'Maximojo':
         dfa,dfb = CM_Maximojo(cmdata,msrate,ratepl,ftr,isellrange)
         
@@ -495,19 +371,5 @@ def CM_Avails(cmdata,msrate,ftr,chman,pcdata,ratepl,isellrange):
         print("ResAvenue - CM Availability and Rate Fetch")
         dfa,dfb = CM_ResAvenue(cmdata,pcdata,ftr,isellrange) 
     
-    return(dfa,dfb)
-#    elif chman == 'Djubo':
-#        dfa = CM_Djubo(otadata)
-#        ddmmyy=datetime.now()
-#        tday = ddmmyy.strftime("%d-%b-%Y")
-#        index=pd.date_range(tday,periods= 180)
-#        frame=pd.DataFrame({'Date':index})
-#        frame['No']=np.nan
-#        dfb=frame
-#        return(dfa,dfb)
-##        
-    
-        
-
-    
+    return(dfa,dfb)   
 

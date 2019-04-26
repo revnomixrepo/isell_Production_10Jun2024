@@ -5,7 +5,6 @@ Created on Fri Mar 22 13:30:16 2019
 @author: Monthly Pricing
 """
 import pandas as pd
-#import GRID as grd
 import sys
 
 

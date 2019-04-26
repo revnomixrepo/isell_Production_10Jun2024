@@ -15,21 +15,18 @@ import csv
 import Leaf_Module as leaf
 
 
-##---------------------Standard paths---------------------------------------###
-defaultpath = r'E:\All_In_One_iSell'
-
-def Flow(mainpath,LRdate,accMan):    
+def Flow(masterpth,defaultpath,LRdate,accMan):    
     basepath=defaultpath+'\\'+'InputData'
     masterpath = defaultpath+'\\'+'masters'
-    beautipth = mainpath+'\\'+'iSell'
+    beautipth = masterpth+'\\'+'iSell'
     #-----------------------Glossary sheet-----------------------------
     glossary = pd.read_excel(defaultpath+r'\masters\logo\Glossary.xlsx')
     
     #----------------------Master Input Conditions---------------------      
-    inputmaster=pd.ExcelFile(mainpath+'\\'+'InputConditionMaster.xlsx')
+    inputmaster=pd.ExcelFile(masterpth+'\\'+'InputConditionMaster.xlsx')
     inputdf2 = pd.read_excel(inputmaster,'Accounts') #Accounts Sheet
-    season_range = pd.read_excel(mainpath+'\\'+'season_master.xlsx')
-    dow_weight = pd.read_excel(mainpath+'\\'+'dow_weights.xlsx') #dow weights sheet
+    season_range = pd.read_excel(masterpth+'\\'+'season_master.xlsx')
+    dow_weight = pd.read_excel(masterpth+'\\'+'dow_weights.xlsx') #dow weights sheet
     
     
     if accMan[0] == 'All':
@@ -316,8 +313,7 @@ def Flow(mainpath,LRdate,accMan):
         
         
         else:
-            print("There is no such Channel Manager Added in Input Conditions !!!")
-               
+            print("There is no such Channel Manager Added in Input Conditions !!!")               
             
             
         rsfile = pd.read_csv(basepath+'\{}\{}\{}'.format('RS_Data',tdayfold,names+str('_RSData.csv')),encoding='cp1252')
@@ -338,7 +334,7 @@ def Flow(mainpath,LRdate,accMan):
             
             
         else:        
-            df_total,df_ota,df_ttlsold=iSell_fun_02.dfconv(staahfile,names,name_chman[names])
+            df_total,df_ota,df_ttlsold=iSell_fun_02.dfconv(defaultpath,staahfile,names,name_chman[names])
             print('\tdfconv done !!!')
 
             df_ttlsold.fillna(value=0,inplace=True)
@@ -722,7 +718,6 @@ def Flow(mainpath,LRdate,accMan):
         else:
             pass
         
-#        iSelldf8.to_csv(r'E:\iSell_Project\All_In_One_iSell\Testing\iSelldf8.csv')
         
         collist=['Season']
         try:
@@ -762,34 +757,24 @@ def Flow(mainpath,LRdate,accMan):
                 
             iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names,iselldt))
             print('----------{}_{}_iSell generated_#{} !!!----------------'.format(sr,names,name_chman[names]))
-            beautiMode.isellbeautify(iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names])
+            beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names])
 
             
         elif name_cmflag[names] == 1:
                         
             if (iSelldf10['Rate on CM'].sum() == 0) :
                 iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}_BAD.csv'.format(tdayfold,names,iselldt))
-                beautiMode.isellbeautify(iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names])
+                beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names])
 
             else :
                 iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names,iselldt))
-                beautiMode.isellbeautify(iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names])
+                beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names])
             
             print('----------{}_{}_iSell Generated _#{} !!!----------------'.format(sr,names,name_chman[names]))
         else:
             print('Please set 0 or 1 to RateOnCM column of Accounts sheet')
-            sys.exit()
+            sys.exit()         
             
-            
-        #12)--------------------# Adoption #------------------------------------------   
-#        finaladop = iSell_fun_02.Adopcal(iSelldf10,180,90,30,15)
-        #print("------------------------Adoption calculated !!!------------------------")       
-        
-            
-            
-        
-    
-        
     print("################## ALL iSell Generated for {} , Thanks ! ########################".format(accMan))
 
 

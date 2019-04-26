@@ -20,14 +20,11 @@ def dRecs(iSelldf4,pgdf,isellrange,lastszrates,cmflag,priceType,hnf,ftr):
     
     iSelldf6['line'] = iSelldf6['line'].astype(int,errors='ignore')
     
-#    iSelldf6.to_csv(r'E:\iSell_Project\All_In_One_iSell\iselldf6.csv')
     #---------------------Seasonal or Monthly priceType-------------------------------   
     if priceType == 'Seasonal':
         iSelldf6['params'] = list(zip(iSelldf6['Season'],iSelldf6['Dow'],iSelldf6['line']))
     elif priceType == 'Monthly':
         iSelldf6['params'] = list(zip(iSelldf6['Month'],iSelldf6['Dow'],iSelldf6['line']))  
-        
-#    iSelldf6.to_csv(r'E:\iSell_Project\All_In_One_iSell\gtdc\iSelldf6.csv')
     
     #----------------recommendations passing parameters to Grid------------------------    
     rec1=[]

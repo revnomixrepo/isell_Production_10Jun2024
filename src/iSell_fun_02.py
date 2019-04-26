@@ -2,14 +2,6 @@ import pandas as pd
 import numpy  as np
 from datetime import datetime
 
-filepth=r'E:\All_In_One_iSell'
-
-CMcols = pd.read_excel(filepth+'\\'+'masters\cm_master.xlsx')
-statusdf = pd.read_excel(filepth+'\\'+'masters\statuscodes.xlsx')
-statuscode = dict(zip(statusdf['status'],statusdf['code']))
-
-CMdates=pd.read_excel(filepth+'\\'+'masters\DateFormats.xlsx')
-
 
 def TBhnfconv(df_hnf,maxcap,isellrange):
     print('You are in TBdfconv')
@@ -24,24 +16,17 @@ def TBhnfconv(df_hnf,maxcap,isellrange):
     df_hnf4=df_hnf3.loc[:,['Date','Hotel Sold']]
     df_hnf5=df_hnf3.loc[:,['Date','Hotel Availability']]
     print('hotel availability and Sold returned')
-#    df_hnf4.to_csv(r'E:\My Hotels\All_In_One_Tool\InputData\Output_CSV\25_Mar_2019\df_hnf4.csv')
-#    df_hnf5.to_csv(r'E:\My Hotels\All_In_One_Tool\InputData\Output_CSV\25_Mar_2019\df_hnf5.csv')
     return(df_hnf4,df_hnf5)
-
-
-
 
 def UKhnfconv(df_hnf,maxcap,isellrange):
     df_hnf['Date']=pd.to_datetime(df_hnf['Date'],format="%d/%m/%Y %H:%M:%S")    
     df_hnf['Date']=pd.to_datetime(df_hnf['Date'],format="%d-%b-%Y")   
-    #df_hnf.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\CM_Availability\df_hnf.csv')
     df_hnf2=frame(df_hnf,isellrange)
     df_hnf3=df_hnf2.loc[:,['Date','Avail','Total']]
     df_hnf3.rename(columns={'Avail':'Hotel Availability','Total':'Hotel Sold'},inplace=True)
     
     df_hnf4=df_hnf3.loc[:,['Date','Hotel Sold']]
-    df_hnf5=df_hnf3.loc[:,['Date','Hotel Availability']]
-    
+    df_hnf5=df_hnf3.loc[:,['Date','Hotel Availability']]    
     return(df_hnf4,df_hnf5)
     
 
@@ -54,18 +39,13 @@ def hnfconv(hnf,totalcap,isellrange):
     hnf2 =frame(hnf,isellrange)
     hnf2.rename(columns={'Sold':'Hotel Sold'},inplace=True)
     hnf3 = hnf2.loc[:,['Date','Hotel Sold']]
-    hnf4 = hnf2.loc[:,['Date','Hotel Availability']]
-    
+    hnf4 = hnf2.loc[:,['Date','Hotel Availability']]    
     return(hnf3,hnf4)
     
     
-    
-
 def occframe(df1,isellrange):        
     ddmmyy = datetime.now()                  
     tday = ddmmyy.strftime("%d-%b-%Y")               
-#    index=pd.date_range(tday,periods= 180)
-#    SAM 25JAN19: Change to 365to create the iSell for NIRMAYA
     index=pd.date_range(tday,periods= isellrange)
     frame=pd.DataFrame({'occupancydate':index})
     df_all = pd.merge(frame,df1,on='occupancydate',how='left')
@@ -74,9 +54,7 @@ def occframe(df1,isellrange):
 def frame(df1,isellrange):
     df1 = pd.DataFrame(df1)
     ddmmyy = datetime.now()                  
-    tday = ddmmyy.strftime("%d-%b-%Y")               
-#    index=pd.date_range(tday,periods= 180)
-#    SAM 25JAN19: Change to 365to create the iSell for NIRMAYA
+    tday = ddmmyy.strftime("%d-%b-%Y")      
     index=pd.date_range(tday,periods= isellrange)
     frame=pd.DataFrame({'Date':index})
     merged = pd.merge(frame,df1,on='Date',how='left')
@@ -86,7 +64,14 @@ def merging(df1,df2):
     mergedf=pd.merge(df1,df2,on='Date',how='left')
     return(mergedf)
     
-def dfconv(cmfile2,htl,chman):
+def dfconv(stdpth,cmfile2,htl,chman):
+    #------------files required for mapping channel manager columns,DateFormats,Status----
+    CMcols = pd.read_excel(stdpth+'\\'+'masters\cm_master.xlsx')
+    statusdf = pd.read_excel(stdpth+'\\'+'masters\statuscodes.xlsx')
+    statuscode = dict(zip(statusdf['status'],statusdf['code']))
+    CMdates=pd.read_excel(stdpth+'\\'+'masters\DateFormats.xlsx')
+    #--------------------------------------------------------------------------------------  
+    
     stdcols = dict(zip(CMcols[chman],CMcols['stdname']))    
     dtformat = dict(zip(CMdates['CM'],CMdates[chman]))
     
@@ -124,7 +109,6 @@ def dfconv(cmfile2,htl,chman):
     #Add LOS , ADR, RPD
 
     df_date3['LOS'] = (df_date3['CheckOut'] - df_date3['CheckIn']).apply(lambda x: x/np.timedelta64(1,'D')) #Length of stay
-    #df_date3.to_csv(r'E:\All_In_One_iSell\InputData\OTA_Data\dfdate3.csv')
 
     df_date3['RevPD'] = df_date3.loc[:,'Total_Amount'].div(df_date3.loc[:,'LOS'])  #Rev per Day
     
@@ -144,14 +128,9 @@ def dfconv(cmfile2,htl,chman):
     #df_ota
     df_ota = pd.DataFrame(df_date3.groupby(['occupancydate','Channel'])['No_of_Rooms'].sum())
     df_ota.reset_index(inplace=True)
-    
-    #df_total.rename(columns={'occupancydate'})
-
         
     return(df_total,df_ota,ttlsold)
     
-    
-    #return(df_total,df_ota)
 
 
 def dfLR(df1,chman):
@@ -182,10 +161,6 @@ def dfLR(df1,chman):
         LRfinal['Date']=pd.to_datetime(LRfinal['Date'])
         
     LRfinal2=LRfinal.loc[:,['Date','OTA_Sold','LAvg']]
-#    if chman == 'UK':
-#        LRfinal3=LRfinal2.rename(columns={'Hotel Sold':'Last_OTASOLD'})
-#        LRfinal3['Last_OTASOLD']=LRfinal3['Last_OTASOLD'].astype(int)
-#    else:
     LRfinal3=LRfinal2.rename(columns={'OTA_Sold':'Last_OTASOLD'})
     LRfinal3['Last_OTASOLD']=LRfinal3['Last_OTASOLD'].astype(int)
         
@@ -201,7 +176,6 @@ def RShop(rs):
     return(rs3)
 
 
-#def AfterRS(df):
 def rename(df):
     df['conditionscode'].replace(3.0, 'B',inplace=True) or df['conditionscode'].replace(2.0, 'S',inplace=True) or df['conditionscode'].replace(1.0, 'R',inplace=True)
     df['taxstatus'].replace(2.0, 'E)',inplace=True) or df['taxstatus'].replace(1.0, 'I)',inplace=True) or df['taxstatus'].replace(-1.0, 'U)',inplace=True)
@@ -557,4 +531,9 @@ def Adopcal(df,day180,day90):
     finaldf2.columns = ['Adoption','Pct(%)']    
     
     return(finaldf2)
+
+
+
+
+
 

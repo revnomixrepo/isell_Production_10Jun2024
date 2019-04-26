@@ -8,11 +8,9 @@ import pandas as pd
 
 def lhd(fname1, fname2, outpath, htl):
 
-
     fread1 = pd.DataFrame(fname1)
     fread2 = pd.DataFrame(fname2)
 
-#    fread1.to_csv(r'E:\All_In_One_iSell\InputData\CM_Availability\kk.csv')
     # Date format change for column 'Date'
     fread1["Date"] = pd.to_datetime(fread1["Date"], format='%Y/%m/%d')
     fread1["Date"] = pd.to_datetime(fread1["Date"], format='%Y/%m/%d')

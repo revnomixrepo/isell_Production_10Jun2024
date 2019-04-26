@@ -8,23 +8,18 @@ import pandas as pd
 import iSell_fun_02 as fun2
 
 def simRecs(htl,otbdf,jump,szrates,chman,cmflag,htlcur,psy,useceiling,usefloor):
-    otbdf.to_csv(r'E:\All_In_One_iSell\otbdf.csv')
-#    print(jump)
-#    print(psy)
+    
     otbdf['OTA_Sold'] = otbdf['OTA_Sold'].fillna(value=0)
     otbdf['OTA_Sold'] = otbdf['OTA_Sold'].astype(int,errors='ignore')
     otbdf['Recommended Rate'] = otbdf['OTA_Sold'] * jump + otbdf['min_rate']
-#    otbdf['Recommended Rate'] = otbdf['Recommended Rate'].astype(int,errors='ignore')
     
     #---------------------------psy factor-----------------------------------------
     otbdf['Recommended Rate'] = otbdf['Recommended Rate'].apply(lambda row: fun2.applyPsychologicalFactor(row,psy))
-    
-#    otbdf.to_csv(r'E:\iSell_Project\All_In_One_iSell\Testing\{}_otbdf.csv'.format(htl))
     otbdf.drop(['min_rate','max_rate'],axis=1,inplace=True)    
     
     
     if cmflag==0:
-         #merging last recommendations with current isell
+        #merging last recommendations with current isell
         otbdf = otbdf.merge(szrates,on='Date',how='left')
         szratedf = pd.DataFrame(otbdf.loc[:,['Date','Recommended Rate']])
         szratedf.rename(columns={'Recommended Rate':'SeasonalRate'},inplace=True)
@@ -43,7 +38,6 @@ def simRecs(htl,otbdf,jump,szrates,chman,cmflag,htlcur,psy,useceiling,usefloor):
         
         otbdf['Recommended Rate'] = np.where(otbdf['Recommended Rate'] == otbdf['Last_szrate'],np.nan,otbdf['Recommended Rate'])
         otbdf.drop(['Last_szrate','Min_Rate','Max_Rate'],axis=1,inplace=True)
-#        print('Djubo Condition')
         
     elif cmflag==1:  
         #-------------------------------set ceiling threshold---------------------------------
@@ -78,10 +72,3 @@ def simRecs(htl,otbdf,jump,szrates,chman,cmflag,htlcur,psy,useceiling,usefloor):
     except:
         pass    
     return(otbdf,szratedf)
-    
-    
-    
-    
-    
-    
-
