@@ -3,7 +3,7 @@ import re
 import sys
 import CMAs
 import pandas as pd
-import numpy as np
+#import numpy as np
 import iSell_fun_02
 import beautiMode
 import directRecs
@@ -320,6 +320,8 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
         dc = pd.read_excel(basepath+'\{}\{}'.format('Demand_Calendar',names+str('.xlsx')))
         df_LR = pd.read_csv(basepath+'\{}\{}\{}'.format('OutPut_CSV',lastfoldname,str('iSell_')+names+str('_{}.csv'.format(LRdt))))
 #        df_PG = pd.read_excel(basepath+'\{}\{}'.format('Pricing_Grid',str('Pricing_Grid_')+names+str('.xlsx')),header=None)
+        rateshopfile = pd.read_csv(basepath + '\{}\{}\{}'.format('RateShop', tdayfold, names + str('_RateShop.csv')))
+        
         
         #---------------------------Frame('Date','Dow')-----------------------------------------------
         tday = ddmmyy.strftime("%d-%b-%Y")       
@@ -757,18 +759,18 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
                 
             iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names,iselldt))
             print('----------{}_{}_iSell generated_#{} !!!----------------'.format(sr,names,name_chman[names]))
-            beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names])
+            beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile)
 
             
         elif name_cmflag[names] == 1:
                         
             if (iSelldf10['Rate on CM'].sum() == 0) :
                 iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}_BAD.csv'.format(tdayfold,names,iselldt))
-                beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names])
+                beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile)
 
             else :
                 iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names,iselldt))
-                beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names])
+                beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile)
             
             print('----------{}_{}_iSell Generated _#{} !!!----------------'.format(sr,names,name_chman[names]))
         else:

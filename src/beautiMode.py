@@ -18,7 +18,7 @@ dow = ddmmyy.strftime('%a')
 iseldt = ddmmyy.strftime('%d%b%Y')
 foldname = ddmmyy.strftime('%d_%b_%Y')
 
-def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,finaladop):
+def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,finaladop,rateshopfile):
     os.chdir(pth)
     df = pd.DataFrame(df)
     #=============================df to wb conv =============================================   
@@ -327,12 +327,22 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     
     else:
         pass   
+    
+    #======================================================================================================
+    # RATE SHOP SHEET CREATION
+    if iselltype == 'internal':
+        rateshopfile.to_excel(writer, sheet_name='RateShop', index=False)
+    elif iselltype == 'client':
+        rateshopfile.to_excel(writer, sheet_name='RateShop', index=False)
+    else:
+        pass
+    #=====================================================================================================
       
     
     writer.save()
     workbook.close()
     
-def isellbeautify(defaultpath, df,htlname,pth2,name_win2,isellrange,glossary,ftr,pgdf,finaladop,acc_man):    
+def isellbeautify(defaultpath, df,htlname,pth2,name_win2,isellrange,glossary,ftr,pgdf,finaladop,acc_man,rateshopfile):    
     try:
         os.chdir(pth2)
         os.mkdir(foldname)
@@ -361,7 +371,7 @@ def isellbeautify(defaultpath, df,htlname,pth2,name_win2,isellrange,glossary,ftr
     df.rename(columns={'OTA_Sold':'OTA Sold','LowestRate':'Lowest Rate'},inplace=True)
     
         
-    beautify(defaultpath, df,'internal',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop) 
+    beautify(defaultpath, df,'internal',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop,rateshopfile) 
     print("\tInternal iSell Dumped")
     
     if str(name_win2) != '0':
@@ -370,7 +380,7 @@ def isellbeautify(defaultpath, df,htlname,pth2,name_win2,isellrange,glossary,ftr
             df.drop('SeasonalRate_y',axis=1,inplace=True)
         except:
             pass
-        beautify(defaultpath, df,'client',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop)  
+        beautify(defaultpath, df,'client',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop,rateshopfile)  
         print("\tClient iSell Dumped !!!")
         
     else:
@@ -381,7 +391,7 @@ def isellbeautify(defaultpath, df,htlname,pth2,name_win2,isellrange,glossary,ftr
                 df.drop('SeasonalRate_y',axis=1,inplace=True)
             except:
                 pass
-            beautify(defaultpath,df,'client',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop)  
+            beautify(defaultpath,df,'client',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop,rateshopfile)  
             print("\tClient iSell Dumped !!!")
         else:
             df = df.iloc[:30,:]
@@ -390,7 +400,7 @@ def isellbeautify(defaultpath, df,htlname,pth2,name_win2,isellrange,glossary,ftr
                 df.drop('SeasonalRate_y',axis=1,inplace=True)
             except:
                 pass
-            beautify(defaultpath,df,'client',36,htlname,pth,glossary,ftr,pgdf,finaladop) 
+            beautify(defaultpath,df,'client',36,htlname,pth,glossary,ftr,pgdf,finaladop,rateshopfile) 
             print("\tClient iSell Dumped !!!")
             
  
