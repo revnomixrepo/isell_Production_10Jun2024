@@ -146,6 +146,8 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
     #------------------------useCeiling and useFloor-------------------------------------
     use_ceiling = dict(zip(inputdf['hotelname'],inputdf['use_CeilingRate']))
     use_floor = dict(zip(inputdf['hotelname'],inputdf['use_FloorRate']))
+    #--------------------------------useGrid---------------------------------------------------
+    use_Grid = dict(zip(inputdf['hotelname'],inputdf['use_Grid']))
 
     
     
@@ -199,7 +201,8 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
             pcdata=''        
         elif name_chman[names] == 'Djubo':
-            staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')),skiprows=1)
+            staahfile2 = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')),skiprows=1)
+            staahfile = pd.DataFrame(staahfile2[staahfile2['Source Type'] == 'OTA'])
             cmdata=''
             pcdata=''
         elif name_chman[names] == 'eZee':
@@ -319,7 +322,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
         rsfile = pd.read_csv(basepath+'\{}\{}\{}'.format('RS_Data',tdayfold,names+str('_RSData.csv')),encoding='cp1252')
         dc = pd.read_excel(basepath+'\{}\{}'.format('Demand_Calendar',names+str('.xlsx')))
         df_LR = pd.read_csv(basepath+'\{}\{}\{}'.format('OutPut_CSV',lastfoldname,str('iSell_')+names+str('_{}.csv'.format(LRdt))))
-#        df_PG = pd.read_excel(basepath+'\{}\{}'.format('Pricing_Grid',str('Pricing_Grid_')+names+str('.xlsx')),header=None)
+        
+        if use_Grid[names] == 1:
+            df_PG = pd.read_excel(basepath+'\{}\{}'.format('Pricing_Grid',names+str('_PG.xlsx')))
+        else:
+            pass
+        
         rateshopfile = pd.read_csv(basepath + '\{}\{}\{}'.format('RateShop', tdayfold, names + str('_RateShop.csv')))
         
         
@@ -539,7 +547,10 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
             #---------------------------------------------------------------------------------
             print('\tMonthly Rates Fetched')
             
-            pgdf=grid.Gridcreator(names,isellforgrid,month_minR,htl_dowWt,clustName,month_jump,jfacts,jumpType[names],psy_fact,priceType[names])          
+            if use_Grid[names] == 1:
+                pgdf = pd.DataFrame(df_PG)
+            else:
+                pgdf=grid.Gridcreator(names,isellforgrid,month_minR,htl_dowWt,clustName,month_jump,jfacts,jumpType[names],psy_fact,priceType[names])          
             
             
         elif priceType[names] == 'Seasonal':
@@ -573,9 +584,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
             
 #            isellforgrid.to_csv(r'E:\iSell_Project\All_In_One_iSell\Testing\isellforgrid.csv')
             
-            print('\tSeasonal Rates Fetched')            
+            print('\tSeasonal Rates Fetched')   
             
-            pgdf=grid.Gridcreator(names,isellforgrid,czonminratesdict,htl_dowWt,clustName,czonjumpsdict,jfacts,jumpType[names],psy_fact,priceType[names])          
+            if use_Grid[names] == 1:
+                pgdf = pd.DataFrame(df_PG)
+            else:
+                pgdf=grid.Gridcreator(names,isellforgrid,czonminratesdict,htl_dowWt,clustName,czonjumpsdict,jfacts,jumpType[names],psy_fact,priceType[names])          
             
             
             
@@ -733,6 +747,11 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
         iSelldf10['Date'] = iSelldf10['Date'].apply(lambda x:x.strftime("%d-%b-%Y"))
         
         #11)-------------------------# Drop col list #------------------------------
+        if name_hnf[names] == 'Yes':
+            iSelldf10.drop('Rooms Avail To Sell Online',axis=1,inplace=True)
+        else:
+            pass         
+    
         colname = list(dropcol[name_chman[names]])
         colnames = [n for n in colname if str(n) != 'nan']
 #        print(colnames)
