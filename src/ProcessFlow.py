@@ -201,8 +201,8 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
             pcdata=''        
         elif name_chman[names] == 'Djubo':
-            staahfile2 = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')),skiprows=1)
-            staahfile = pd.DataFrame(staahfile2[staahfile2['Source Type'] == 'OTA'])
+            staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')),skiprows=1)
+#            staahfile = pd.DataFrame(staahfile2[staahfile2['Source Type'] == 'OTA'])
             cmdata=''
             pcdata=''
         elif name_chman[names] == 'eZee':
