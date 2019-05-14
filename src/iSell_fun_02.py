@@ -340,7 +340,11 @@ def hnf_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloo
     
     df_rcp_season['rate_dif']= (df_rcp_season['max_rate'] - df_rcp_season['min_rate'])
     #df_rcp_season['ota_max']= (df_rcp_season['Rooms Avail To Sell Online'] + df_rcp_season['OTA_Sold'])
-    df_rcp_season['ota_max']= (df_rcp_season['Hotel Availability'] + df_rcp_season['Hotel Sold'])
+
+    #================Set -ve Hotel Availability to zero====================================
+#    df_rcp_season['ota_max']= (df_rcp_season['Hotel Availability'] + df_rcp_season['Hotel Sold'])
+    df_rcp_season['ota_max']= (np.where(df_rcp_season['Hotel Availability'] < 0,0,df_rcp_season['Hotel Availability']) + df_rcp_season['Hotel Sold'])
+    
     df_rcp_season['ota_max'] = np.where(df_rcp_season['ota_max']<0,0,df_rcp_season['ota_max'])
     
 #    print("========================================")
@@ -448,7 +452,8 @@ def recvalue(df,s,l,d,ptype):
         sgrid=df[df.Month==s]
     #-------------------------------------------------------------------        
     sgrid.reset_index(inplace=True)
-    v = sgrid.loc[l,d]
+#    v = sgrid.loc[l,d]
+    v = sgrid.iloc[l][d]
     return(v)
 
 

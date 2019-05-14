@@ -7,7 +7,7 @@ def dRecs(iSelldf4,pgdf,isellrange,lastszrates,cmflag,priceType,hnf,ftr):
     iSelldf6 = pd.DataFrame(iSelldf4)
     
     if hnf == 'Yes':
-        iSelldf6['availablty']= iSelldf6['Hotel Availability']/iSelldf6['Capacity']
+        iSelldf6['availablty']= np.where(iSelldf6['Hotel Availability'] < 0 ,0, iSelldf6['Hotel Availability']) /iSelldf6['Capacity']
         
     else:
         iSelldf6['availablty']= iSelldf6['Rooms Avail To Sell Online']/iSelldf6['Capacity']
@@ -25,7 +25,6 @@ def dRecs(iSelldf4,pgdf,isellrange,lastszrates,cmflag,priceType,hnf,ftr):
         iSelldf6['params'] = list(zip(iSelldf6['Season'],iSelldf6['Dow'],iSelldf6['line']))
     elif priceType == 'Monthly':
         iSelldf6['params'] = list(zip(iSelldf6['Month'],iSelldf6['Dow'],iSelldf6['line']))  
-    
     #----------------recommendations passing parameters to Grid------------------------    
     rec1=[]
     for parlist in iSelldf6['params']:
