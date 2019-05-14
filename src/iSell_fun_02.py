@@ -452,7 +452,8 @@ def recvalue(df,s,l,d,ptype):
         sgrid=df[df.Month==s]
     #-------------------------------------------------------------------        
     sgrid.reset_index(inplace=True)
-    v = sgrid.loc[l,d]
+#    v = sgrid.loc[l,d]
+    v = sgrid.iloc[l][d]
     return(v)
 
 
