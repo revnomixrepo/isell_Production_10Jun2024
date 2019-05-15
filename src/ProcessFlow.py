@@ -216,7 +216,27 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
             
             cmdata = pd.read_csv(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.csv')))
             pcdata=''
-            
+
+        elif name_chman[names] == 'LeafDover':
+            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+            cmData1 = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
+                                    header=[1])
+            # hnfData1 = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+            # outpath = basepath + '\{}\{}'.format('HNF', tdayfold)
+
+            # leaf.lhd(cmData1, hnfData1, outpath, names)
+            # To add Leaf Dover (ota, cm)
+            # import Report_Leaf_H as lhd
+
+            # lhd.lhd(inventryStatus, forcast)
+
+            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('HNF', tdayfold, names + str('_HNF.csv')),
+                                    delimiter=",", index_col=False, header=0, low_memory=False, quoting=csv.QUOTE_ALL,
+                                    encoding='utf8')
+            # cmdata = pd.DataFrame(staahfile)
+            cmrates2 = pd.DataFrame(cmdata.loc[:, ['Date', 'CMRate']])
+            cmrates2['Date'] = pd.to_datetime(cmrates2['Date'], format="%Y-%m-%d")
+
         elif name_chman[names] == 'UK':
             pcdata=''
             
