@@ -3,17 +3,19 @@
 Automate Report for Leaf hotel iSell
 
 '''
-
+import iSell_fun_02 as isellfun
 import pandas as pd
 
-def lhd(fname1, fname2, outpath, htl):
+def lhd(fname1, fname2, outpath, htl, isellrange):
 
     fread1 = pd.DataFrame(fname1)
     fread2 = pd.DataFrame(fname2)
 
     # Date format change for column 'Date'
     fread1["Date"] = pd.to_datetime(fread1["Date"], format='%Y/%m/%d')
-    fread1["Date"] = pd.to_datetime(fread1["Date"], format='%Y/%m/%d')
+    fread1["Date"] = pd.to_datetime(fread1["Date"], format='%Y-%m-%d')
+    
+    fread1 = isellfun.frame(fread1,isellrange)
 
     # Date format change for column 'PP_Date'
     fread2["PP_DATE"] = pd.to_datetime(fread2["PP_DATE"], format='%d/%m/%Y')

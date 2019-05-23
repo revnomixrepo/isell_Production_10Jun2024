@@ -242,10 +242,11 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
             
             if names == 'Leaf Hotel Dover':
                 cmData1 = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')),header=[1])
+#                cmData1.to_csv(r'E:\All_In_One_iSell\Testing\cmdata1.csv')
                 hnfData1 = pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')))
                 outpath = basepath+'\{}\{}'.format('HNF',tdayfold)
 
-                leaf.lhd(cmData1, hnfData1, outpath, names)
+                leaf.lhd(cmData1, hnfData1, outpath, names, isellrange)
                 # To add Leaf Dover (ota, cm)
                 # import Report_Leaf_H as lhd
 
@@ -786,7 +787,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
         print("\tAdoption calculated !!!")       
         
                        
-        
+#        iSelldf10.to_csv(r'E:\All_In_One_iSell\Testing\iSelldf10.csv')    
         #13)-----------------#Rate on CM check and iSell CSV dump #-------------------------------------
         if name_cmflag[names] ==0:           
             iSelldf10.drop('SeasonalRate_x',axis=1,inplace=True)
@@ -800,7 +801,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
             print('----------{}_{}_iSell generated_#{} !!!----------------'.format(sr,names,name_chman[names]))
             beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile)
 
-            
+        
         elif name_cmflag[names] == 1:
                         
             if (iSelldf10['Rate on CM'].sum() == 0) :
