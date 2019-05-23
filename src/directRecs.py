@@ -50,10 +50,17 @@ def dRecs(iSelldf4,pgdf,isellrange,lastszrates,cmflag,priceType,hnf,ftr):
         iSelldf6['Recommended Rate'] = np.where(iSelldf6['Rate on CM'] == iSelldf6['Recommended Rate'],np.nan,iSelldf6['Recommended Rate'])
         iSelldf7 = pd.DataFrame(iSelldf6)
         szrate ='Not Required'
-        try:
+        
+        if hnf == 'Yes':
             iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
-        except:
-            pass
+        else:
+            iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+            
+        
+#        try:
+#            iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+#        except:
+#            pass
         
     elif cmflag == 0:
         #merging last recommendations with current isell
