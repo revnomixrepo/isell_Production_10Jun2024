@@ -195,7 +195,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
         elif name_chman[names] == 'AxisRooms':
             staahfile = pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')))
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xls')))
-            pcdata = pd.read_excel(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.xls')))        
+            pcdata = pd.read_excel(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.xls')))
+        elif name_chman[names] == 'BookingHotel':
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
+            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
+            pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
+
         elif name_chman[names] == 'Maximojo':
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))

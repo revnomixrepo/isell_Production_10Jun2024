@@ -5,6 +5,58 @@ from datetime import datetime
 
 
 
+
+def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
+
+    def exsplit(df, column):
+        numb_df = df[column].str.split('_', expand=True)
+        return numb_df[1]
+    # READ RATE FILE
+    raw_df = pd.DataFrame(rfile)
+    df = raw_df.transpose().reset_index()
+    df.fillna(value='Date', inplace=True)
+    df = pd.DataFrame(df)
+    new_header = df.iloc[0]
+    df = df[1:]
+    df.columns = new_header
+
+    colLoc = df.columns.get_loc(msrate)
+    rt_df = df.iloc[:, [colLoc + 1, colLoc + 2]]
+    rt_df = rt_df.rename(columns={'SingleRate': 'Rate on CM'})
+    rt_df = rt_df[['Date', 'Rate on CM']]
+    rt_df['Date'] = pd.to_datetime(rt_df.Date, format='%a, %d %b %Y')
+    rt_df.Date = pd.to_datetime(rt_df.Date, format='%Y-%m-%d')
+
+    # READ INVENTORY FILE
+    raw_idf = pd.DataFrame(ifile)
+    i_df = raw_idf.transpose().reset_index()        # Transpose file
+    i_df = pd.DataFrame(i_df)
+    # CHANGE HEADER LOCATION IN DF
+    new_header = i_df.iloc[0]
+    i_df = i_df[1:]
+    i_df.columns = new_header
+
+    i_df = i_df.rename(columns={'Unnamed: 0': 'Date'})
+    colList = list(i_df.columns)
+    colList.pop(0)
+    i_df['Rooms Avail To Sell Online'] = 0
+    for i in colList:
+        i_df[i] = pd.to_numeric(exsplit(i_df, i))
+        i_df['Rooms Avail To Sell Online'] += i_df[i]
+
+    i_df['Date'] = pd.to_datetime(i_df.Date, format='%a, %d %b %Y')
+    i_df['Date'] = pd.to_datetime(i_df.Date, format='%Y-%m-%d')
+
+    # i_df.Date = pd.to_datetime(i_df.Date).dt.date
+    inv_df = i_df[['Date', 'Rooms Avail To Sell Online']]
+    delx_df = i_df[['Date', ftr]]
+
+    rt_df = iSell_fun_02.frame(rt_df, isellrange)
+    inv_df = iSell_fun_02.frame(inv_df, isellrange)
+    delx_df = iSell_fun_02.frame(delx_df, isellrange)
+    cm_df = iSell_fun_02.merging(delx_df, rt_df)
+    return(inv_df, cm_df)
+
 def CM_TB(otadata,cmrate):
     
     otadata.fillna(value=0,inplace=True)
@@ -369,7 +421,11 @@ def CM_Avails(cmdata,msrate,ftr,chman,pcdata,ratepl,isellrange):
         
     elif chman == 'ResAvenue':
         print("ResAvenue - CM Availability and Rate Fetch")
-        dfa,dfb = CM_ResAvenue(cmdata,pcdata,ftr,isellrange) 
+        dfa,dfb = CM_ResAvenue(cmdata,pcdata,ftr,isellrange)
+    elif chman == 'BookingHotel':
+        print("BookingHotel - CM Availability and Rate Fetch")
+        dfa,dfb = BookingHotel_CM(pcdata, cmdata, ftr, msrate, isellrange)
+
     
-    return(dfa,dfb)   
+    return(dfa,dfb)
 
