@@ -24,6 +24,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
     
     #----------------------Master Input Conditions---------------------      
     inputmaster=pd.ExcelFile(masterpth+'\\'+'InputConditionMaster.xlsx')
+#    inputmaster=pd.ExcelFile(masterpth+'\\'+'InputConditionMaster_{}.xlsx'.format(accMan[0]))
     inputdf2 = pd.read_excel(inputmaster,'Accounts') #Accounts Sheet
     season_range = pd.read_excel(masterpth+'\\'+'season_master.xlsx')
     dow_weight = pd.read_excel(masterpth+'\\'+'dow_weights.xlsx') #dow weights sheet
@@ -191,6 +192,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
         if name_chman[names] == 'Staah':
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
+            staahfile.dropna(subset=['CheckIn Date','CheckOut Date'],inplace=True)
             pcdata=''
         elif name_chman[names] == 'AxisRooms':
             staahfile = pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')))
