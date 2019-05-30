@@ -298,7 +298,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     gformat = workbook.add_format({ 'border':1})
     
     #assigning conditional formatting to glossary
-    worksheet2.conditional_format('{}1:{}{}'.format('A','C',35),
+    worksheet2.conditional_format('{}1:{}{}'.format('A','C',51),
                                          {'type': 'cell',
                                           'criteria' : '>',
                                           'value' : 0,                                
@@ -316,6 +316,12 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     worksheet2.write('A17', 'Sr No', boldcell)    
     worksheet2.write('B17', 'Pricing Abbreviations', boldcell)
     worksheet2.write('C17', 'Rate Description', boldcell)  
+    
+    worksheet2.write('A45', 'Sr No', boldcell)    
+    worksheet2.write('B45', 'Pricing Abbreviations', boldcell)
+    worksheet2.write('C45', 'Rate Description', boldcell)  
+    
+    
       
     #===================================================================================================
     #-----------------------------Grid Addition and Adoption addition---------------------------------------------------
