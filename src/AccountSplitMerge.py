@@ -22,21 +22,21 @@ cm_sheet1 = 'Accounts'
 cm_sheet2 = 'Monthly_MinRates'
 cm_sheet3 = 'Monthly_MaxRates'
 cm_sheet4 = 'Monthly_Jump'
-cm_fPath = r'E:\All_In_One_iSell'
+# cm_fPath = r'E:\All_In_One_iSell'
 cm_fName = 'InputConditionMastertest.xlsx'
-cm_backupath = cm_fPath+r'\masters\MappingFiles\Backup'  # backup with date
-cm_file = cm_fPath +r'\SoftwareDepo'+ '\\' + cm_fName #backup path wo date
 
 
-def var_init(drivepth,condn):   
+def var_init(drivepth, accpath ,condn):
     # INPUT FILE NAME "NOTE:- SHOULD NOT CHANGE"
-    
+
     #    cm_fPath = r'E:\All_In_One_iSell'
     # cm_splitpath = r'E:\Chakradhar\QA_REVNO\AccountSplit_master\Managers'
-    cm_splitpath = drivepth     
-    
+    cm_splitpath = accpath
+    cm_file = drivepth +r'\masters'+ '\\' + cm_fName #backup path wo date
+    cm_backupath = drivepth+r'\masters\MappingFiles\Backup'  # backup with date
+
     # COMPLETE PATH INCLUDING FILE NAME AND FILE PATH
-    
+
     # SHEETS NAME OF ''InputConditionMaster.xlsx' FILE
     #    cm_sheet1 = 'Accounts'
     #    cm_sheet2 = 'Monthly_MinRates'
@@ -48,27 +48,27 @@ def var_init(drivepth,condn):
     #    cm_df1.to_csv(r'E:\All_In_One_iSell\masters\MappingFiles\Backup\cm_df1.csv')
     cm_df1 = cm_df1[cm_df1['Status'] == 1]                   # FILTER COLUMN 'Status' by '1'
     cm_df1 = cm_df1.drop(['Sr.No'], axis=1)                  # DROP THE COLUMN NAME 'srno'
-    
+
     cm_df2 = pd.read_excel(cm_file, sheet_name=cm_sheet2)    # cm_sheet2 = 'Monthly_MinRates'
     cm_df2 = cm_df2.drop(['Sr.No'], axis=1)
-    
+
     cm_df3 = pd.read_excel(cm_file, sheet_name=cm_sheet3)    # cm_sheet3 = 'Monthly_MaxRates'
     cm_df3 = cm_df3.drop(['Sr.No'], axis=1)                  # DROP THE COLUMN NAME 'Sr.No'
-    
+
     cm_df4 = pd.read_excel(cm_file, sheet_name=cm_sheet4)    # cm_sheet4 = 'Monthly_Jump'
     cm_df4 = cm_df4.drop(['Sr.No'], axis=1)                  # DROP THE COLUMN NAME 'Sr.No'
-    
+
     # COLLECTION OF UNIQUE VALUES FROM COLUMN 'AccManager' FROM SHEET1 OF INPUT FILE
     # ----------acc man -> folder name----------------------
     accman_fold = dict(zip(cm_df1['AccManager'],cm_df1['D_Folder']))
-#    cm_df_Manager = accman_fold.keys
-#    print(1)
+    #    cm_df_Manager = accman_fold.keys
+    #    print(1)
     # ------------------Backup Function Call ------------------------
-#    backup_cm('', cm_splitpath, cm_backupath, accman_fold,cm_file)
-    
+    #    backup_cm('', cm_splitpath, cm_backupath, accman_fold,cm_file)
+
     #-----------------Split Call-------------------------------------
     if condn == 'split':
-        split(condn,accman_fold)
+        split(condn,accman_fold, cm_splitpath, cm_backupath, cm_file)
     else:
         backup_cm('', cm_splitpath, cm_backupath, accman_fold,cm_file)
 #        pass
@@ -187,19 +187,19 @@ def lost_accont(lost_df):
 # DEFINE 'split' FUNCTION TO CREATE  MANAGERS INDIVIDUAL FILE by SPLITTING INPUT FILE
 
 
-def split(condn, accman_fold):
-    cm_splitpath= 'D:'
-    ch = int(input('Do you want to split?[1/0] :'))         # ch accept input from your as 1 or 0
+def split(condn, accman_fold, cm_splitpath, cm_backupath,  cm_file):
 
-    if ch == 1:
+    ch = str(input('Do you want to split?[Yes/No] :'))         # ch accept input from your as 1 or 0
+
+    if ch == 'Yes':
         print('Please wait all account manager master files are merging......')
         backup_cm(condn, cm_splitpath, cm_backupath, accman_fold, cm_file)                                 # call backup_cm function then execution goes down for split
     else:
         print('enter correct choice')                # when the condition false execution come in else statement
         sys.exit()                                   # sys.exit() stop/end execution
-    kk = int(input('Please update account managers in InputConditionMaster and press 1 after saving file :'))
+    kk = str(input('Please update account managers in InputConditionMaster and press Yes after saving file :'))
     
-    if kk != 1:
+    if kk != 'Yes':
         print('Pl enter correct choice !!!')
         sys.exit()
     else: 
