@@ -14,7 +14,7 @@ def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
     # READ RATE FILE
     raw_df = pd.DataFrame(rfile)
     df = raw_df.transpose().reset_index()
-    df.fillna(value='Date', inplace=True)
+#    df.fillna(value='Date', inplace=True)
     df = pd.DataFrame(df)
     new_header = df.iloc[0]
     df = df[1:]
@@ -22,6 +22,7 @@ def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
 
     colLoc = df.columns.get_loc(msrate)
     rt_df = df.iloc[:, [colLoc + 1, colLoc + 2]]
+    rt_df.columns = ['Date','SingleRate']
     rt_df = rt_df.rename(columns={'SingleRate': 'Rate on CM'})
     rt_df = rt_df[['Date', 'Rate on CM']]
     rt_df['Date'] = pd.to_datetime(rt_df.Date, format='%a, %d %b %Y')
