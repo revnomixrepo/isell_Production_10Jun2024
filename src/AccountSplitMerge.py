@@ -23,8 +23,8 @@ cm_sheet2 = 'Monthly_MinRates'
 cm_sheet3 = 'Monthly_MaxRates'
 cm_sheet4 = 'Monthly_Jump'
 # cm_fPath = r'E:\All_In_One_iSell'
-cm_fName = 'InputConditionMastertest.xlsx'
-
+cm_fName = 'InputConditionMaster.xlsx'
+tdate = date.today().__format__('%d%b%Y')
 
 def var_init(drivepth, accpath ,condn):
     # INPUT FILE NAME "NOTE:- SHOULD NOT CHANGE"
@@ -171,7 +171,7 @@ def backup(backup_path,df_1,df_2,df_3,df_4, c):
         print('InputConditionMaster Updated')
 
 
-def lost_accont(lost_df):
+def lost_accont(lost_df, cm_backupath):
     lost_df1 = lost_df[lost_df['Status'] == 0]
     if lost_df1.empty:
         print('NO lost Account')
@@ -218,7 +218,7 @@ def split(condn, accman_fold, cm_splitpath, cm_backupath,  cm_file):
         
         cm_df4 = pd.read_excel(cm_file, sheet_name=cm_sheet4)    # cm_sheet4 = 'Monthly_Jump'
         cm_df4 = cm_df4.drop(['Sr.No'], axis=1)
-    lost_accont(lost_df)
+    lost_accont(lost_df, cm_backupath)
         
     count = 0
     for i in accman_fold:
