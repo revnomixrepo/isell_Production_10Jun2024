@@ -15,7 +15,7 @@ import csv
 import Leaf_Module as leaf
 
 
-def Flow(masterpth,defaultpath,LRdate,accMan):    
+def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     basepath=defaultpath+'\\'+'InputData'
     masterpath = defaultpath+'\\'+'masters'
     beautipth = masterpth+'\\'+'iSell'
@@ -23,8 +23,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan):
     glossary = pd.read_excel(defaultpath+r'\masters\logo\Glossary.xlsx')
     
     #----------------------Master Input Conditions---------------------      
-    inputmaster=pd.ExcelFile(masterpth+'\\'+'InputConditionMaster.xlsx')
+
+    inputmaster = pd.ExcelFile(accpath+'\\'+'InputConditionMaster_{}.xlsx'.format(accMan[0]))
+
+    # inputmaster=pd.ExcelFile(masterpth+'\\'+'InputConditionMaster.xlsx')
 #    inputmaster=pd.ExcelFile(masterpth+'\\'+'InputConditionMaster_{}.xlsx'.format(accMan[0]))
+
     inputdf2 = pd.read_excel(inputmaster,'Accounts') #Accounts Sheet
     season_range = pd.read_excel(masterpth+'\\'+'season_master.xlsx')
     dow_weight = pd.read_excel(masterpth+'\\'+'dow_weights.xlsx') #dow weights sheet
