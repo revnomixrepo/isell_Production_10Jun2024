@@ -22,7 +22,7 @@ def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
 
     colLoc = df.columns.get_loc(msrate)
     rt_df = df.iloc[:, [colLoc + 1, colLoc + 2]]
-    rt_df.columns = ['Date','SingleRate']
+    rt_df.columns= ['Date', 'SingleRate']
     rt_df = rt_df.rename(columns={'SingleRate': 'Rate on CM'})
     rt_df = rt_df[['Date', 'Rate on CM']]
     rt_df['Date'] = pd.to_datetime(rt_df.Date, format='%a, %d %b %Y')
