@@ -304,21 +304,24 @@ def CM_Maximojo(cmdata,msrate,rateid,ftr,isellrange):
 
 def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):    
     df2 = cmdata.T
-    df2.reset_index(inplace=True)
-    
-    df2.rename(columns={np.nan:'Year','Room':'Day'},inplace=True)
+    df2.reset_index(inplace=True)    
     df2.dropna(axis=1,how='all',inplace=True)
-
-    df2['month']=[i[:3] for i in df2['index']]
+    
+    
+    new_header = df2.iloc[0] #grab the first row for the header
+    df2.columns = new_header
+    df2.drop(0,axis=0,inplace=True)
+    
+    df2.rename(columns={np.nan:'Year','Room':'Day'},inplace=True)    
+    df2['month']=[i[:3] for i in df2['Unnamed: 0']]
+    
     df2['mon_num']=pd.to_datetime(df2.month, format='%b').dt.month
     for cols in ['Day', 'mon_num', 'Year']:
         df2[cols] = df2[cols].astype(int)
-    #==============================================================================
-     
+    #==========================================================================     
     for cols in ['Day', 'mon_num', 'Year']:
         df2[cols] = df2[cols].astype(str)
-
-    #==============================================================================
+    #==========================================================================
     df2['Date']=df2['Day']+'-'+df2['month']+'-'+df2['Year']
 
     try:
@@ -326,9 +329,8 @@ def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):
     except:
         df2['Date'] = pd.to_datetime(df2['Date'])
         
-    #--------------------FTR addition -------------------------------
-        
-    df22 = df2.drop(['index','Day','Year','month','mon_num'],axis=1)
+    #--------------------FTR addition -----------------------------------------        
+    df22 = df2.drop(['Unnamed: 0','Day','Year','month','mon_num'],axis=1)
     df222 = df22.loc[:,['Date',ftr]] #FTR DF
         
 
