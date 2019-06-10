@@ -206,11 +206,16 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
             pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
-
+        elif name_chman[names] == 'TravelClick':
+            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
+                                   skiprows=[1, 2], quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
+            pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
+            staahfile['Rooms'] = 1
         elif name_chman[names] == 'Maximojo':
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
-            pcdata=''        
+            pcdata=''
         elif name_chman[names] == 'Djubo':
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')),skiprows=1)
 #            staahfile = pd.DataFrame(staahfile2[staahfile2['Source Type'] == 'OTA'])
@@ -445,8 +450,8 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 #-------------similar to getfam----------------
                 rmsavail,cmdf = CMAs.CM_TB(staahfile,cmrates2)  
             elif names =='Best Western Clifton':
-                rmsavail,cmdf = CMAs.CM_UK(staahfile,cmrates2,name_msrate[names],isellrange)  
-         
+                rmsavail,cmdf = CMAs.CM_UK(staahfile,cmrates2,name_msrate[names],isellrange)
+
             
         elif name_chman[names] == 'TB':
             rmsavail,cmdf = CMAs.CM_TB(staahfile,cmrates2)           
