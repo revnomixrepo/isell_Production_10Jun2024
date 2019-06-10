@@ -4,6 +4,57 @@ import numpy  as np
 from datetime import datetime
 
 
+def TravelClick(rfile, ifile, ftr, msrate, rateplan, isellrange):
+    tdate = datetime.today().date()
+    year = tdate.year
+    month = tdate.month
+
+    # READ RATE FILE
+    raw_rdf = pd.DataFrame(rfile)
+    raw_rdf = raw_rdf[raw_rdf['Ratetype'] == msrate]
+
+    raw_rdf = raw_rdf[raw_rdf['Roomtype'] == ftr]
+    rt_df = raw_rdf[['Date', rateplan]]
+    rt_df = pd.DataFrame(rt_df)
+    rt_df = rt_df.rename(columns={rateplan: 'Rate on CM'})
+    rt_df.Date = pd.to_datetime(rt_df.Date, format='%Y-%m-%d')
+
+    # READ INVENTORY FILE
+    i_df = pd.DataFrame(ifile)
+    i_df = i_df.rename(columns={'Room': 'Raw_Date'})
+
+    def date_conv(s):
+        s.strip()
+        i = s.split("/")
+        mm = str(i[0])
+        if int(mm) < month:
+            n_year = year + 1
+        else:
+            n_year = year
+        s = str(n_year) + str(s)
+        return s
+
+    i_df['Date'] = i_df['Raw_Date'].apply(lambda x: date_conv(str(x)))
+
+    i_df['Date'].astype('datetime64[ns]')
+    i_df['Date'] = pd.to_datetime(i_df['Date'])
+    i_df[[0, 1]] = i_df['Property level'].str.split('/', expand=True)
+    i_df[0] = i_df[0].astype(int)
+    i_df = i_df.rename(columns={0: 'Rooms Avail To Sell Online'})
+    inv_df = i_df[['Date', 'Rooms Avail To Sell Online']]
+
+    flt_df = i_df[['Date', ' ' + ftr + ' ']]
+    flt_df = pd.DataFrame(flt_df)
+    flt_df[[0, 1]] = pd.DataFrame(flt_df[' ' + ftr + ' '].str.split('/', expand=True))
+    flt_df[0] = flt_df[0].astype(int)
+    flt_df = flt_df.rename(columns={0: ftr})
+    flt_df = flt_df[['Date', ftr]]
+    rt_df = iSell_fun_02.frame(rt_df, isellrange)
+    inv_df = iSell_fun_02.frame(inv_df, isellrange)
+    flt_df = iSell_fun_02.frame(flt_df, isellrange)
+    cm_df = iSell_fun_02.merging(flt_df, rt_df)
+    return (inv_df, cm_df)
+
 
 
 def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
@@ -428,6 +479,9 @@ def CM_Avails(cmdata,msrate,ftr,chman,pcdata,ratepl,isellrange):
     elif chman == 'BookingHotel':
         print("BookingHotel - CM Availability and Rate Fetch")
         dfa,dfb = BookingHotel_CM(pcdata, cmdata, ftr, msrate, isellrange)
+    elif chman == 'TravelClick':
+        print("TravelClick - CM Availability and Rate Fetch")
+        dfa, dfb = TravelClick(pcdata, cmdata, ftr, msrate, ratepl, isellrange)
 
     
     return(dfa,dfb)
