@@ -219,7 +219,7 @@ def split(condn, accman_fold, cm_splitpath, cm_backupath,  cm_file):
         cm_df4 = pd.read_excel(cm_file, sheet_name=cm_sheet4)    # cm_sheet4 = 'Monthly_Jump'
         cm_df4 = cm_df4.drop(['Sr.No'], axis=1)
     lost_accont(lost_df, cm_backupath)
-        
+    accman_fold = dict(zip(cm_df1['AccManager'], cm_df1['D_Folder']))
     count = 0
     for i in accman_fold:
         split_path = cm_splitpath + '\\' + accman_fold[i] + r'\All_In_One_iSell\masters'
