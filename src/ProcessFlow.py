@@ -226,6 +226,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             checkOut = dict(zip(ezeedates['Hotel'],ezeedates['Checkout']))
             
             staahfile = pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')))
+            staahfile.dropna(axis=0,subset=['Arrival','Dept'],inplace=True)
             staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'],format=checkIn[names])
             staahfile['Dept'] = pd.to_datetime(staahfile['Dept'],format=checkOut[names])        
             staahfile['Rooms']=1
