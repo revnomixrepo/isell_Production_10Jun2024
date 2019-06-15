@@ -3,7 +3,7 @@ import re
 import sys
 import CMAs
 import pandas as pd
-#import numpy as np
+import numpy as np
 import iSell_fun_02
 import beautiMode
 import directRecs
@@ -110,9 +110,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     #================================================================================================
     #================================================================================================
     
-#    datedf=pd.read_excel(masterpath+'\\'+'DateFormats.xlsx')
-#    cm_cols =pd.read_excel(masterpath+'\\'+'cm_master.xlsx')
-#    statusdf = pd.read_excel(masterpath+'\\'+'statuscodes.xlsx')
     ezeedates = pd.read_excel(masterpath+'\\'+'ezeedate_format.xlsx')
     jfacts = pd.read_excel(masterpath+r'\zFactors.xlsx')
     dropcol = pd.read_excel(masterpath+'\\'+'DropColumns.xlsx')
@@ -206,19 +203,41 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
             pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
+            
         elif name_chman[names] == 'TravelClick':
-            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
-            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
+                     
+            #===========================Travel Click OTA Condition===============================
+            if names in ["YO1 India's Holistic Wellness Center_OTA"]:
+                staahfile2 = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names[:-4] + str('_OTAData.csv')))   
+                staahfile2['Subchannel Desc'].fillna(value='blankval',inplace=True)
+                staahfile2['Subchannel Desc'] = np.where(staahfile2['Subchannel Desc'] == 'blankval', staahfile2['Channel Name'],staahfile2['Subchannel Desc'])
+                staahfile2.drop('Channel Name',axis=1,inplace=True)
+                #---------------renamed 'Subchannel Desc' as Channel Name---------------------
+                staahfile2.rename(columns={'Subchannel Desc':'Channel Name'},inplace=True)
+                #---------------removing ['PMS','Brand.com'] from Channel Name---------------
+                staahfile3 = staahfile2[~staahfile2['Channel Name'].isin(['PMS','Brand.com'])]
+                staahfile = pd.DataFrame(staahfile3)
+                
+                cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
                                    skiprows=[1, 2], quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
-            pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
-            staahfile['Rooms'] = 1
+                pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
+                staahfile['Rooms'] = 1
+                
+            else:
+                staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+                
+            
+                cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
+                                       skiprows=[1, 2], quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
+                pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
+                staahfile['Rooms'] = 1
+                         
         elif name_chman[names] == 'Maximojo':
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
             pcdata=''
         elif name_chman[names] == 'Djubo':
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')),skiprows=1)
-#            staahfile = pd.DataFrame(staahfile2[staahfile2['Source Type'] == 'OTA'])
             cmdata=''
             pcdata=''
         elif name_chman[names] == 'eZee':
