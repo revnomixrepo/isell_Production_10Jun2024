@@ -26,13 +26,14 @@ cm_sheet4 = 'Monthly_Jump'
 cm_fName = 'InputConditionMaster.xlsx'
 tdate = date.today().__format__('%d%b%Y')
 
+
 def var_init(drivepth, accpath ,condn):
     # INPUT FILE NAME "NOTE:- SHOULD NOT CHANGE"
 
     #    cm_fPath = r'E:\All_In_One_iSell'
     # cm_splitpath = r'E:\Chakradhar\QA_REVNO\AccountSplit_master\Managers'
     cm_splitpath = accpath
-    cm_file = drivepth +r'\masters'+ '\\' + cm_fName #backup path wo date
+    cm_file = drivepth + r'\masters' + '\\' + cm_fName #backup path wo date
     cm_backupath = drivepth+r'\masters\MappingFiles\Backup'  # backup with date
 
     # COMPLETE PATH INCLUDING FILE NAME AND FILE PATH
@@ -45,7 +46,7 @@ def var_init(drivepth, accpath ,condn):
 
     #  READ SHEET FROM INPUT FILE
     cm_df1 = pd.read_excel(cm_file, sheet_name=cm_sheet1)    # cm_sheet1 = 'Accounts'
-    #    cm_df1.to_csv(r'E:\All_In_One_iSell\masters\MappingFiles\Backup\cm_df1.csv')
+
     cm_df1 = cm_df1[cm_df1['Status'] == 1]                   # FILTER COLUMN 'Status' by '1'
     cm_df1 = cm_df1.drop(['Sr.No'], axis=1)                  # DROP THE COLUMN NAME 'srno'
 
@@ -66,15 +67,13 @@ def var_init(drivepth, accpath ,condn):
     # ------------------Backup Function Call ------------------------
     #    backup_cm('', cm_splitpath, cm_backupath, accman_fold,cm_file)
 
-    #-----------------Split Call-------------------------------------
+    # -----------------Split Call-------------------------------------
     if condn == 'split':
         split(condn,accman_fold, cm_splitpath, cm_backupath, cm_file)
     else:
-        backup_cm('', cm_splitpath, cm_backupath, accman_fold,cm_file)
+        backup_cm('', cm_splitpath, cm_backupath, accman_fold, cm_file)
 #        pass
-    
-    
-    
+
     # DEFINE 'backup_cm' FUNCTION TO CREATE BACKUP AND COLLECT N SAVE ALL CHANGE FROM MANAGERS INDIVIDUAL FILE TO INPUT FILE
 
 
@@ -105,7 +104,7 @@ def backup_cm(condition,cm_splitpath,cm_backupath, accman_fold, cm_file):
         for i in accman_fold:
             #  print(i)
             # split_file = cm_splitpath + r'\{}\'.format(accman_fold[i]) +'InputConditionMaster_{}.xlsx'.format(i)
-            split_file = cm_splitpath + '\\' +str(accman_fold[i])+r'\All_In_One_iSell\masters\InputConditionMaster_{}.xlsx'.format(i)
+            split_file = cm_splitpath + '\\' + str(accman_fold[i])+r'\All_In_One_iSell\masters\InputConditionMaster_{}.xlsx'.format(i)
 #            print(split_file)
             backup_df1 = pd.read_excel(split_file, sheet_name=cm_sheet1)      # READ SHEET USING FILTER VALUE i
             backup_df2 = pd.read_excel(split_file, sheet_name=cm_sheet2)      # i GET VALUE FROM LIST (cm_df_manager)
@@ -141,21 +140,18 @@ def backup_cm(condition,cm_splitpath,cm_backupath, accman_fold, cm_file):
             backup_path = cm_backupath + '\\' + 'backup_cm_{}_beforesplit.xlsx'.format(tdate)
         else:
             backup_path = cm_backupath + '\\' + 'backup_cm_{}.xlsx'.format(tdate)
-        backup(backup_path,df_1,df_2,df_3,df_4,0)                                      # CALL 'backup' FUNCTION PROVIDED PATH IS 'backup_path'
-        backup(cm_file,df_1,df_2,df_3,df_4,1)                                        # CALL 'backup' FUNCTION PROVIDED PATH IS  'cm_file'
-    #        ''' THIS CALL OVERWRITE MAIN INPUT FILE LOGIC BEHIND WRITEN IN TOP COMMENT '''
-    #        except Exception as E:
-    #            print(E)
-    #            print('Please check the above error')
+        backup(backup_path, df_1, df_2, df_3, df_4, 0)           # CALL 'backup' FUNCTION PROVIDED PATH IS 'backup_path'
+        backup(cm_file, df_1, df_2, df_3, df_4, 1)                  # CALL 'backup' FUNCTION PROVIDED PATH IS  'cm_file'
+    # THIS CALL OVERWRITE MAIN INPUT FILE LOGIC BEHIND WRITEN IN TOP COMMENT
 
 
-def backup(backup_path,df_1,df_2,df_3,df_4, c):
+def backup(backup_path, df_1, df_2, df_3, df_4, c):
     #    cm_sheet1 = 'Accounts'
     #    cm_sheet2 = 'Monthly_MinRates'
     #    cm_sheet3 = 'Monthly_MaxRates'
     #    cm_sheet4 = 'Monthly_Jump'
     #  WRITE DF INTO A EXCEL FILE
-    df_1= df_1[['Sr.No','Status','AccManager','hotelname','ChannelMan','staahid','cap','otacap','msrate','flowthrough','rateplan','RateOnCM','HNF','Currency','PricingType','PsychologicalFactor','GridType','PriceJump','ClusterName','JumpType','use_CeilingRate','use_FloorRate','use_Grid','isellwindow','clientwindow(180)','City','D_Folder']]
+    df_1 = df_1[['Sr.No','Status','AccManager','hotelname','ChannelMan','staahid','cap','otacap','msrate','flowthrough','rateplan','RateOnCM','HNF','Currency','PricingType','PsychologicalFactor','GridType','PriceJump','ClusterName','JumpType','use_CeilingRate','use_FloorRate','use_Grid','isellwindow','clientwindow(180)','City','D_Folder']]
     df_2 = df_2[['Sr.No','hotelname','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','use_MaxRate']]
     df_3 = df_3[['Sr.No','hotelname','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']]
     df_4 = df_4[['Sr.No','hotelname','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Season1','Season2']]
@@ -182,8 +178,6 @@ def lost_accont(lost_df, cm_backupath):
         lost_df1.to_excel(lost_path)
 
 
-
-
 # DEFINE 'split' FUNCTION TO CREATE  MANAGERS INDIVIDUAL FILE by SPLITTING INPUT FILE
 
 
@@ -204,7 +198,6 @@ def split(condn, accman_fold, cm_splitpath, cm_backupath,  cm_file):
         sys.exit()
     else: 
         cm_df1 = pd.read_excel(cm_file, sheet_name=cm_sheet1)    # cm_sheet1 = 'Accounts'
-        #    cm_df1.to_csv(r'E:\All_In_One_iSell\masters\MappingFiles\Backup\cm_df1.csv')
 
         cm_df1 = cm_df1.drop(['Sr.No'], axis=1)                  # DROP THE COLUMN NAME 'srno'
         lost_df = cm_df1
@@ -232,23 +225,27 @@ def split(condn, accman_fold, cm_splitpath, cm_backupath,  cm_file):
         cm_df_Sheet1 = cm_df_Sheet1.reset_index(drop='Sr.No')
         cm_df_Sheet1.index = np.arange(1, len(cm_df_Sheet1) + 1)
         cm_df_Sheet1 = cm_df_Sheet1.reset_index().rename(columns={'index': 'Sr.No'})
+        cm_df_Sheet1 = cm_df_Sheet1.drop_duplicates(subset='hotelname')
 
         cm_dfs = cm_df2['hotelname'].isin(cm_df_Sheet1['hotelname'])
         cm_df_Sheet2 = cm_df2[cm_dfs]
         cm_df_Sheet2.index = np.arange(1, len(cm_df_Sheet2) + 1)
         cm_df_Sheet2 = cm_df_Sheet2.reset_index().rename(columns={'index': 'Sr.No'})
-
+        cm_df_Sheet2 = cm_df_Sheet2.drop_duplicates(subset='hotelname')
 
         cm_dfs = cm_df3['hotelname'].isin(cm_df_Sheet1['hotelname'])
         cm_df_Sheet3 = cm_df3[cm_dfs]
         cm_df_Sheet3.index = np.arange(1, len(cm_df_Sheet3) + 1)
         cm_df_Sheet3 = cm_df_Sheet3.reset_index().rename(columns={'index': 'Sr.No'})
+        cm_df_Sheet3 = cm_df_Sheet3.drop_duplicates(subset='hotelname')
 
         cm_dfs = cm_df4['hotelname'].isin(cm_df_Sheet1['hotelname'])
         cm_df_Sheet4 = cm_df4[cm_dfs]
         cm_df_Sheet4.index = np.arange(1, len(cm_df_Sheet4) + 1)
         cm_df_Sheet4 = cm_df_Sheet4.reset_index().rename(columns={'index': 'Sr.No'})
+        cm_df_Sheet4 = cm_df_Sheet4.drop_duplicates(subset='hotelname')
 
+        # WRITE EXCEL FILE IN ACCOUNT MANAGER FOLDER
         cm_df_Sheet1.to_excel(writer, sheet_name=cm_sheet1, index=False)
         cm_df_Sheet2.to_excel(writer, sheet_name=cm_sheet2, index=False)
         cm_df_Sheet3.to_excel(writer, sheet_name=cm_sheet3, index=False)
