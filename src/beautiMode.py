@@ -141,6 +141,26 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
                                          {'type': 'cell',
                                           'criteria' : '<=',
                                           'value' : 0,
+                                         'format': border_form})    
+    
+        #========================= 'Dow' =====================================================
+        elif colname == 'Dow':
+            worksheet.conditional_format('{}7:{}{}'.format(colnum,colnum,rowlim),
+                                         {'type': 'text',
+                                          'criteria' : 'containing',
+                                          'value' : 'Sat',
+                                         'format': format4}) 
+            
+            worksheet.conditional_format('{}7:{}{}'.format(colnum,colnum,rowlim),
+                                         {'type': 'text',
+                                          'criteria' : 'containing',
+                                          'value' : "Sun",
+                                         'format': format4}) 
+    
+            worksheet.conditional_format('{}7:{}{}'.format(colnum,colnum,rowlim),
+                                         {'type': 'cell',
+                                          'criteria' : '>',
+                                          'value' : 0,
                                          'format': border_form})
     
         #========================= 'Hotel Availability' =====================================================
