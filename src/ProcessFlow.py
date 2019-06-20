@@ -835,18 +835,18 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 
             iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names,iselldt))
             print('----------{}_{}_iSell generated_#{} !!!----------------'.format(sr,names,name_chman[names]))
-            beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile)
+            beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile, name_cap[names])
 
         
         elif name_cmflag[names] == 1:
                         
             if (iSelldf10['Rate on CM'].sum() == 0) :
                 iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}_BAD.csv'.format(tdayfold,names,iselldt))
-                beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile)
+                beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile, name_cap[names])
 
             else :
                 iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names,iselldt))
-                beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile)
+                beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile, name_cap[names])
             
             print('----------{}_{}_iSell Generated _#{} !!!----------------'.format(sr,names,name_chman[names]))
         else:
