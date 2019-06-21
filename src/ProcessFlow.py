@@ -25,10 +25,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     #----------------------Master Input Conditions---------------------      
 
     inputmaster = pd.ExcelFile(accpath+'\\'+'InputConditionMaster_{}.xlsx'.format(accMan[0]))
+    
+    format2file = pd.read_excel(masterpath+'\\'+'Format2_iSells.xlsx')
+    format2isells = list(format2file['HotelNames'])
 
-    # inputmaster=pd.ExcelFile(masterpth+'\\'+'InputConditionMaster.xlsx')
-#    inputmaster=pd.ExcelFile(masterpth+'\\'+'InputConditionMaster_{}.xlsx'.format(accMan[0]))
-
+    
+    
     inputdf2 = pd.read_excel(inputmaster,'Accounts') #Accounts Sheet
     season_range = pd.read_excel(masterpth+'\\'+'season_master.xlsx')
     dow_weight = pd.read_excel(masterpth+'\\'+'dow_weights.xlsx') #dow weights sheet
@@ -317,7 +319,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 cmrates2 = pd.DataFrame(cmrates)
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'],format="%d/%m/%Y")
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'],format="%d-%b-%Y")
-                #cmrates2.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\CM_Availability\cmrates222.csv')
             
         
         elif name_chman[names] == 'TB':
@@ -340,7 +341,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             
         elif name_chman[names] == 'AsiaTech':
             staahfile = pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')), delimiter =",", index_col=False, header=0)
-            #staahfile.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\OTA_Data\16_Oct_2018\staahfile.csv')
             cmdata=''
             pcdata=''
             
@@ -355,7 +355,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             staahfile2['Status']=staahfile2['Status'].fillna(value=1)
             staahfile =  pd.DataFrame(staahfile2[staahfile2.Status != 1])
             
-            #staahfile.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\OTA_Data\16_Oct_2018\staahfile.csv')     
             cmdata=''
             pcdata=''
             
@@ -439,8 +438,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         dc3 = pd.merge(frame,dc3_1,on='Date',how='left')
         dc3['Capacity']=name_cap[names]
         print('\tDC attached !')
-        
-        #df_ttlsold.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\ttlsold1.csv')
 
         #2)---------------# CM_Avail #----------------------------------------------
         
@@ -607,7 +604,13 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             if use_Grid[names] == 1:
                 pgdf = pd.DataFrame(df_PG)
             else:
-                pgdf=grid.Gridcreator(names,isellforgrid,month_minR,htl_dowWt,clustName,month_jump,jfacts,jumpType[names],psy_fact,priceType[names])          
+                pgdf=grid.Gridcreator(names,isellforgrid,month_minR,htl_dowWt,clustName,month_jump,jfacts,jumpType[names],psy_fact,priceType[names])     
+                if names in format2isells:
+                    #-------------dump grid for format2 iSell----------------------------
+                    pgdf.to_excel(basepath+'\{}\{}'.format('Pricing_Grid',names+'_PG.xlsx'))
+                else:
+                    pass
+                    
             
             
         elif priceType[names] == 'Seasonal':
