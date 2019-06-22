@@ -246,7 +246,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
         
          #=========================== ADR, Revenue, Rate on CM, ReccRate ===================================================================
        
-        elif colname in ['Hotel Revenue','Hotel ADR OTB','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate','Lowest Rate']:
+        elif colname in ['Total Revenue','Total ADR OTB','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate','Lowest Rate']:
             worksheet.conditional_format('{}7:{}{}'.format(colnum,colnum,rowlim),
                                          {'type': 'cell',
                                           'criteria' : '>=',
