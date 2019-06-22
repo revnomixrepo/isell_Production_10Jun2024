@@ -181,6 +181,13 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     print('---------------------------------------------------')
 
     for sr, names in enumerate(inputdf['hotelname'],start=1):
+        #-------------------format 2 name setting(flag)-----------------------------#
+        if '_OTA' in names:
+            format2flag = 1
+            names == names[:-4]
+        else:
+            format2flag = 0
+            pass
         
         #-------------------Dynamic Dictionaries-------------------------------------------
         #Hotel Cluster Weights
@@ -823,10 +830,15 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         #12)--------------------# Adoption #------------------------------------------   
         finaladop = iSell_fun_02.Adopcal(iSelldf10,179,89)
 #        print(finaladop)
-        print("\tAdoption calculated !!!")       
-        
+        print("\tAdoption calculated !!!")          
                        
-#        iSelldf10.to_csv(r'E:\All_In_One_iSell\Testing\iSelldf10.csv')    
+        
+        #========================reset name again for format2(check flag)=========================
+        if format2flag == 1:
+            names = names+'_OTA'
+        else:
+            pass
+        #==============================================================================
         #13)-----------------#Rate on CM check and iSell CSV dump #-------------------------------------
         if name_cmflag[names] ==0:           
             iSelldf10.drop('SeasonalRate_x',axis=1,inplace=True)

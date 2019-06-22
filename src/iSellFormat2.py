@@ -45,13 +45,13 @@ def total_ota_merging(htlname, ftr, iselldt, outcsvpath):
     total_otas['Date'] = pd.to_datetime(total_otas['Date'],format='%Y-%m-%d')
     
     df_total2 = pd.DataFrame(df_total.loc[:,['Date', 'Dow', 'Event', 'Capacity',
-           'Hotel Availability', 'Lakeview King', 'OTA_Sold', 'Pickup',
+           'Hotel Availability', ftr, 'OTA_Sold', 'Pickup',
            'OTA Revenue', 'ADR OTB']])
     
     df_total2['Date'] = pd.to_datetime(df_total2['Date'],format='%Y-%m-%d')
     
-    df_total2.rename(columns={'OTA_Sold':'Hotel Sold', 'Pickup':'Hotel Pickup',
-           'OTA Revenue':'Hotel Revenue', 'ADR OTB':'Hotel ADR OTB'},inplace=True)
+    df_total2.rename(columns={'OTA_Sold':'Total Sold', 'Pickup':'Total Pickup',
+           'OTA Revenue':'Total Revenue', 'ADR OTB':'Total ADR OTB'},inplace=True)
     
     #============================2) ota df============================================
     df_ota = pd.read_csv(outcsvpath+r"\iSell_{}_OTA_{}.csv".format(htlname,iselldt))
@@ -79,10 +79,11 @@ def total_ota_merging(htlname, ftr, iselldt, outcsvpath):
         pass
     
     #==================combine isell to test===================================
-    format3.to_csv(r'E:\BeautiMode\Inputs\format2.csv')
+#    format3.to_csv(r'E:\BeautiMode\Inputs\format2.csv')
     #==========================================================================
     print('Final Combine iSell df returned')
-    finaladop = ifun.Adopcal(format3,179,89)
+    format4 = format3.rename(columns={'Hotel Pickup':'Pickup'})
+    finaladop = ifun.Adopcal(format4,179,89)
     return(format3,finaladop)
 
    
@@ -91,10 +92,9 @@ for name in isell_format2['HotelNames']:
     isellrange = int(name_win[name])
     combine_iSell,finaladop = total_ota_merging(name, name_ftr[name], iselldt, outcsvpath)    
     #-------------------------------------------------------------------------#
-    names = 'Bhagini Suites'
     beautipth = std_path+r'\masters\iSell'
     
-    glossary = pd.read_excel(r'E:\BeautiMode\Inputs\logo\Glossary.xlsx')
+    glossary = pd.read_excel(std_path+r'\masters\logo\Glossary.xlsx')
     pgdf = pd.read_excel(std_path+r'\InputData\Pricing_Grid\{}_PG.xlsx'.format(name))
     rateshopfile = pd.read_csv(std_path+r'\InputData\RateShop\{}\{}_RateShop.csv'.format(fold_dt,name))
     #-------------------------------------------------------------------------#    
