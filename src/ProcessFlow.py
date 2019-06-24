@@ -5,6 +5,7 @@ import CMAs
 import pandas as pd
 import numpy as np
 import iSell_fun_02
+import iSellFormat2 as form2
 import beautiMode
 import directRecs
 import monthlymodule as mnthprice
@@ -25,10 +26,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     #----------------------Master Input Conditions---------------------      
 
     inputmaster = pd.ExcelFile(accpath+'\\'+'InputConditionMaster_{}.xlsx'.format(accMan[0]))
+    
+    format2file = pd.read_excel(masterpath+'\\'+'Format2_iSells.xlsx')
+    format2isells = list(format2file['HotelNames'])
 
-    # inputmaster=pd.ExcelFile(masterpth+'\\'+'InputConditionMaster.xlsx')
-#    inputmaster=pd.ExcelFile(masterpth+'\\'+'InputConditionMaster_{}.xlsx'.format(accMan[0]))
-
+    
+    
     inputdf2 = pd.read_excel(inputmaster,'Accounts') #Accounts Sheet
     season_range = pd.read_excel(masterpth+'\\'+'season_master.xlsx')
     dow_weight = pd.read_excel(masterpth+'\\'+'dow_weights.xlsx') #dow weights sheet
@@ -179,6 +182,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     print('---------------------------------------------------')
 
     for sr, names in enumerate(inputdf['hotelname'],start=1):
+        #-------------------format 2 name setting(flag)-----------------------------#
+        if '_OTA' in names:
+            format2flag = 1
+        else:
+            format2flag = 0
+            pass
         
         #-------------------Dynamic Dictionaries-------------------------------------------
         #Hotel Cluster Weights
@@ -207,7 +216,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         elif name_chman[names] == 'TravelClick':
                      
             #===========================Travel Click OTA Condition===============================
-            if names in ["YO1 India's Holistic Wellness Center_OTA"]:
+            if '_OTA' in names:
                 staahfile2 = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names[:-4] + str('_OTAData.csv')))   
                 staahfile2['Subchannel Desc'].fillna(value='blankval',inplace=True)
                 staahfile2['Subchannel Desc'] = np.where(staahfile2['Subchannel Desc'] == 'blankval', staahfile2['Channel Name'],staahfile2['Subchannel Desc'])
@@ -218,9 +227,9 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 staahfile3 = staahfile2[~staahfile2['Channel Name'].isin(['PMS','Brand.com'])]
                 staahfile = pd.DataFrame(staahfile3)
                 
-                cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
+                cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names[:-4] + str('_CM.xlsx')),
                                    skiprows=[1, 2], quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
-                pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
+                pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names[:-4] + str('_PC.xlsx')))
                 staahfile['Rooms'] = 1
                 
             else:
@@ -317,7 +326,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 cmrates2 = pd.DataFrame(cmrates)
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'],format="%d/%m/%Y")
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'],format="%d-%b-%Y")
-                #cmrates2.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\CM_Availability\cmrates222.csv')
             
         
         elif name_chman[names] == 'TB':
@@ -340,7 +348,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             
         elif name_chman[names] == 'AsiaTech':
             staahfile = pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')), delimiter =",", index_col=False, header=0)
-            #staahfile.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\OTA_Data\16_Oct_2018\staahfile.csv')
             cmdata=''
             pcdata=''
             
@@ -355,7 +362,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             staahfile2['Status']=staahfile2['Status'].fillna(value=1)
             staahfile =  pd.DataFrame(staahfile2[staahfile2.Status != 1])
             
-            #staahfile.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\OTA_Data\16_Oct_2018\staahfile.csv')     
             cmdata=''
             pcdata=''
             
@@ -375,18 +381,33 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         else:
             print("There is no such Channel Manager Added in Input Conditions !!!")               
             
+        #==================================format2 name setting====================================================
+        if format2flag == 1:
+            rsfile = pd.read_csv(basepath+'\{}\{}\{}'.format('RS_Data',tdayfold,names[:-4]+str('_RSData.csv')),encoding='cp1252')
+            dc = pd.read_excel(basepath+'\{}\{}'.format('Demand_Calendar',names[:-4]+str('.xlsx')))
+            #---------------------------------LastReport name should have OTA-------------------------------------------
+            df_LR = pd.read_csv(basepath+'\{}\{}\{}'.format('OutPut_CSV',lastfoldname,str('iSell_')+names+str('_{}.csv'.format(LRdt))))
+            #------------------------------------------------------------------------------------------------------------
+            if use_Grid[names] == 1:
+                df_PG = pd.read_excel(basepath+'\{}\{}'.format('Pricing_Grid',names[:-4]+str('_PG.xlsx')))
+            else:
+                pass
             
-        rsfile = pd.read_csv(basepath+'\{}\{}\{}'.format('RS_Data',tdayfold,names+str('_RSData.csv')),encoding='cp1252')
-        dc = pd.read_excel(basepath+'\{}\{}'.format('Demand_Calendar',names+str('.xlsx')))
-        df_LR = pd.read_csv(basepath+'\{}\{}\{}'.format('OutPut_CSV',lastfoldname,str('iSell_')+names+str('_{}.csv'.format(LRdt))))
+            rateshopfile = pd.read_csv(basepath + '\{}\{}\{}'.format('RateShop', tdayfold, names[:-4] + str('_RateShop.csv')))
         
-        if use_Grid[names] == 1:
-            df_PG = pd.read_excel(basepath+'\{}\{}'.format('Pricing_Grid',names+str('_PG.xlsx')))
-        else:
-            pass
-        
-        rateshopfile = pd.read_csv(basepath + '\{}\{}\{}'.format('RateShop', tdayfold, names + str('_RateShop.csv')))
-        
+        else:       
+            rsfile = pd.read_csv(basepath+'\{}\{}\{}'.format('RS_Data',tdayfold,names+str('_RSData.csv')),encoding='cp1252')
+            dc = pd.read_excel(basepath+'\{}\{}'.format('Demand_Calendar',names+str('.xlsx')))
+            df_LR = pd.read_csv(basepath+'\{}\{}\{}'.format('OutPut_CSV',lastfoldname,str('iSell_')+names+str('_{}.csv'.format(LRdt))))
+            
+            if use_Grid[names] == 1:
+                df_PG = pd.read_excel(basepath+'\{}\{}'.format('Pricing_Grid',names+str('_PG.xlsx')))
+            else:
+                pass
+            
+            rateshopfile = pd.read_csv(basepath + '\{}\{}\{}'.format('RateShop', tdayfold, names + str('_RateShop.csv')))
+        #================================================================================================================
+            
         
         #---------------------------Frame('Date','Dow')-----------------------------------------------
         tday = ddmmyy.strftime("%d-%b-%Y")       
@@ -439,8 +460,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         dc3 = pd.merge(frame,dc3_1,on='Date',how='left')
         dc3['Capacity']=name_cap[names]
         print('\tDC attached !')
-        
-        #df_ttlsold.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\ttlsold1.csv')
 
         #2)---------------# CM_Avail #----------------------------------------------
         
@@ -607,7 +626,13 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             if use_Grid[names] == 1:
                 pgdf = pd.DataFrame(df_PG)
             else:
-                pgdf=grid.Gridcreator(names,isellforgrid,month_minR,htl_dowWt,clustName,month_jump,jfacts,jumpType[names],psy_fact,priceType[names])          
+                pgdf=grid.Gridcreator(names,isellforgrid,month_minR,htl_dowWt,clustName,month_jump,jfacts,jumpType[names],psy_fact,priceType[names])     
+                if names in format2isells:
+                    #-------------dump grid for format2 iSell----------------------------
+                    pgdf.to_excel(basepath+'\{}\{}'.format('Pricing_Grid',names+'_PG.xlsx'))
+                else:
+                    pass
+                    
             
             
         elif priceType[names] == 'Seasonal':
@@ -820,10 +845,15 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         #12)--------------------# Adoption #------------------------------------------   
         finaladop = iSell_fun_02.Adopcal(iSelldf10,179,89)
 #        print(finaladop)
-        print("\tAdoption calculated !!!")       
-        
+        print("\tAdoption calculated !!!")          
                        
-#        iSelldf10.to_csv(r'E:\All_In_One_iSell\Testing\iSelldf10.csv')    
+        
+#        #========================reset name again for format2(check flag)=========================
+#        if format2flag == 1:
+#            names = names+'_OTA'
+#        else:
+#            pass
+        #==============================================================================
         #13)-----------------#Rate on CM check and iSell CSV dump #-------------------------------------
         if name_cmflag[names] ==0:           
             iSelldf10.drop('SeasonalRate_x',axis=1,inplace=True)
@@ -851,7 +881,19 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             print('----------{}_{}_iSell Generated _#{} !!!----------------'.format(sr,names,name_chman[names]))
         else:
             print('Please set 0 or 1 to RateOnCM column of Accounts sheet')
-            sys.exit()         
+            sys.exit()   
+        
+        #14)===========================Format2 Call==========================================
+        if format2flag == 1:
+            outcsvpath = basepath+'\\'+'OutPut_CSV\{}'.format(tdayfold)            
+            combine_iSell,finaladop = form2.total_ota_merging(names[:-4] ,name_ftr[names], iselldt, outcsvpath)
+            combine_iSell.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names[:-4]+'_Combine',iselldt))
+            print("Combine iSell dumped for {}".format(names[:-4]))
+            beautiMode.isellbeautify(defaultpath, combine_iSell, names[:-4]+'_Combine', beautipth, int(name_win2[names]), isellrange, glossary, name_ftr[names], pgdf, finaladop, name_accman[names], rateshopfile, name_cap[names])
+        else:
+            pass
+            
+            
             
     print("################## ALL iSell Generated for {} , Thanks ! ########################".format(accMan))
 

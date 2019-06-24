@@ -214,7 +214,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
                                          'format': border_form})
             
         #========================== OTA Sold (G) =============================================================
-        elif colname == 'OTA Sold':
+        elif 'Sold' in colname:
             worksheet.conditional_format('{}7:{}{}'.format(colnum,colnum,rowlim),
                                          {'type': 'cell',
                                           'criteria' : '>=',
@@ -222,7 +222,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
                                          'format': format4}) 
 #            print("Formatting {} column".format(colname))
         #=========================== PickupColumn(H) ===================================================================
-        elif colname == 'Pickup':
+        elif 'Pickup' in colname:
             worksheet.conditional_format('{}7:{}{}'.format(colnum,colnum,rowlim),
                                          {'type': 'cell',
                                           'criteria' : '<',
@@ -246,7 +246,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
         
          #=========================== ADR, Revenue, Rate on CM, ReccRate ===================================================================
        
-        elif colname in ['OTA Revenue','ADR OTB','Rate on CM','Recommended Rate','Lowest Rate']:
+        elif colname in ['Total Revenue','Total ADR OTB','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate','Lowest Rate']:
             worksheet.conditional_format('{}7:{}{}'.format(colnum,colnum,rowlim),
                                          {'type': 'cell',
                                           'criteria' : '>=',
