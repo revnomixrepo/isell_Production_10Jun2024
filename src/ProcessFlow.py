@@ -328,7 +328,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'],format="%d-%b-%Y")
             
         
-        elif name_chman[names] == 'TB':
+        elif name_chman[names] == 'TravelBook':
             pcdata=''
             staahfile = pd.read_csv(basepath+'\{}\{}\{}'.format('HNF',tdayfold,names+str('_HNF.csv')), delimiter =",", index_col=False, header=0, low_memory=False, quoting=csv.QUOTE_ALL,encoding='utf8')
             
@@ -417,7 +417,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         
         #---------------------# df_total,df_ota,df_ttlsold #--------------------------------------------
         
-        if name_chman[names] in ['UK','TB']:
+        if name_chman[names] in ['UK','TravelBook']:
             pass   
             
             
@@ -492,7 +492,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 rmsavail,cmdf = CMAs.CM_UK(staahfile,cmrates2,name_msrate[names],isellrange)
 
             
-        elif name_chman[names] == 'TB':
+        elif name_chman[names] == 'TravelBook':
             rmsavail,cmdf = CMAs.CM_TB(staahfile,cmrates2)           
             
         elif name_chman[names] == 'RezNext':
@@ -508,7 +508,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     #    
         iSelldf1 = iSell_fun_02.merging(dc3,rmsavail)
         print('\tCM And FTR added !!!')
-        if name_chman[names] in ['UK','TB']:
+        if name_chman[names] in ['UK','TravelBook']:
             iSelldf2 = iSelldf1
             print('\tOTA Sold Added')
         else:
@@ -567,7 +567,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         
         #5)---------------# OTA Revenue #------------------------------------------
         
-        if name_chman[names] in ['UK','TB']:
+        if name_chman[names] in ['UK','TravelBook']:
             iSelldf4=iSell_fun_02.merging(iSelldf2,cmdf)
             
             print('\tRevenue, ADR, CM Rate Added !!!')
@@ -715,7 +715,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 
                 #-----------------------I)TB----------------------------------------------          
                         
-                elif name_chman[names] =='TB':
+                elif name_chman[names] =='TravelBook':
                     df_hnf = pd.read_csv(basepath+'\{}\{}\{}'.format('HNF',tdayfold,names+str('_HNF.csv')), delimiter =",", index_col=False, header=0, low_memory=False, quoting=csv.QUOTE_ALL,encoding='utf8')
                     htlsold,htlavail = iSell_fun_02.TBhnfconv(df_hnf,name_maxcap[names],isellrange) 
                     
@@ -804,7 +804,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         iSelldf7.drop(['LAvg', 'CAvg'],axis=1,inplace=True)
         print('\tMarket Trend added !!!')
         
-        if name_chman[names] in ['UK','TB']:
+        if name_chman[names] in ['UK','TravelBook']:
             iSelldf7.rename(columns={'OTA Revenue':'Revenue'},inplace=True)
             iSelldf8 = iSelldf7
         else:    

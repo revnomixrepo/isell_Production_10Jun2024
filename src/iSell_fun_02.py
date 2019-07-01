@@ -76,6 +76,8 @@ def dfconv(stdpth,cmfile2,htl,chman):
     dtformat = dict(zip(CMdates['CM'],CMdates[chman]))
     
     cmfile2.rename(columns=stdcols,inplace=True)
+    cmfile2.dropna(axis=0,subset=['CheckIn','CheckOut'],inplace=True)
+    
     cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'],format="{}".format(dtformat['CheckIn']))
     cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'],format="{}".format(dtformat['CheckOut']))
     
@@ -134,7 +136,7 @@ def dfconv(stdpth,cmfile2,htl,chman):
 
 
 def dfLR(df1,chman):
-    if chman in ['UK','TB']:
+    if chman in ['UK','TravelBook']:
         df1.rename(columns={'Hotel Sold':'OTA_Sold'},inplace=True)
     else:
         pass
