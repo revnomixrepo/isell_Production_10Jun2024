@@ -136,7 +136,7 @@ def dfconv(stdpth,cmfile2,htl,chman):
 
 
 def dfLR(df1,chman):
-    if chman in ['UK','TB']:
+    if chman in ['UK','TravelBook']:
         df1.rename(columns={'Hotel Sold':'OTA_Sold'},inplace=True)
     else:
         pass
