@@ -225,7 +225,13 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 staahfile2.rename(columns={'Subchannel Desc':'Channel Name'},inplace=True)
                 #---------------removing ['PMS','Brand.com'] from Channel Name---------------
                 staahfile3 = staahfile2[~staahfile2['Channel Name'].isin(['PMS','Brand.com'])]
-                staahfile = pd.DataFrame(staahfile3)
+                
+                #------------------remove House Bookings for YO1----------------------------
+                if names in ["YO1 India's Holistic Wellness Center_OTA"]:
+                    staahfile = pd.DataFrame(staahfile3[staahfile3['Rate Plan']!='House'])
+                else:
+                    staahfile = pd.DataFrame(staahfile3)
+                #-----------------------------------------------------------------------------
                 
                 cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names[:-4] + str('_CM.xlsx')),
                                    skiprows=[1, 2], quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
@@ -233,8 +239,14 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 staahfile['Rooms'] = 1
                 
             else:
-                staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+                staahfile2 = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
                 
+                #------------------remove House Bookings for YO1---------------------------------
+                if names in ["YO1 India's Holistic Wellness Center"]:
+                    staahfile = pd.DataFrame(staahfile2[staahfile2['Rate Plan'] != 'House'])
+                else:
+                    staahfile = pd.DataFrame(staahfile2)
+                #---------------------------------------------------------------------------------                
             
                 cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
                                        skiprows=[1, 2], quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
