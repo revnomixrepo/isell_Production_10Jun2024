@@ -3,6 +3,26 @@ import pandas as pd
 import numpy  as np
 from datetime import datetime
 
+def ezee_new_pc_data(file, ratepaln):
+
+    df_file = file.drop(columns=['Room Type ID', 'Room Type', 'Rate Plan ID'])
+    df_file = df_file[df_file['Operation'] == 'Rates']
+    df_file = df_file.drop(columns=['Operation'])
+    # df_file = df_file.drop(0, axis=0)
+    df_file = df_file.T.reset_index()
+    new_header = df_file.iloc[0]
+    df_file.columns = new_header
+    df_file = df_file.iloc[1:, :]
+    df_file.rename(columns={'Rate Plan': 'date'}, inplace=True)
+    df_file['Date'] = pd.to_datetime(df_file['date'], format='@%Y-%m-%d')
+    df_file = pd.DataFrame(df_file)
+    df_file['Date'] = pd.to_datetime(df_file['Date'], format='%Y-%m-%d')
+    df_rate = df_file[['Date', ratepaln]]
+    df_rate = pd.DataFrame(df_rate)
+    df_rate[ratepaln] = df_rate[ratepaln].astype(int)
+    df_rate.rename(columns={ratepaln: 'Rate on CM'}, inplace=True)
+    return df_rate
+
 
 def TravelClick(rfile, ifile, ftr, msrate, rateplan, isellrange):
     tdate = datetime.today().date()
@@ -215,7 +235,7 @@ def CM_ResAvenue(cmdata,pcdata,ftr,isellrange):
     return(ddf9,df6)
 
 
-def CM_eZee(cmdata,ratepl,ftr,isellrange):
+def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     cmdata = pd.DataFrame(cmdata)
     cmdata['Date'] = pd.to_datetime(cmdata['Date'],format="%d-%m-%Y")
     rmsdf = cmdata.loc[:,['Date','roomtype','availablity']]
@@ -238,11 +258,18 @@ def CM_eZee(cmdata,ratepl,ftr,isellrange):
     cm_ezee3 = cm_ezee2.loc[:,['Date','baserate']]
     cm_ezee3['Date']=pd.to_datetime(cm_ezee3['Date'])
     cm_ezee3.rename(columns={'baserate':'Rate on CM'},inplace=True)
-    cm_ezee4 = iSell_fun_02.frame(cm_ezee3,isellrange)
-    
-    rmsdf444.drop_duplicates(subset='Date',inplace=True)
-    cm_ezee4.drop_duplicates(subset='Date',inplace=True)
+
+    if htlname == 'Hotel Emerald':
+        cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+        cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+    else:
+        cm_ezee4 = iSell_fun_02.frame(cm_ezee3, isellrange)
+
+    rmsdf444.drop_duplicates(subset='Date', inplace=True)
+    cm_ezee4.drop_duplicates(subset='Date', inplace=True)
+
     return(rmsdf444,cm_ezee4)
+
 
 def CM_UK(otadata,cmrate,msrate,isellrange):
     otadata = pd.DataFrame(otadata)
@@ -458,7 +485,7 @@ def CM_Staah(cmdata,msrate,ftr,isellrange):
     return(availframe2,msrateframe)
 
 
-def CM_Avails(cmdata,msrate,ftr,chman,pcdata,ratepl,isellrange):
+def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange):
     
     if chman == 'Staah':
         dfa,dfb = CM_Staah(cmdata,msrate,ftr,isellrange)
@@ -471,7 +498,7 @@ def CM_Avails(cmdata,msrate,ftr,chman,pcdata,ratepl,isellrange):
         dfa,dfb = CM_Maximojo(cmdata,msrate,ratepl,ftr,isellrange)
         
     elif chman == 'eZee':
-        dfa,dfb = CM_eZee(cmdata,ratepl,ftr,isellrange)
+        dfa,dfb = CM_eZee(cmdata,ratepl, pcdata,ftr,isellrange, htlname)
         
     elif chman == 'ResAvenue':
         print("ResAvenue - CM Availability and Rate Fetch")
