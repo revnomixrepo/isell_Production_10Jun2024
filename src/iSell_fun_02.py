@@ -474,7 +474,11 @@ def applyPsychologicalFactor(n,psyfact):
 #    print(psyfact)
     if n > 0:            
         if str(psyfact) == "nan":
-            rval= int(n)        
+            rval= int(n)  
+        elif str(psyfact) == "NA":
+            rval= int(n) 
+        elif int(psyfact) == 1:
+            rval= int(n) 
         else:
             psyfact = int(psyfact)
             rval=(int((round(n,-1))/psyfact)*psyfact)-1         
