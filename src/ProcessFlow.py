@@ -151,8 +151,9 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     #------------------------useCeiling and useFloor-------------------------------------
     use_ceiling = dict(zip(inputdf['hotelname'],inputdf['use_CeilingRate']))
     use_floor = dict(zip(inputdf['hotelname'],inputdf['use_FloorRate']))
-    #--------------------------------useGrid---------------------------------------------------
+    #--------------------------------useGrid and cussion---------------------------------------------------
     use_Grid = dict(zip(inputdf['hotelname'],inputdf['use_Grid']))
+    use_cussion = dict(zip(inputdf['hotelname'],inputdf['cussion']))
 
     
     
@@ -724,7 +725,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                     
                     iSelldf444_1 = iSell_fun_02.merging(iSelldf44,htlsold)
                     iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)
-                    iSelldf5,szRates=iSell_fun_02.hnf_rcpalgo(iSelldf444,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names])
+                    iSelldf5,szRates=iSell_fun_02.hnf_rcpalgo(iSelldf444,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names],use_cussion[names])
                     #-----------getting iSelldf5 and szRates from UK---------------------------------
                     print('\tUK Recommendations added as per HNF updated !!!')
                 
@@ -736,7 +737,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                     
                     iSelldf444_1 = iSell_fun_02.merging(iSelldf44,htlsold)
                     iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)
-                    iSelldf5,szRates=iSell_fun_02.hnf_rcpalgo(iSelldf444,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names]) 
+                    iSelldf5,szRates=iSell_fun_02.hnf_rcpalgo(iSelldf444,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names],use_cussion[names])
                     #-----------getting iSelldf5 and szRates from UK---------------------------------
                     print('\tTB Recommendations added as per HNF updated !!!')
                     
@@ -769,7 +770,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                             
                         iSelldf444_1 = iSell_fun_02.merging(iSelldf44,htlsold)
                         iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)
-                        iSelldf5,szRates=iSell_fun_02.hnf_rcpalgo(iSelldf444,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names])
+                        iSelldf5,szRates=iSell_fun_02.hnf_rcpalgo(iSelldf444,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names],use_cussion[names])
                         #------getting iSelldf5 and szRates from Normal GridType-----------------------
                         print('\tNormal Recommendations added as per HNF updated !!!')   
                     
@@ -782,7 +783,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                     print("\tDirect Recommendations added (Non HNF)")                
                 else:                        
                     #-------------------II) Normal Pricing(Non HNF Based) #------------------------------------------------
-                    iSelldf5,szRates=iSell_fun_02.nonHNF_rcpalgo(iSelldf44,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names])
+                    iSelldf5,szRates=iSell_fun_02.nonHNF_rcpalgo(iSelldf44,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names],use_cussion[names])
                     print('\tNormal Recommendations added (Non HNF)')         
             
             #=========================================================================================            
