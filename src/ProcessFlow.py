@@ -272,7 +272,10 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             staahfile['Rooms']=1
             
             cmdata = pd.read_csv(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.csv')))
-            pcdata=''
+            if names == 'Hotel Emerald':
+                pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
+            else:
+                pcdata=''
 
         elif name_chman[names] == 'LeafDover':
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
@@ -372,7 +375,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             #staahfile2.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\OTA_Data\16_Oct_2018\staahfile.csv')
             staahfile2['Rooms']=1
             staahfile2['Status']=staahfile2['Status'].fillna(value=1)
-            staahfile =  pd.DataFrame(staahfile2[staahfile2.Status != 1])
+            staahfile = pd.DataFrame(staahfile2[staahfile2.Status != 1])
             
             cmdata=''
             pcdata=''
@@ -512,7 +515,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             rmsavail,cmdf = CMAs.CM_RezNext(cmdata,name_msrate[names],name_ftr[names],name_rateplan[names],isellrange)
             
         else:
-            rmsavail,cmdf = CMAs.CM_Avails(cmdata,name_msrate[names],name_ftr[names],name_chman[names],pcdata,name_rateplan[names],isellrange)
+            rmsavail,cmdf = CMAs.CM_Avails(cmdata,names, name_msrate[names],name_ftr[names],name_chman[names],pcdata,name_rateplan[names],isellrange)
             
          
     #    df_ttlsold.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\ttlsold2.csv')
