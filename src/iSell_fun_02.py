@@ -218,7 +218,7 @@ def seasonminmax(df1):
     df5=df4.loc[:,['min_rate','max_rate']]
     return(df5)
     
-def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloor):
+def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloor,cussion):
     
     df_rcp_season=dff1
     df_rcp_season['max_cap']=maxcap #read from RC
@@ -265,10 +265,16 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
     np.where((df_rcp_season['ota_max']<=df_rcp_season['cap_sqrt2']),df_rcp_season['sqrt0'], df_rcp_season['OTA_Sold'])))
     df_rcp_season['denominator'] = df_rcp_season['max_cap'] - (df_rcp_season['max_cap'] - np.where((df_rcp_season['ota_max']==0),df_rcp_season['cap_sqrt'],df_rcp_season['ota_max']))
     
-    df_rcp_season['ratio_top'] =np.where((df_rcp_season['ota_max']==0),1,
+    #----------------------------------------------------Cussion Condition 04July2019----------------------------------------------------
+    if cussion == 1:
+        df_rcp_season['ratio_top'] =np.where((df_rcp_season['ota_max']==0),1,
                  (np.where((df_rcp_season['OTA_Sold']==0), df_rcp_season['cma_sqrt'], 
                            df_rcp_season['OTA_Sold'])/df_rcp_season['ota_max']))
+    else:
+        df_rcp_season['ratio_top'] = 1
+    #--------------------------------------------------------------------------------------------------------------------------   
     
+        
     df_rcp_season['rcp']= (((df_rcp_season['rate_dif']*df_rcp_season['numarator'])/df_rcp_season['denominator'])*df_rcp_season['ratio_top']) + df_rcp_season['min_rate']
     
     #remove cussion limit for HNF
@@ -332,7 +338,7 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         return(recdf2,seasonalrate)
 
 
-def hnf_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloor):
+def hnf_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloor,cussion):
     df_rcp_season=dff1
     df_rcp_season['max_cap']=maxcap #read from RC
 
@@ -379,10 +385,15 @@ def hnf_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloo
     df_rcp_season['denominator'] = df_rcp_season['max_cap'] - (df_rcp_season['max_cap'] - np.where((df_rcp_season['ota_max']==0),
                                          df_rcp_season['cap_sqrt'],df_rcp_season['ota_max']))
     
-    df_rcp_season['ratio_top'] =np.where((df_rcp_season['ota_max']==0),1,(np.where((df_rcp_season['Hotel Sold']==0),df_rcp_season['cma_sqrt'],df_rcp_season['Hotel Sold'])/df_rcp_season['ota_max']))
-#   removed cussion limit by Sam Sir on 29Mar2019
-#    df_rcp_season['rcp']= (((df_rcp_season['rate_dif']*df_rcp_season['numarator'])/df_rcp_season['denominator'])*df_rcp_season['ratio_top']) + df_rcp_season['min_rate']   
-    df_rcp_season['rcp']= (((df_rcp_season['rate_dif']*df_rcp_season['numarator'])/df_rcp_season['denominator'])) + df_rcp_season['min_rate']
+    #--------------------------------------cussion change 04July2019---------------------------------------------
+    if cussion == 1:
+        df_rcp_season['ratio_top'] =np.where((df_rcp_season['ota_max']==0),1,(np.where((df_rcp_season['Hotel Sold']==0),df_rcp_season['cma_sqrt'],df_rcp_season['Hotel Sold'])/df_rcp_season['ota_max']))
+    else:
+        df_rcp_season['ratio_top'] = 1
+    #-------------------------------------------------------------------------------------------------------------    
+#   removed cussion limit by Sam Sir on 29Mar2019, again cussion limit incorporated on 4july2019---------
+    df_rcp_season['rcp']= (((df_rcp_season['rate_dif']*df_rcp_season['numarator'])/df_rcp_season['denominator'])*df_rcp_season['ratio_top']) + df_rcp_season['min_rate']   
+#    df_rcp_season['rcp']= (((df_rcp_season['rate_dif']*df_rcp_season['numarator'])/df_rcp_season['denominator'])) + df_rcp_season['min_rate']
     
     df_rcp_season['rcp'].fillna(value=-1,inplace=True)
     df_rcp_season['rcp']=df_rcp_season['rcp'].astype(int)
