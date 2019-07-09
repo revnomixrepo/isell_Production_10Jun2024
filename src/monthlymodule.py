@@ -5,6 +5,7 @@ Created on Fri Mar 22 13:30:16 2019
 @author: Monthly Pricing
 """
 import pandas as pd
+import logging
 import sys
 
 
@@ -60,7 +61,7 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
     testisell['min_rate'] = testisell['Min_Rate']*testisell['Dow_wt']
     testisell['min_rate'] = testisell['min_rate'].astype(float,errors='ignore')
     
-    print('\tChecking MaxRate Flag')
+    logging.info('\tChecking MaxRate Flag')
     #---------------------USE MAX Rate Flag Condition-----------------------------------
     if flag_mRate == 0:
         #--------------------ceiling rate condition----------------------------------------
@@ -129,7 +130,7 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
     #dataframe to crosscheck containing all monthly values
 #    monthdow11.to_csv(r'E:\iSell_Project\All_In_One_iSell\Testing\{}monthdow11.csv'.format(htl))
     
-    print("\tMonthly values fetched")   
+    logging.info("\tMonthly values fetched")   
     
     
     return(monthdow2,monthdow11)

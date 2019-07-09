@@ -16,7 +16,30 @@ import csv
 import Leaf_Module as leaf
 
 
-def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
+def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
+    import logging
+    
+    from datetime import datetime
+    ddmmyy = datetime.now()
+    tdayfold = ddmmyy.strftime("%d_%b_%Y")
+    iselldt=ddmmyy.strftime("%d%b%Y")
+    
+    #================================Logger Addition===================================
+    logpth = defaultpath + '\\' + 'logs'    
+    #---------------------------------log flag-----------------------------------------------
+    if logflag == 'DEBUG':
+        logging.basicConfig(format='%(asctime)s %(message)s',filename=logpth+'\\'+'iSell_{}_Debug_{}.log'.format(iselldt, accMan),level=logging.DEBUG)
+    else:
+        logging.basicConfig(format='%(asctime)s %(message)s',filename=logpth+'\\'+'iSell_{}_Info_{}.log'.format(iselldt, accMan),level=logging.INFO)
+    
+    logging.warning('is when this event was logged by {}.'.format(accMan))
+    logging.warning('Logging Mode: {}.'.format(logflag))
+    logging.info('=======================================================================')
+    
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:ProcessFlow, SubModule:Flow')
+    #=====================================================================================
+    
     basepath=defaultpath+'\\'+'InputData'
     masterpath = defaultpath+'\\'+'masters'
     beautipth = masterpth+'\\'+'iSell'
@@ -39,11 +62,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     
     if accMan[0] == 'All':
         inputdf = pd.DataFrame(inputdf2)
-        print('############# Preparing iSells for All Account Managers #################')
+        logging.info('############# Preparing iSells for All Account Managers #################')
     else:
         inputdf = pd.DataFrame(inputdf2[inputdf2['AccManager'].isin(accMan)]) 
-        print('############# Preparing iSells for {} #################'.format(accMan))
-        
+        logging.info('############# Preparing iSells for {} #################'.format(accMan))
+        logging.debug('InputConditionMaster_{} File ::'.format(accMan))    
+        logging.debug(inputdf.to_string())      
     
                            
     monthlyrates = pd.read_excel(inputmaster,'Monthly_MinRates') #Monthly_Rates Sheet
@@ -116,7 +140,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     ezeedates = pd.read_excel(masterpath+'\\'+'ezeedate_format.xlsx')
     jfacts = pd.read_excel(masterpath+r'\zFactors.xlsx')
     dropcol = pd.read_excel(masterpath+'\\'+'DropColumns.xlsx')
-    print('All master files read !')
+    logging.info('All master files read !')
 
 
     ##=======================Dictionaries======================================
@@ -158,17 +182,11 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     
     
     #-----------------jump types dataframe-------------------------------------
-    jumpType = dict(zip(inputdf['hotelname'],inputdf['JumpType'])) 
-    
+    jumpType = dict(zip(inputdf['hotelname'],inputdf['JumpType']))    
 
     
-    from datetime import datetime
-    ddmmyy = datetime.now()
-    tdayfold = ddmmyy.strftime("%d_%b_%Y")
-    iselldt=ddmmyy.strftime("%d%b%Y")
+    
     os.chdir(basepath+'\{}'.format('OutPut_CSV'))
-
-
     try:
         os.mkdir(tdayfold)
     except FileExistsError:
@@ -176,32 +194,42 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         
 
     sysdt=LRdate#str(input("Enter Last iSell Run Date for reading Last Report('mm/dd/yyyy'):"))
+    logging.info("Last Report date provided is :{}".format(LRdate))
+    logging.debug(LRdate)
     sysdt2=pd.to_datetime(sysdt)
     lastfoldname=sysdt2.strftime('%d_%b_%Y')
     LRdt=sysdt2.strftime("%d%b%Y")
-    print('All folders updated !!!')
-    print('---------------------------------------------------')
+    
+    logging.info('All folders updated !!!')
+    logging.info('---------------------------------------------------')
 
     for sr, names in enumerate(inputdf['hotelname'],start=1):
         #-------------------format 2 name setting(flag)-----------------------------#
         if '_OTA' in names:
             format2flag = 1
+            logging.debug('set format2flag = 1 as _OTA in names for Format2iSell')            
         else:
             format2flag = 0
-            pass
+            logging.debug('set format2flag = 0 for NormalFormat')   
         
         #-------------------Dynamic Dictionaries-------------------------------------------
         #Hotel Cluster Weights
         clustName=htl_cluster[names]
+        logging.debug('ClusterName:{}'.format(clustName))   
         htl_dowWt = dict(zip(dow_cluster2['Dow'],dow_cluster2[clustName]))
+        logging.debug('Hotel Day of Week Weights:{}'.format(htl_dowWt))
+        
         
         #----------------------------------------------------------------------------------
         print('{}.Creating {}_iSell ...'.format(sr,names))
-        print('\tChannel Manager :{}'.format(name_chman[names]))
+        logging.info('{}.Creating {}_iSell ...'.format(sr,names))
+        logging.info('Channel Manager :{}'.format(name_chman[names]))
         isellrange = int(name_win[names])
+        logging.info('isellwindow:{}'.format(isellrange))
+        
         
         if name_chman[names] == 'Staah':
-            cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
+            cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))            
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
             staahfile.dropna(subset=['CheckIn Date','CheckOut Date'],inplace=True)
             pcdata=''
@@ -303,7 +331,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             
             if names == 'Leaf Hotel Dover':
                 cmData1 = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')),header=[1])
-#                cmData1.to_csv(r'E:\All_In_One_iSell\Testing\cmdata1.csv')
                 hnfData1 = pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')))
                 outpath = basepath+'\{}\{}'.format('HNF',tdayfold)
 
@@ -395,7 +422,35 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         
         
         else:
-            print("There is no such Channel Manager Added in Input Conditions !!!")               
+            logging.info("There is no such Channel Manager Added in Input Conditions !!!")    
+            
+        #===============================debug all input data frames=================================================
+        logging.debug('----------------------------------------------------------------')
+        logging.debug('Input Data Files required for {} to create iSell'.format(name_chman[names]))
+        #------------------------------------------cmdata--------------------------------
+        
+#        try:
+#            logging.debug('{}_CM dataframe ::'.format(names))
+#            logging.debug(cmdata.to_string())
+#        except:
+#            logging.debug('No cmdata needed')
+        
+        #--------------------------------------staahfile(ota data)------------------------
+        try:
+            logging.debug('{}_OTAData dataframe ::'.format(names))
+            logging.debug(staahfile.to_string())
+        except:
+            logging.debug('No OTAData needed') 
+        
+        #--------------------------------------PC data(price calander)------------------------
+        try:
+            logging.debug('{}_PC dataframe ::'.format(names))
+            logging.debug(pcdata.to_string())
+        except:
+            logging.debug('No pcdata needed') 
+        
+        #------------------------------------------------------------------------------------
+            
             
         #==================================format2 name setting====================================================
         if format2flag == 1:
@@ -423,13 +478,51 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             
             rateshopfile = pd.read_csv(basepath + '\{}\{}\{}'.format('RateShop', tdayfold, names + str('_RateShop.csv')))
         #================================================================================================================
+        
+        #--------------------------------------(Demand Calendar)---------------------------------
+        try:
+            logging.debug('{} Demand Calendar dataframe ::'.format(names))
+            logging.debug(dc.to_string())
+        except:
+            logging.debug('Demand calendar is needed, not found')         
+        #-----------------------------------(last isell report)----------------------------------
+        try:
+            logging.debug('{} Last iSell Report dataframe ::'.format(names))
+            logging.debug(df_LR.to_string())
+        except:
+            logging.debug('Last iSell Report is needed, not found') 
             
+         #-----------------------------------(RSData Report)----------------------------------
+        try:
+            logging.debug('{}_RSData Report dataframe ::'.format(names))
+            logging.debug(rsfile.to_string())
+        except:
+            logging.debug('RSData Report is needed, not found')
+            
+         #-----------------------------------(Rateshop Report)----------------------------------
+        try:
+            logging.debug('{}_RateShop Report dataframe ::'.format(names))
+            logging.debug(rateshopfile.to_string())
+        except:
+            logging.debug('RateShop Report is needed, not found')
+        
+        #------------------------------------Pricing Grid----------------------------------------
+        try:
+            logging.debug('{}_PG dataframe ((use_Grid=1)::'.format(names))
+            logging.debug(df_PG.to_string())
+        except:
+            logging.debug('External Pricing Grid is not found (use_Grid=0)')
+            
+        logging.debug('----------------------------------------------------------------')        
+        #==============================================================================================
         
         #---------------------------Frame('Date','Dow')-----------------------------------------------
         tday = ddmmyy.strftime("%d-%b-%Y")       
         index=pd.date_range(tday,periods= isellrange)
         frame=pd.DataFrame({'Date':index})
         frame['Dow'] = frame['Date'].apply(lambda x:x.strftime('%a')) 
+        logging.debug('Frame with {} days(isellwindow) range'.format(isellrange))
+        logging.debug(frame.to_string())
         
         #---------------------# df_total,df_ota,df_ttlsold #--------------------------------------------
         
@@ -437,34 +530,45 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             pass   
             
             
-        else:        
+        else:
+            logging.debug('Exploading data ...')
             df_total,df_ota,df_ttlsold=iSell_fun_02.dfconv(defaultpath,staahfile,names,name_chman[names])
-            print('\tdfconv done !!!')
-
+            logging.info('Occupancy conversion done !!!')
+            
             df_ttlsold.fillna(value=0,inplace=True)
-            #print(type(df_ttlsold))
-            #df_ttlsold.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\ttlsold.csv')
 
-            #df_all
+            #df_all            
             df_all = iSell_fun_02.occframe(df_total,isellrange)
+            logging.debug('Merged df_total with iSell frame')
             df_ota2 = df_ota.pivot(index='occupancydate', columns='Channel',values='No_of_Rooms')
             df_ota2.reset_index(inplace=True)
+            logging.debug('OTA Pivote Table (df_ota2) ::')
+            logging.debug(df_ota2.to_string())
 
             #df_all2
             df_all2= pd.merge(df_all,df_ota2,on='occupancydate',how='left')
             df_all2.fillna(value=0,inplace=True)
             df_all3=df_all2.rename(columns={'occupancydate':'Date','No_of_Rooms':'OTA_Sold','RevPD':'OTA Revenue'})
             ddff=df_all3.set_index('Date')
-            #df_all3.to_csv(r'E:\iSell_Project\Djubo\df_all3.csv')
+            
+            logging.debug('final dataframe (ddff) ::')
+            logging.debug(ddff.to_string())
+            
 
             otabreak=pd.DataFrame(ddff.iloc[:,2:])
             otabreak.reset_index(inplace=True)
+            logging.debug('otabreak dataframe ::')
+            logging.debug(otabreak.to_string())
 
             otasold =pd.DataFrame(ddff.loc[:,'OTA_Sold'])
             otasold.reset_index(inplace=True)
+            logging.debug('otasold dataframe ::')
+            logging.debug(otasold.to_string())
 
             otarev = pd.DataFrame(ddff.loc[:,'OTA Revenue'])
             otarev.reset_index(inplace=True)
+            logging.debug('otarev dataframe ::')
+            logging.debug(otarev.to_string())
         
         
     #----------------------# df merging #---------------------------------------------
@@ -475,28 +579,30 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         dc3_1=dc2.loc[:,['Date','Event']]
         dc3 = pd.merge(frame,dc3_1,on='Date',how='left')
         dc3['Capacity']=name_cap[names]
-        print('\tDC attached !')
+        
+        logging.info('Demand Calendar attached and capacity added ::')
+        logging.debug(dc3.to_string())
 
         #2)---------------# CM_Avail #----------------------------------------------
         
         if name_chman[names] == 'Djubo':
             cap = int(name_cap[names])
-            print(cap)
+            logging.info(cap)
             rmsavail,cmdf = CMAs.CM_Djubo(df_ttlsold,cap,isellrange)
             
         elif name_chman[names] == 'SiteMinder':
             cap = int(name_cap[names])
-            print(cap)
+            logging.info(cap)
             rmsavail,cmdf = CMAs.CM_Djubo(df_ttlsold,cap,isellrange)
             
         elif name_chman[names] == 'BookingCentre':
             cap = int(name_cap[names])
-            print(cap)
+            logging.info(cap)
             rmsavail,cmdf = CMAs.CM_Djubo(df_ttlsold,cap)        
             
         elif name_chman[names] == 'AsiaTech':
             cap = int(name_cap[names])
-            print(cap)
+            logging.info(cap)
             rmsavail,cmdf = CMAs.CM_Djubo(df_ttlsold,cap,isellrange)
         
         elif name_chman[names] == 'UK':
@@ -518,35 +624,40 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         else:
             rmsavail,cmdf = CMAs.CM_Avails(cmdata,names, name_msrate[names],name_ftr[names],name_chman[names],pcdata,name_rateplan[names],isellrange)
             
-         
-    #    df_ttlsold.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\ttlsold2.csv')
-    #    rmsavail.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\ttlsold3.csv')
-    #    
+       
         iSelldf1 = iSell_fun_02.merging(dc3,rmsavail)
-        print('\tCM And FTR added !!!')
+        logging.info('Demand calendar and Availability merged ::')
+        logging.debug(iSelldf1.to_string())
+        
         if name_chman[names] in ['UK','TravelBook']:
             iSelldf2 = iSelldf1
-            print('\tOTA Sold Added')
         else:
             iSelldf2 = iSell_fun_02.merging(iSelldf1,otasold)
-            print('\tOTA Sold Added')
+            logging.info('OTA Sold merged ::')
+            logging.debug(iSelldf2.to_string())
             
         #==================== HNF On The FLY =======================================
+        logging.debug("Checking for 'Hybrid' Condition in GridType Column...")
+        
         if GridType[names] == 'Hybrid':
+            logging.debug('GridType is Hybrid')            
             flyHNF = pd.DataFrame(iSelldf2.loc[:,['Date','Capacity','Rooms Avail To Sell Online']])
             flyHNF['Sold'] = flyHNF['Capacity'] - flyHNF['Rooms Avail To Sell Online']
             flyHNF['Date'] = flyHNF['Date'].apply(lambda x:x.strftime("%d-%b-%Y"))            
             flyHNF2 = pd.DataFrame(flyHNF.loc[:,['Date','Sold']])
             flyHNF2.to_excel(basepath +'\\'+'HNF\{}\{}_HNF.xlsx'.format(tdayfold,names))
-            print("\tHNF On the fly Calculated")
+            logging.info("HNF On the fly Calculated and dumped in today's HNF folder")
+            logging.debug(flyHNF2.to_string())            
         else:
+            logging.debug('GridType is not Hybrid') 
             pass
         
         
 
         #3)---------------# Last Report #------------------------------------------
         LRfinal = iSell_fun_02.dfLR(df_LR,name_chman[names])
-        LRfinal2 = iSell_fun_02.frame(LRfinal,isellrange)       
+        LRfinal2 = iSell_fun_02.frame(LRfinal,isellrange) 
+        
         
         #======================# Last SeasonalRate #=====================================
         cmflag = name_cmflag[names]
@@ -563,12 +674,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 Last_szrates['Date'] = pd.to_datetime(Last_szrates['Date'],format='%Y-%m-%d')
                 
             
-            print('\tRead last Report with seasonal rates !!!')
+            logging.info('\tRead last Report with seasonal rates !!!')
             #Last_szrates.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\lastszrate2.csv') 
         elif cmflag == 1:
             Last_szrates = 'NotRequired'               
         else:
-            print('\tPlease Check RateOnCM column in InputCondition, It should be 1 or 0')
+            logging.info('\tPlease Check RateOnCM column in InputCondition, It should be 1 or 0')
             sys.exit()
             
         #4)========================== Pickup =================================================
@@ -579,44 +690,44 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         
         iSelldf2 = iSelldf2_1.drop(['Last_OTASOLD','LAvg'],axis=1)       
         
-        print('\tPickup Added !!!')
+        logging.info('\tPickup Added !!!')
         
         #5)---------------# OTA Revenue #------------------------------------------
         
         if name_chman[names] in ['UK','TravelBook']:
             iSelldf4=iSell_fun_02.merging(iSelldf2,cmdf)
             
-            print('\tRevenue, ADR, CM Rate Added !!!')
+            logging.info('\tRevenue, ADR, CM Rate Added !!!')
         else:        
             iSelldf3 = iSell_fun_02.merging(iSelldf2,otarev)
-            print('\tRevenue Added !!!')
+            logging.info('\tRevenue Added !!!')
             
             #6)--------------# ADR #--------------------------------------------------
             
             iSelldf3['ADR OTB']=(iSelldf3['OTA Revenue']/iSelldf3['OTA_Sold']).round(0)
             iSelldf3['ADR OTB'].fillna(value=0,inplace=True)
-            print('\tADR Added !!!')
+            logging.info('\tADR Added !!!')
 
             #7)--------------# Rate on CM #---------------------------------------------------
             iSelldf4 = iSell_fun_02.merging(iSelldf3,cmdf)  
             
-            print('\tRate on CM Added !!!')
+            logging.info('\tRate on CM Added !!!')
             
         
-        print('\t-----Pricing Conditions------')
+        logging.info('\t-----Pricing Conditions------')
             
         #8)-------------# Pricing Type #------------------------------------------------------
         #phychological factor        
         psy_fact = name_psy[names]
         
-        print('\tGrid Type is :{}'.format(GridType[names]))
+        logging.info('\tGrid Type is :{}'.format(GridType[names]))
         
         if priceType[names] == 'Monthly':
             #--------------Monthly Dynamic Dictionaries----------------------------------------            
             #Hotel Monthly Min Rate
             month_minR = dict(zip(monthMinRate2['Month'],monthMinRate2[names]))            
-            #-------(*print monthly min rates*)---------
-#            print(month_minR)
+            #-------(*logging.info monthly min rates*)---------
+#            logging.info(month_minR)
             #---------------------------------------
             #Hotel Monthly Jumps
             month_jump = dict(zip(monthJump2['Month'],monthJump2[names]))
@@ -631,13 +742,13 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             
             
             
-            print('\tPricing Type is :{}'.format(priceType[names]))
+            logging.info('\tPricing Type is :{}'.format(priceType[names]))
             iSelldf44,isellforgrid=mnthprice.month_minmax(names,iSelldf4,month_minR,htl_dowWt,jfacts,month_jump,htl_cluster,jumpType[names],month_maxR,month_useMax[names],use_ceiling[names])
             
             #-----------------Min, min, Max, max, (4 columns) fetching after Rate on CM
 #            iSelldf44.to_csv(r'E:\All_In_One_iSell\Testing\iSelldf44_{}.csv'.format(names))
             #---------------------------------------------------------------------------------
-            print('\tMonthly Rates Fetched')
+            logging.info('\tMonthly Rates Fetched')
             
             if use_Grid[names] == 1:
                 pgdf = pd.DataFrame(df_PG)
@@ -652,7 +763,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             
             
         elif priceType[names] == 'Seasonal':
-            print('\tPricing Type is :{}'.format(priceType[names]))
+            logging.info('\tPricing Type is :{}'.format(priceType[names]))
             #-----------------Seasonal Range, Minimum Rates, MaxRates Jumps------------------------
             s1start = name_s1s[names]
             s1end = name_s1e[names]
@@ -682,7 +793,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             
 #            isellforgrid.to_csv(r'E:\iSell_Project\All_In_One_iSell\Testing\isellforgrid.csv')
             
-            print('\tSeasonal Rates Fetched')   
+            logging.info('\tSeasonal Rates Fetched')   
             
             if use_Grid[names] == 1:
                 pgdf = pd.DataFrame(df_PG)
@@ -692,9 +803,9 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
             
             
         else:
-            print('\tPricing Type is not defined')
+            logging.info('\tPricing Type is not defined')
             sys.exit()
-        print("\tAll Grids Generated")
+        logging.info("\tAll Grids Generated")
     
         #=============================================================================================
         #--------------------------------PRICING ALGOS------------------------------------------------
@@ -713,7 +824,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                     try:
                         df_hnf = pd.read_csv(basepath+'\{}\{}\{}'.format('HNF',tdayfold,names+str('_HNF.csv')), delimiter =",", index_col=False, header=0, low_memory=False, quoting=csv.QUOTE_ALL,encoding='utf8')
                     except FileNotFoundError:
-                        print('HNF Not found for UK, It is mandatory for UK')
+                        logging.info('HNF Not found for UK, It is mandatory for UK')
                         sys.exit()
                         
                     if names == 'Leaf Hotel Dover':
@@ -727,7 +838,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                     iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)
                     iSelldf5,szRates=iSell_fun_02.hnf_rcpalgo(iSelldf444,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names],use_cussion[names])
                     #-----------getting iSelldf5 and szRates from UK---------------------------------
-                    print('\tUK Recommendations added as per HNF updated !!!')
+                    logging.info('\tUK Recommendations added as per HNF updated !!!')
                 
                 #-----------------------I)TB----------------------------------------------          
                         
@@ -739,7 +850,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                     iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)
                     iSelldf5,szRates=iSell_fun_02.hnf_rcpalgo(iSelldf444,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names],use_cussion[names])
                     #-----------getting iSelldf5 and szRates from UK---------------------------------
-                    print('\tTB Recommendations added as per HNF updated !!!')
+                    logging.info('\tTB Recommendations added as per HNF updated !!!')
                     
                 #-----------------II) HNF based Direct Pricing --------------------------------------    
                 else:                 
@@ -747,14 +858,14 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                     if GridType[names] == 'Direct':
                         cmflag = name_cmflag[names]
                         df_hnf = pd.read_excel(basepath+'\{}\{}\{}'.format('HNF',tdayfold,names+str('_HNF.xlsx')))
-                        print("\tHNF read for {}".format(names))
+                        logging.info("\tHNF read for {}".format(names))
                         #----------------------calculate hotel sold and availability frames------------------------
                         htlsold,htlavail=iSell_fun_02.hnfconv(df_hnf,name_cap[names],isellrange)
                         
                         iSelldf444_1 = iSell_fun_02.merging(isellforgrid,htlsold)
                         iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)
                         iSelldf5,szRates = directRecs.dRecs(iSelldf444,pgdf,isellrange,Last_szrates,cmflag,priceType[names],name_hnf[names],name_ftr[names])                
-                        print('\tDirect Recommendations added as per HNF updated !!!')
+                        logging.info('\tDirect Recommendations added as per HNF updated !!!')
                         #------getting iSelldf5 and szRates from Direct GridType-----------------------
                         
                     #---------------------III) HNF Based Normal Pricing #------------------------------------------    
@@ -762,17 +873,17 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                         try:
                             df_hnf = pd.read_excel(basepath+'\{}\{}\{}'.format('HNF',tdayfold,names+str('_HNF.xlsx')))
                         except FileNotFoundError:
-                            print('HNF Not Found please update HNF or set No in HNF column of Input Conditions Master')
+                            logging.info('HNF Not Found please update HNF or set No in HNF column of Input Conditions Master')
                             sys.exit()
                         
-                        print("\tHNF read for {}".format(names))
+                        logging.info("\tHNF read for {}".format(names))
                         htlsold,htlavail=iSell_fun_02.hnfconv(df_hnf,name_cap[names],isellrange)                        
                             
                         iSelldf444_1 = iSell_fun_02.merging(iSelldf44,htlsold)
                         iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)
                         iSelldf5,szRates=iSell_fun_02.hnf_rcpalgo(iSelldf444,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names],use_cussion[names])
                         #------getting iSelldf5 and szRates from Normal GridType-----------------------
-                        print('\tNormal Recommendations added as per HNF updated !!!')   
+                        logging.info('\tNormal Recommendations added as per HNF updated !!!')   
                     
             #==========================3) Non HNF Based Pricing=======================================    
             else:
@@ -780,26 +891,26 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                     #-----------------I) Direct Recommendations(Non HNF Based) -----------------------------------
                     cmflag = name_cmflag[names]
                     iSelldf5,szRates = directRecs.dRecs(isellforgrid,pgdf,isellrange,Last_szrates,cmflag,priceType[names],name_hnf[names],name_ftr[names])
-                    print("\tDirect Recommendations added (Non HNF)")                
+                    logging.info("\tDirect Recommendations added (Non HNF)")                
                 else:                        
                     #-------------------II) Normal Pricing(Non HNF Based) #------------------------------------------------
                     iSelldf5,szRates=iSell_fun_02.nonHNF_rcpalgo(iSelldf44,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names],use_cussion[names])
-                    print('\tNormal Recommendations added (Non HNF)')         
+                    logging.info('\tNormal Recommendations added (Non HNF)')         
             
             #=========================================================================================            
             
                 
         
 
-        print('\t-----------------------------')
+        logging.info('\t-----------------------------')
         #=================== Merge Current Seasonal rates with iSell for cmflag = 0  ==============================================
         if cmflag == 0:
             iSelldf55 = iSell_fun_02.merging(iSelldf5,szRates)   
-            print("\tSeasonal Rates merged with the iSell")            
+            logging.info("\tSeasonal Rates merged with the iSell")            
         elif cmflag == 1:
             iSelldf55 = pd.DataFrame(iSelldf5)
         else:
-            print('\tRateOnCM is not set in input conditions, it should be 0 or 1')
+            logging.info('\tRateOnCM is not set in input conditions, it should be 0 or 1')
             sys.exit()
        
         #=====================================================================================================
@@ -809,7 +920,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         lrate4,rstable2,cavg=iSell_fun_02.RateShop(rsfile,isellrange)
         iSelldf6_1 = iSell_fun_02.merging(iSelldf55,lrate4)
         iSelldf6 = iSell_fun_02.merging(iSelldf6_1,rstable2)
-        print('\tRateshop added !!!')
+        logging.info('Rateshop added !!!')
         
         #10)--------------------# Market Trend #-------------------------
         lavg = LRfinal.loc[:,['Date','LAvg']]
@@ -818,17 +929,18 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         iSelldf7['Market Trend'] = iSelldf7.loc[:,'CAvg']-iSelldf7.loc[:,'LAvg']
         iSelldf7['Market Trend'] = iSelldf7['Market Trend'].fillna(value=0)	
         iSelldf7.drop(['LAvg', 'CAvg'],axis=1,inplace=True)
-        print('\tMarket Trend added !!!')
+        logging.info('Market Trend added !!!')
         
         if name_chman[names] in ['UK','TravelBook']:
             iSelldf7.rename(columns={'OTA Revenue':'Revenue'},inplace=True)
             iSelldf8 = iSelldf7
         else:    
             iSelldf8 = iSell_fun_02.merging(iSelldf7,otabreak)
-            print('\tOTA Data added !!!')
+            logging.info('OTA Data added !!!')
         
         if name_cmflag[names] == 0:
             iSelldf8 = iSell_fun_02.merging(iSelldf8,szRates)
+            logging.debug('Seasonal Rates merged')
         else:
             pass
         
@@ -839,7 +951,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
         except:
             iSelldf9_1=pd.DataFrame(iSelldf8)
          
-#        print('Season deleted')
         iSelldf9 = pd.DataFrame(iSelldf9_1.iloc[:int(isellrange),:])
         iSelldf10 = iSelldf9.round(0)
         iSelldf10['Date'] = iSelldf10['Date'].apply(lambda x:x.strftime("%d-%b-%Y"))
@@ -852,16 +963,21 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
     
         colname = list(dropcol[name_chman[names]])
         colnames = [n for n in colname if str(n) != 'nan']
-#        print(colnames)
+        
+        logging.debug('column names list to drop columns(mapping) which are not required ::')
+        logging.debug(colnames)        
+        
         try:
             iSelldf10.drop(colnames,axis=1,inplace=True)
         except:
             pass
         
+        logging.debug('column names dropped')
         #12)--------------------# Adoption #------------------------------------------   
         finaladop = iSell_fun_02.Adopcal(iSelldf10,179,89)
-#        print(finaladop)
-        print("\tAdoption calculated !!!")          
+        logging.info("Adoption calculated ::") 
+        logging.debug(finaladop.to_string())
+        
                        
         
 #        #========================reset name again for format2(check flag)=========================
@@ -880,37 +996,41 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath):
                 pass
                 
             iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names,iselldt))
+            logging.info('----------{}_{}_iSell generated_#{} !!!----------------'.format(sr,names,name_chman[names]))
             print('----------{}_{}_iSell generated_#{} !!!----------------'.format(sr,names,name_chman[names]))
             beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile, name_cap[names])
 
         
-        elif name_cmflag[names] == 1:
-                        
+        elif name_cmflag[names] == 1:                        
             if (iSelldf10['Rate on CM'].sum() == 0) :
+                logging.info('iSell CSV is dumped in OutPut_CSV with BAD name as the Rate on CM column is Zero')
                 iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}_BAD.csv'.format(tdayfold,names,iselldt))
                 beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile, name_cap[names])
 
-            else :
+            else:
+                logging.info('iSell CSV is dumped in OutPut_CSV folder')
                 iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names,iselldt))
                 beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile, name_cap[names])
             
             print('----------{}_{}_iSell Generated _#{} !!!----------------'.format(sr,names,name_chman[names]))
+            logging.info('----------{}_{}_iSell Generated _#{} !!!----------------'.format(sr,names,name_chman[names]))
         else:
-            print('Please set 0 or 1 to RateOnCM column of Accounts sheet')
+            logging.info('Please set 0 or 1 to RateOnCM column of Accounts sheet')
             sys.exit()   
         
         #14)===========================Format2 Call==========================================
-        if format2flag == 1:
+        if format2flag == 1:            
             outcsvpath = basepath+'\\'+'OutPut_CSV\{}'.format(tdayfold)            
             combine_iSell,finaladop = form2.total_ota_merging(names[:-4] ,name_ftr[names], iselldt, outcsvpath)
             combine_iSell.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names[:-4]+'_Combine',iselldt))
-            print("Combine iSell dumped for {}".format(names[:-4]))
+            logging.info("Combine iSell dumped for {}".format(names[:-4]))
             beautiMode.isellbeautify(defaultpath, combine_iSell, names[:-4]+'_Combine', beautipth, int(name_win2[names]), isellrange, glossary, name_ftr[names], pgdf, finaladop, name_accman[names], rateshopfile, name_cap[names])
         else:
             pass
             
             
             
+    logging.info("################## ALL iSell Generated for {} , Thanks ! ########################".format(accMan))
     print("################## ALL iSell Generated for {} , Thanks ! ########################".format(accMan))
 
 
