@@ -64,7 +64,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
         writer = pd.ExcelWriter('iSell_{}_{}.xlsx'.format(htlname,iseldt), engine='xlsxwriter')
         logging.debug('Created writer object with iSell.xlsx')
         
-    #===============df positioning================================================
+    #===============df positioning to 6th row================================================
     df.to_excel(writer, sheet_name='iSell_{}'.format(iseldt),startrow=6, startcol=0, header=False, index=False)
     logging.debug('pushed isell dataframe df to writer object at 6th row')
     
@@ -84,6 +84,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
             'border':1       
             })
     
+    #----------------Assigning Header Format-----------------------------------
     for col_num,value in enumerate(df.columns.values):
         worksheet.write(5, col_num, value, header_format)
     
@@ -374,13 +375,15 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     worksheet2.set_column('{}1:{}{}'.format('A','A',rowlim),5)
     worksheet2.set_column('{}1:{}{}'.format('B','B',rowlim),32)
     worksheet2.set_column('{}1:{}{}'.format('C','C',rowlim),46)  
-    logging.debug("Set column widths for A,B,C")
+    logging.debug("Set column widths for A,B,C as 5,32 and 46 respectively")
     
     
     gformat = workbook.add_format({ 'border':1})
+    gl_shape=glossary.shape
+    gl_rows = gl_shape[0]
     
     #assigning conditional formatting to glossary
-    worksheet2.conditional_format('{}1:{}{}'.format('A','C',51),
+    worksheet2.conditional_format('{}1:{}{}'.format('A','C',gl_rows+1),
                                          {'type': 'cell',
                                           'criteria' : '>',
                                           'value' : 0,                                
@@ -482,7 +485,7 @@ def isellbeautify(defaultpath, df, htlname, pth2, name_win2, isellrange, glossar
     
     #-----------------------------beautify function call------------------------------    
     beautify(defaultpath, df,'internal',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop,rateshopfile,hcap2) 
-    #---------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------
     logging.info("Internal iSell Dumped")
     logging.debug("Preparing Client iSell as per DOW, iSell Range and Client iSellWindow condition")
     logging.debug('Todays DOW (dow) : {}'.format(dow))

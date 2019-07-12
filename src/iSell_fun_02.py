@@ -45,10 +45,18 @@ def hnfconv(hnf,totalcap,isellrange):
     hnf['Sold'].fillna(value=0,inplace=True)
     hnf['Hotel Availability']=hnf['cap']-hnf['Sold']
     hnf['Hotel Availability']=hnf['Hotel Availability'].astype(int)
+    logging.debug('Hotel Availability calculated , Hotel Availability = capacity - Sold')
     hnf2 =frame(hnf,isellrange)
     hnf2.rename(columns={'Sold':'Hotel Sold'},inplace=True)
     hnf3 = hnf2.loc[:,['Date','Hotel Sold']]
-    hnf4 = hnf2.loc[:,['Date','Hotel Availability']]    
+    hnf4 = hnf2.loc[:,['Date','Hotel Availability']]  
+    
+    logging.debug('Hotel Sold, Hotel Availability Returned ::')
+    logging.debug('Hotel Sold(hnf3) ::')
+    
+    logging.debug(hnf3.to_string())
+    logging.debug('Hotel Availability(hnf4) ::')
+    logging.debug(hnf4.to_string())
     return(hnf3,hnf4)
     
     
@@ -61,6 +69,9 @@ def occframe(df1,isellrange):
     index=pd.date_range(tday,periods= isellrange)
     frame=pd.DataFrame({'occupancydate':index})
     df_all = pd.merge(frame,df1,on='occupancydate',how='left')
+    
+    logging.debug('Data merged on occupancydate column ::')
+    logging.debug(df_all.to_string())
     return(df_all)
 
 def frame(df1,isellrange):
@@ -73,12 +84,18 @@ def frame(df1,isellrange):
     index=pd.date_range(tday,periods= isellrange)
     frame=pd.DataFrame({'Date':index})
     merged = pd.merge(frame,df1,on='Date',how='left')
+    
+    logging.debug("Merged with iSellFrame on 'Date' column ::")
+    logging.debug(merged.to_string())
     return(merged)
 
 def merging(df1,df2):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:merging') 
     mergedf=pd.merge(df1,df2,on='Date',how='left')
+    
+    logging.debug("Merged two DataFrames on 'Date' column ::")
+    logging.debug(mergedf.to_string())
     return(mergedf)
     
 def dfconv(stdpth,cmfile2,htl,chman):
@@ -99,6 +116,7 @@ def dfconv(stdpth,cmfile2,htl,chman):
     logging.debug('Date Format mapping:')  
     logging.debug(dtformat)    
     
+    #---------------renamed OTA data columns with standard name--------------------
     cmfile2.rename(columns=stdcols,inplace=True)
     cmfile2.dropna(axis=0,subset=['CheckIn','CheckOut'],inplace=True)
     logging.debug("Dropped rows having 'CheckIn','CheckOut' values blank") 
@@ -137,7 +155,10 @@ def dfconv(stdpth,cmfile2,htl,chman):
     
     df_date['Total_Amount'].fillna(value=0,inplace=True)
     logging.debug("Blank Total_Amount replaced with 0")
-
+    
+    df_date['Status'].fillna(value='Cancelled',inplace=True)
+    logging.debug("Replaced Blank Status values with 'Cancelled'")
+    
     df_date['statuscode'] = df_date['Status'].map(statuscode)
     logging.debug("statuscode binary column added by mapping Status in data with statuscode dictionary")
 
@@ -157,12 +178,13 @@ def dfconv(stdpth,cmfile2,htl,chman):
     logging.debug("RevPD column added where RevPD = Total_Amount/LOS")
     
     df_date3['ADR'] = df_date3.loc[:,'Total_Amount'].div(df_date3.loc[:,'LOS']*df_date3.loc[:,'No_of_Rooms']) #Average Daily Rate
-    logging.debug("ADR(Average Daily Rate) column added where ADR = Total_Amount/(LOS x No_of_Rooms)")
+    logging.debug("ADR(Average Daily Rate) column added where ADR = Total_Amount/(LOS x No_of_Rooms) ::")
+    logging.debug(df_date3.to_string())
 
     #df_totalsold
     ttlsold = pd.DataFrame(df_date3.groupby(['occupancydate'])['No_of_Rooms'].sum())
     ttlsold.reset_index(inplace=True)
-    logging.debug("ttlsold dataframe calculated :")
+    logging.debug("ttlsold dataframe calculated ::")
     logging.debug(ttlsold.to_string())
     
     #df_total
@@ -190,6 +212,7 @@ def dfLR(df1,chman):
         df1.rename(columns={'Hotel Sold':'OTA_Sold'},inplace=True)
     else:
         pass
+    
     pos1 = df1.columns.get_loc('LowestRate')+1
     pos2 = df1.columns.get_loc('Market Trend')
     compp = df1.iloc[:,pos1:pos2]

@@ -83,9 +83,9 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     dow_cluster.set_index('ClusterName',inplace=True)
     dow_cluster2 = dow_cluster.T
     dow_cluster2.reset_index(inplace=True)
-    dow_cluster2.rename(columns={'index':'Dow'},inplace=True)  
-
-    
+    dow_cluster2.rename(columns={'index':'Dow'},inplace=True) 
+    logging.debug('dow_cluster dataframe ::')
+    logging.debug(dow_cluster2.to_string())   
     
     
     #============================Monthly==========================================================
@@ -96,7 +96,10 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     monthMinRate.set_index('hotelname',inplace=True)
     monthMinRate2 = monthMinRate.T
     monthMinRate2.reset_index(inplace=True)
-    monthMinRate2.rename(columns={'index':'Month'},inplace=True)  
+    monthMinRate2.rename(columns={'index':'Month'},inplace=True)
+    logging.debug('MinRate dataframe ::')
+    logging.debug(monthMinRate2.to_string())   
+    
     
     
     #------------------Monthly Jump DataFrame[Month, HotelNames...]---------------------------------------
@@ -104,7 +107,11 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     monthJump.set_index('hotelname',inplace=True)
     monthJump2 = monthJump.T
     monthJump2.reset_index(inplace=True)
-    monthJump2.rename(columns={'index':'Month'},inplace=True)   
+    monthJump2.rename(columns={'index':'Month'},inplace=True)
+    
+    logging.debug('Monthlyjump dataframe ::')
+    logging.debug(monthJump2.to_string())   
+    
     
     
     #------------------Monthly MaxRate DataFrame[Month,HotelNames...]------------------------------------
@@ -112,7 +119,9 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     monthMaxRate.set_index('hotelname',inplace=True)
     monthMaxRate2 = monthMaxRate.T
     monthMaxRate2.reset_index(inplace=True)
-    monthMaxRate2.rename(columns={'index':'Month'},inplace=True)   
+    monthMaxRate2.rename(columns={'index':'Month'},inplace=True) 
+    logging.debug('MonthlyMax Rate dataframe ::')
+    logging.debug(monthMaxRate2.to_string())   
     
     #==========================Seasonal========================================
     
@@ -357,7 +366,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                 months2 = months[1:8]
                 data=[]
                 for m in months2:            
-                    cmdf = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')),sheetname=m,skiprows=1)
+                    cmdf = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')),sheet_name=m,skiprows=1)
         #            cmdf.rename(columns={'Unnamed: 0':'Date'},inplace=True)
                     cmdf2 = pd.DataFrame(cmdf.set_index('Unnamed: 0').T).reset_index()
                     
@@ -369,6 +378,8 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                 cmrates2 = pd.DataFrame(cmrates)
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'],format="%d/%m/%Y")
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'],format="%d-%b-%Y")
+                logging.debug('Best Western CMRate(cmrates2) ::')
+                logging.debug(cmrates2.to_string())
             
         
         elif name_chman[names] == 'TravelBook':
@@ -418,10 +429,9 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             
         elif name_chman[names] == 'RezNext':
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
-            cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))    
+            cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))         
         
-        
-        else:
+        else:            
             logging.info("There is no such Channel Manager Added in Input Conditions !!!")    
             
         #===============================debug all input data frames=================================================
@@ -429,11 +439,11 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         logging.debug('Input Data Files required for {} to create iSell'.format(name_chman[names]))
         #------------------------------------------cmdata--------------------------------
         
-#        try:
-#            logging.debug('{}_CM dataframe ::'.format(names))
-#            logging.debug(cmdata.to_string())
-#        except:
-#            logging.debug('No cmdata needed')
+        try:
+            logging.debug('{}_CM dataframe ::'.format(names))
+            logging.debug(cmdata.to_string())
+        except:
+            logging.debug('No cmdata needed')
         
         #--------------------------------------staahfile(ota data)------------------------
         try:
@@ -533,7 +543,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         else:
             logging.debug('Exploading data ...')
             df_total,df_ota,df_ttlsold=iSell_fun_02.dfconv(defaultpath,staahfile,names,name_chman[names])
-            logging.info('Occupancy conversion done !!!')
+            logging.info('Occupancy conversion done, returned (df_total,df_ota,df_ttlsold) !!!')
             
             df_ttlsold.fillna(value=0,inplace=True)
 
@@ -574,7 +584,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     #----------------------# df merging #---------------------------------------------
 
 
-        #1)---------------# DC #------------------------------------------------------------
+        #1)---------------# Demand Calendar #------------------------------------------------------------
         dc2=iSell_fun_02.frame(dc,isellrange)
         dc3_1=dc2.loc[:,['Date','Event']]
         dc3 = pd.merge(frame,dc3_1,on='Date',how='left')
@@ -661,6 +671,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         
         #======================# Last SeasonalRate #=====================================
         cmflag = name_cmflag[names]
+        
         if cmflag == 0:
             Last_szrates = pd.DataFrame(df_LR.loc[:,['Date','SeasonalRate_y']])
             Last_szrates.rename(columns={'SeasonalRate_y':'Last_szrate'},inplace=True)      
@@ -706,12 +717,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             
             iSelldf3['ADR OTB']=(iSelldf3['OTA Revenue']/iSelldf3['OTA_Sold']).round(0)
             iSelldf3['ADR OTB'].fillna(value=0,inplace=True)
-            logging.info('\tADR Added !!!')
+            logging.info('ADR Added !!!')
 
             #7)--------------# Rate on CM #---------------------------------------------------
             iSelldf4 = iSell_fun_02.merging(iSelldf3,cmdf)  
             
-            logging.info('\tRate on CM Added !!!')
+            logging.info('Rate on CM Added !!!')
             
         
         logging.info('\t-----Pricing Conditions------')
@@ -742,18 +753,19 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             
             
             
-            logging.info('\tPricing Type is :{}'.format(priceType[names]))
+            logging.info('Pricing Type is :{}'.format(priceType[names]))
             iSelldf44,isellforgrid=mnthprice.month_minmax(names,iSelldf4,month_minR,htl_dowWt,jfacts,month_jump,htl_cluster,jumpType[names],month_maxR,month_useMax[names],use_ceiling[names])
             
             #-----------------Min, min, Max, max, (4 columns) fetching after Rate on CM
 #            iSelldf44.to_csv(r'E:\All_In_One_iSell\Testing\iSelldf44_{}.csv'.format(names))
             #---------------------------------------------------------------------------------
-            logging.info('\tMonthly Rates Fetched')
+            logging.info('Monthly Rates Fetched')
             
             if use_Grid[names] == 1:
                 pgdf = pd.DataFrame(df_PG)
             else:
-                pgdf=grid.Gridcreator(names,isellforgrid,month_minR,htl_dowWt,clustName,month_jump,jfacts,jumpType[names],psy_fact,priceType[names])     
+                pgdf=grid.Gridcreator(names,isellforgrid,month_minR,htl_dowWt,clustName,month_jump,jfacts,jumpType[names],psy_fact,priceType[names]) 
+                
                 if names in format2isells:
                     #-------------dump grid for format2 iSell----------------------------
                     pgdf.to_excel(basepath+'\{}\{}'.format('Pricing_Grid',names+'_PG.xlsx'))
@@ -933,14 +945,18 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         
         if name_chman[names] in ['UK','TravelBook']:
             iSelldf7.rename(columns={'OTA Revenue':'Revenue'},inplace=True)
+            logging.info('UK or TravelBook iSell dataframe ::')
             iSelldf8 = iSelldf7
+            logging.debug(iSelldf8.to_string())
+            
         else:    
             iSelldf8 = iSell_fun_02.merging(iSelldf7,otabreak)
             logging.info('OTA Data added !!!')
         
         if name_cmflag[names] == 0:
             iSelldf8 = iSell_fun_02.merging(iSelldf8,szRates)
-            logging.debug('Seasonal Rates merged')
+            logging.info('Seasonal Rates merged for comparison')
+            logging.debug(iSelldf8.to_string())            
         else:
             pass
         
@@ -1019,15 +1035,14 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             sys.exit()   
         
         #14)===========================Format2 Call==========================================
-        if format2flag == 1:            
+        if format2flag == 1:
+            logging.info('Format2 condition (format2flag ==1) ::')            
             outcsvpath = basepath+'\\'+'OutPut_CSV\{}'.format(tdayfold)            
-            combine_iSell,finaladop = form2.total_ota_merging(names[:-4] ,name_ftr[names], iselldt, outcsvpath)
-            combine_iSell.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names[:-4]+'_Combine',iselldt))
-            logging.info("Combine iSell dumped for {}".format(names[:-4]))
+            combine_iSell,finaladop = form2.total_ota_merging(names[:-4] ,name_ftr[names], iselldt, outcsvpath)            
+            logging.debug(combine_iSell.to_string())
             beautiMode.isellbeautify(defaultpath, combine_iSell, names[:-4]+'_Combine', beautipth, int(name_win2[names]), isellrange, glossary, name_ftr[names], pgdf, finaladop, name_accman[names], rateshopfile, name_cap[names])
         else:
-            pass
-            
+            pass         
             
             
     logging.info("################## ALL iSell Generated for {} , Thanks ! ########################".format(accMan))
