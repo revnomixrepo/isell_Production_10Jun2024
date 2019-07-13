@@ -1,9 +1,12 @@
 import iSell_fun_02
 import pandas as pd
 import numpy  as np
+import logging
 from datetime import datetime
 
 def ezee_new_pc_data(file, ratepaln):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:ezee_new_pc_data')
 
     df_file = file.drop(columns=['Room Type ID', 'Room Type', 'Rate Plan ID'])
     df_file = df_file[df_file['Operation'] == 'Rates']
@@ -21,10 +24,17 @@ def ezee_new_pc_data(file, ratepaln):
     df_rate = pd.DataFrame(df_rate)
     df_rate[ratepaln] = df_rate[ratepaln].astype(int)
     df_rate.rename(columns={ratepaln: 'Rate on CM'}, inplace=True)
+
+    #------------returning only rateonCM from new eZee Extranet------------------
+    logging.debug('RateonCM Frame (new eZee Extranet) ::')
+    logging.debug(df_rate.to_string()) 
+    
     return df_rate
 
 
 def TravelClick(rfile, ifile, ftr, msrate, rateplan, isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:TravelClick')
     tdate = datetime.today().date()
     year = tdate.year
     month = tdate.month
@@ -73,11 +83,20 @@ def TravelClick(rfile, ifile, ftr, msrate, rateplan, isellrange):
     inv_df = iSell_fun_02.frame(inv_df, isellrange)
     flt_df = iSell_fun_02.frame(flt_df, isellrange)
     cm_df = iSell_fun_02.merging(flt_df, rt_df)
+    
+    logging.debug('Availability Frame ::')
+    logging.debug(inv_df.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(cm_df.to_string()) 
+    
     return (inv_df, cm_df)
 
 
 
 def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:BookingHotel_CM')
 
     def exsplit(df, column):
         numb_df = df[column].str.split('_', expand=True)
@@ -127,9 +146,19 @@ def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
     inv_df = iSell_fun_02.frame(inv_df, isellrange)
     delx_df = iSell_fun_02.frame(delx_df, isellrange)
     cm_df = iSell_fun_02.merging(delx_df, rt_df)
+    
+    logging.debug('Availability Frame ::')
+    logging.debug(inv_df.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(cm_df.to_string()) 
+    
     return(inv_df, cm_df)
 
 def CM_TB(otadata,cmrate):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_TB')
+
     
     otadata.fillna(value=0,inplace=True)
     otadata = pd.DataFrame(otadata)
@@ -146,10 +175,19 @@ def CM_TB(otadata,cmrate):
     cmrate3.rename(columns={'CMRate':'Rate on CM'},inplace=True)    
     cmrate4 =  iSell_fun_02.merging(otadata4,cmrate3)
     
+    logging.debug('Availability Frame ::')
+    logging.debug(otadata3.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(cmrate4.to_string())  
+    
     return(otadata3,cmrate4)
     
 
 def CM_RezNext(cmdf,msrate,ftr,chnnel,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_RezNext')
+    
     cmdf = pd.DataFrame(cmdf)        
     cmdf2= pd.DataFrame(cmdf.query('MealName == "{}" and ChannelName == "{}"'.format(msrate,chnnel)))
     
@@ -178,10 +216,20 @@ def CM_RezNext(cmdf,msrate,ftr,chnnel,isellrange):
     #====================merge Avail and FTR avail ===========================
     availdf = cmavail2.merge(ftravail2,on='Date',how='left')
     availdf['Date'] = pd.to_datetime(availdf['Date'],format="%Y-%m-%d")    
+    
+    logging.debug('Availability Frame ::')
+    logging.debug(availdf.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(cmdf5.to_string())  
+    
     return(availdf,cmdf5)
 
 
 def CM_ResAvenue(cmdata,pcdata,ftr,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_ResAvenue')
+    
     cmdata.drop('Unnamed: 0',axis=1,inplace=True)
     df2 = cmdata.T
     df2.reset_index(inplace=True)
@@ -232,10 +280,20 @@ def CM_ResAvenue(cmdata,pcdata,ftr,isellrange):
     ddf9 = iSell_fun_02.merging(ddf8,ddf7)
     
     
+    logging.debug('Availability Frame ::')
+    logging.debug(ddf9.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(df6.to_string())  
+    
+    
     return(ddf9,df6)
 
 
 def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_eZee')
+    
     cmdata = pd.DataFrame(cmdata)
     cmdata['Date'] = pd.to_datetime(cmdata['Date'],format="%d-%m-%Y")
     rmsdf = cmdata.loc[:,['Date','roomtype','availablity']]
@@ -258,20 +316,32 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     cm_ezee3 = cm_ezee2.loc[:,['Date','baserate']]
     cm_ezee3['Date']=pd.to_datetime(cm_ezee3['Date'])
     cm_ezee3.rename(columns={'baserate':'Rate on CM'},inplace=True)
-
+    
+    #------------------change by Chakradhar------------------------------------
     if htlname == 'Hotel Emerald':
         cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
         cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
     else:
         cm_ezee4 = iSell_fun_02.frame(cm_ezee3, isellrange)
-
+    #--------------------------------------------------------------------------
+    
     rmsdf444.drop_duplicates(subset='Date', inplace=True)
     cm_ezee4.drop_duplicates(subset='Date', inplace=True)
+    
+    logging.debug('Availability Frame ::')
+    logging.debug(rmsdf444.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(cm_ezee4.to_string())  
 
     return(rmsdf444,cm_ezee4)
 
 
 def CM_UK(otadata,cmrate,msrate,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_UK')
+    
+    
     otadata = pd.DataFrame(otadata)
     otadata['Date'] = pd.to_datetime(otadata['Date'],format="%d/%m/%Y %H:%M:%S")
     otadata['Date'] = pd.to_datetime(otadata['Date'],format="%d-%b-%Y")
@@ -284,11 +354,21 @@ def CM_UK(otadata,cmrate,msrate,isellrange):
     cmrate2 = iSell_fun_02.frame(cmrate,isellrange)
     cmrate3 = cmrate2.loc[:,['Date',msrate]]
     cmrate3.rename(columns={msrate:'Rate on CM'},inplace=True)    
-    cmrate4 =  iSell_fun_02.merging(otadata4,cmrate3)    
+    cmrate4 =  iSell_fun_02.merging(otadata4,cmrate3)   
+    
+    logging.debug('Availability Frame ::')
+    logging.debug(otadata3.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(cmrate4.to_string())  
+    
     return(otadata3,cmrate4)
     
     
 def CM_Djubo(ttlsold,cap,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_Djubo')
+    
     ttlsold = pd.DataFrame(ttlsold)
     cap = int(cap)
     ttlsold.rename(columns={'occupancydate':'Date'},inplace=True)
@@ -330,12 +410,23 @@ def CM_Djubo(ttlsold,cap,isellrange):
     frame=pd.DataFrame({'Date':index})
     frame['Rate on CM']=np.nan
     dfb=frame
+    
+    
+    logging.debug('Availability Frame ::')
+    logging.debug(dfa.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(dfb.to_string())  
+    
     return(dfa,dfb)
 
 
 
 
 def CM_Maximojo(cmdata,msrate,rateid,ftr,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_Maximojo')
+    
     df_cmm2 = cmdata[cmdata["RatePlan(Id)"] == rateid]
     
     #----------------------# FTR #-------------------------------------------------
@@ -376,11 +467,20 @@ def CM_Maximojo(cmdata,msrate,rateid,ftr,isellrange):
         cmrate3['Date']=pd.to_datetime(cmrate3['Date'])        
         
     cmrate4 = iSell_fun_02.frame(cmrate3,isellrange)
-
+    
+    logging.debug('Availability Frame ::')
+    logging.debug(df_avail22.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(cmrate4.to_string())  
+    
     return(df_avail22,cmrate4)
 
 
-def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):    
+def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):  
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_AxisRooms')
+    
     df2 = cmdata.T
     df2.reset_index(inplace=True)    
     df2.dropna(axis=1,how='all',inplace=True)
@@ -450,11 +550,20 @@ def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):
         cm_df3['Date']=pd.to_datetime(cm_df3['Date'])
         
     cm_df4=iSell_fun_02.frame(cm_df3,isellrange)
+    
+    logging.debug('Availability Frame ::')
+    logging.debug(df33.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(cm_df4.to_string())    
 
     return(df33,cm_df4)
 
         
 def CM_Staah(cmdata,msrate,ftr,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_Staah')
+    
     cm2=pd.DataFrame(cmdata[cmdata.isnull().all(axis=1)])
     cm3=list(cm2.index)
     cmdata1=pd.DataFrame(cmdata.iloc[1:cm3[0],:])
@@ -482,10 +591,18 @@ def CM_Staah(cmdata,msrate,ftr,isellrange):
     
     availframe2 = pd.merge(availframe,fthrou,on='Date',how='left')
     
+    logging.debug('Availability Frame ::')
+    logging.debug(availframe2.to_string())    
+    
+    logging.debug('RateonCM Frame ::')
+    logging.debug(msrateframe.to_string())    
+    
     return(availframe2,msrateframe)
 
 
 def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_Avails')
     
     if chman == 'Staah':
         dfa,dfb = CM_Staah(cmdata,msrate,ftr,isellrange)
@@ -509,7 +626,7 @@ def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange):
     elif chman == 'TravelClick':
         print("TravelClick - CM Availability and Rate Fetch")
         dfa, dfb = TravelClick(pcdata, cmdata, ftr, msrate, ratepl, isellrange)
-
-    
+        
+    logging.debug('availability and rateonCM frames returned to ProcessFlow')
     return(dfa,dfb)
 
