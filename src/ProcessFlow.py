@@ -875,7 +875,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                         htlsold,htlavail,oooflag=iSell_fun_02.hnfconv(df_hnf,name_cap[names],isellrange)
                         iSelldf444_1 = iSell_fun_02.merging(isellforgrid,htlsold)
                         iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)
-                        iSelldf5,szRates =iSell_fun_02.hnf_rcpalgo(iSelldf444,name_ftr[names],name_maxcap[names],name_curr[names],name_chman[names],Last_szrates,psy_fact,name_cmflag[names],use_ceiling[names],use_floor[names])                
+                        iSelldf5,szRates =directRecs.dRecs(iSelldf444,pgdf,isellrange,Last_szrates,cmflag,priceType[names],name_hnf[names],name_ftr[names])                 
                         logging.info('\tDirect Recommendations added as per HNF updated !!!')
                         #------getting iSelldf5 and szRates from Direct GridType-----------------------
                         
