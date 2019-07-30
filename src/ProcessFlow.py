@@ -166,7 +166,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     inputdf['RateOnCM'] =  inputdf['RateOnCM'].astype(int)
     name_cmflag = dict(zip(inputdf['hotelname'],inputdf['RateOnCM']))
     
-    #phychological factor
+    #phsychological factor
     name_psy = dict(zip(inputdf['hotelname'],inputdf['PsychologicalFactor']))   
     
     name_hnf = dict(zip(inputdf['hotelname'],inputdf['HNF']))
@@ -872,11 +872,10 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                         df_hnf = pd.read_excel(basepath+'\{}\{}\{}'.format('HNF',tdayfold,names+str('_HNF.xlsx')))
                         logging.info("\tHNF read for {}".format(names))
                         #----------------------calculate hotel sold and availability frames------------------------
-                        htlsold,htlavail=iSell_fun_02.hnfconv(df_hnf,name_cap[names],isellrange)
-                        
+                        htlsold,htlavail,oooflag=iSell_fun_02.hnfconv(df_hnf,name_cap[names],isellrange)
                         iSelldf444_1 = iSell_fun_02.merging(isellforgrid,htlsold)
                         iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)
-                        iSelldf5,szRates = directRecs.dRecs(iSelldf444,pgdf,isellrange,Last_szrates,cmflag,priceType[names],name_hnf[names],name_ftr[names])                
+                        iSelldf5,szRates =directRecs.dRecs(iSelldf444,pgdf,isellrange,Last_szrates,cmflag,priceType[names],name_hnf[names],name_ftr[names])                 
                         logging.info('\tDirect Recommendations added as per HNF updated !!!')
                         #------getting iSelldf5 and szRates from Direct GridType-----------------------
                         
@@ -889,7 +888,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                             sys.exit()
                         
                         logging.info("\tHNF read for {}".format(names))
-                        htlsold,htlavail=iSell_fun_02.hnfconv(df_hnf,name_cap[names],isellrange)                        
+                        htlsold,htlavail,oooflag=iSell_fun_02.hnfconv(df_hnf,name_cap[names],isellrange)                        
                             
                         iSelldf444_1 = iSell_fun_02.merging(iSelldf44,htlsold)
                         iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)
@@ -961,6 +960,29 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             pass
         
         
+        #----------------Handling OOO Flag-------------------------------------
+        if name_hnf[names]=='No':
+            oooflag=0
+        else:
+            pass           
+        
+        
+        if oooflag != 1:
+#            print("oooflag ::{}",format(oooflag))
+            try:
+                iSelldf8.drop('OOO',axis=1,inplace=True)
+            except KeyError:
+                pass
+        else:
+            pass
+        
+        logging.debug('handled oooflag ::')
+        logging.debug(iSelldf8.to_string())
+        
+        
+        #----------------------------------------------------------------------
+            
+        
         collist=['Season']
         try:
             iSelldf9_1=iSelldf8.drop(collist,axis=1)
@@ -1012,8 +1034,8 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                 pass
                 
             iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names,iselldt))
-            logging.info('----------{}_{}_iSell generated_#{} !!!----------------'.format(sr,names,name_chman[names]))
-            print('----------{}_{}_iSell generated_#{} !!!----------------'.format(sr,names,name_chman[names]))
+            logging.info('{}_{}_iSell generated_#{} !!!----------------'.format(sr,names,name_chman[names]))
+            print('{}_iSell generated_#{} !!!----------------'.format(names,name_chman[names]))
             beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile, name_cap[names])
 
         
@@ -1028,8 +1050,8 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                 iSelldf10.to_csv(basepath+'\\'+'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold,names,iselldt))
                 beautiMode.isellbeautify(defaultpath, iSelldf10,names,beautipth,name_win2[names],isellrange,glossary,name_ftr[names],pgdf,finaladop,name_accman[names],rateshopfile, name_cap[names])
             
-            print('----------{}_{}_iSell Generated _#{} !!!----------------'.format(sr,names,name_chman[names]))
-            logging.info('----------{}_{}_iSell Generated _#{} !!!----------------'.format(sr,names,name_chman[names]))
+            print('{}_iSell Generated _#{} !!!----------------'.format(names,name_chman[names]))
+            logging.info('{}_iSell Generated _#{} !!!----------------'.format(names,name_chman[names]))
         else:
             logging.info('Please set 0 or 1 to RateOnCM column of Accounts sheet')
             sys.exit()   
@@ -1046,7 +1068,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             
             
     logging.info("################## ALL iSell Generated for {} , Thanks ! ########################".format(accMan))
-    print("################## ALL iSell Generated for {} , Thanks ! ########################".format(accMan))
+    print("###### ALL iSell Generated for {} , Thanks ! #######".format(accMan))
 
 
 

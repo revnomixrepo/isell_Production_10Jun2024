@@ -34,30 +34,51 @@ def UKhnfconv(df_hnf,maxcap,isellrange):
     df_hnf4=df_hnf3.loc[:,['Date','Hotel Sold']]
     df_hnf5=df_hnf3.loc[:,['Date','Hotel Availability']]    
     return(df_hnf4,df_hnf5)
+  
     
-
 def hnfconv(hnf,totalcap,isellrange):
+    hnf.fillna(value=0,inplace=True)
+    
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:hnfconv')
-    
     hnf['Date']=pd.to_datetime(hnf['Date'],format="%d-%b-%Y")
     hnf['cap'] = int(totalcap)
     hnf['Sold'].fillna(value=0,inplace=True)
     hnf['Hotel Availability']=hnf['cap']-hnf['Sold']
-    hnf['Hotel Availability']=hnf['Hotel Availability'].astype(int)
-    logging.debug('Hotel Availability calculated , Hotel Availability = capacity - Sold')
+    
+     ################## THIS IS ACTUAL AVAILABILITY WHEN OUT OF ORDER AVAILABILITY IS GIVEN
+    logging.debug(hnf.columns)
+    try:
+        hnf['Hotel Availability']=hnf['Hotel Availability']-hnf['OOO']
+        logging.debug('Hotel Availability calculated , Hotel Availability = capacity - Sold')
+        oooflag=1
+        logging.debug('Actual Availability calculated when out of order is given,Hotel Availability=availability-OOO')
+        logging.debug('oooflag set to 1 , Calculated availability by using OOO (hnf)::')
+        logging.debug(hnf.to_string())       
+        
+    except:
+        oooflag=0
+        logging.debug('oooflag set to 0 (hnf) ::')
+        logging.debug(hnf.to_string())
+        
+        
+    hnf['Hotel Availability']=hnf['Hotel Availability'].astype(int)   
     hnf2 =frame(hnf,isellrange)
     hnf2.rename(columns={'Sold':'Hotel Sold'},inplace=True)
     hnf3 = hnf2.loc[:,['Date','Hotel Sold']]
-    hnf4 = hnf2.loc[:,['Date','Hotel Availability']]  
+    
+    if oooflag==1:
+        hnf4 = pd.DataFrame(hnf2.loc[:,['Date','Hotel Availability','OOO']])
+    else:
+        hnf4 = pd.DataFrame(hnf2.loc[:,['Date','Hotel Availability']])
     
     logging.debug('Hotel Sold, Hotel Availability Returned ::')
-    logging.debug('Hotel Sold(hnf3) ::')
-    
+    logging.debug('Hotel Sold(hnf3) ::')    
     logging.debug(hnf3.to_string())
+    
     logging.debug('Hotel Availability(hnf4) ::')
     logging.debug(hnf4.to_string())
-    return(hnf3,hnf4)
+    return(hnf3,hnf4,oooflag)
     
     
 def occframe(df1,isellrange):
@@ -423,6 +444,7 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         df_rcp_season['rcp']=np.where(df_rcp_season['rcp'] == df_rcp_season['Last_szrate'],np.nan,df_rcp_season['rcp'])
         logging.debug('last recommendations(Last_szrate) compared with current rcp column')
         df_rcp_season.drop('Last_szrate',axis=1,inplace=True)
+        
         recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
         
@@ -431,7 +453,8 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         logging.debug(recdf2.to_string())
         
         logging.debug('SeasonalRate(seasonalrate) ::')
-        logging.debug(seasonalrate.to_string())        
+        logging.debug(seasonalrate.to_string())  
+        
         return(recdf2,seasonalrate)
     
     #===============================================================================================================
@@ -457,6 +480,7 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
             pass
         #---------------------------------------------------------------------------------------       
         df_rcp_season['rcp']=np.where(df_rcp_season['rcp'] == df_rcp_season['Rate on CM'],np.nan,df_rcp_season['rcp'])
+                    
         recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
         
@@ -464,7 +488,7 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         logging.debug('Recommendations(recdf2) ::')
         logging.debug(recdf2.to_string())
         
-        logging.debug('SeasonalRate(seasonalrate):{}'.format(seasonalrate))        
+        
         return(recdf2,seasonalrate)
 
 
@@ -472,10 +496,10 @@ def hnf_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloo
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:hnf_rcpalgo')
     
-    df_rcp_season=dff1
+    df_rcp_season=pd.DataFrame(dff1)
     df_rcp_season['max_cap']=maxcap #read from RC
     
-    df_rcp_season['rate_dif']= (df_rcp_season['max_rate'] - df_rcp_season['min_rate'])
+    df_rcp_season['rate_dif']= df_rcp_season['max_rate'] - df_rcp_season['min_rate']
     #df_rcp_season['ota_max']= (df_rcp_season['Rooms Avail To Sell Online'] + df_rcp_season['OTA_Sold'])
 
     #================Set -ve Hotel Availability to zero====================================
@@ -555,8 +579,17 @@ def hnf_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloo
         df_rcp_season['rcp']=np.where(df_rcp_season['rcp'] == df_rcp_season['Last_szrate'],np.nan,df_rcp_season['rcp'])
         df_rcp_season.drop('Last_szrate',axis=1,inplace=True)
         #recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp','Season']])
-        recdf=df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']]
+        
+        recdf=df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Hotel Sold','Hotel Availability','OOO','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']]
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
+        
+        logging.debug('Recommendations and SeasonalRate Returned ::')
+        logging.debug('Recommendations (recdf2) ::')
+        logging.debug(recdf2.to_string())
+        
+        logging.debug('SeasonalRate(seasonalrate) ::')
+        logging.debug(seasonalrate.to_string())        
+        
         return(recdf2,seasonalrate)
     
     #===============================================================================================================
@@ -578,8 +611,7 @@ def hnf_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloo
         
         df_rcp_season['rcp']=np.where(df_rcp_season['rcp'] == df_rcp_season['Rate on CM'],np.nan,df_rcp_season['rcp'])
         #recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp','Season']])
-        recdf=df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']]
-#        recdf.to_csv(r'E:\iSell_Project\Djubo\recdfkk.csv')
+        recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Hotel Sold','Hotel Availability','OOO','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
         #
         return(recdf2,seasonalrate)

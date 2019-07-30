@@ -151,7 +151,7 @@ def backup(backup_path, df_1, df_2, df_3, df_4, c):
     #    cm_sheet3 = 'Monthly_MaxRates'
     #    cm_sheet4 = 'Monthly_Jump'
     #  WRITE DF INTO A EXCEL FILE
-    df_1 = df_1[['Sr.No','Status','AccManager','hotelname','ChannelMan','staahid','cap','otacap','msrate','flowthrough','rateplan','RateOnCM','HNF','Currency','PricingType','PsychologicalFactor','GridType','PriceJump','ClusterName','JumpType','use_CeilingRate','use_FloorRate','use_Grid','isellwindow','clientwindow(180)','City','D_Folder']]
+    df_1 = df_1[['Sr.No','Status','AccManager','hotelname','ChannelMan','staahid','cap','otacap','msrate','flowthrough','rateplan','RateOnCM','HNF','Currency','PricingType','PsychologicalFactor','GridType','PriceJump','ClusterName','JumpType','use_CeilingRate','use_FloorRate','use_Grid','cussion','isellwindow','clientwindow(180)','City','D_Folder']]
     df_2 = df_2[['Sr.No','hotelname','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','use_MaxRate']]
     df_3 = df_3[['Sr.No','hotelname','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']]
     df_4 = df_4[['Sr.No','hotelname','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Season1','Season2']]
