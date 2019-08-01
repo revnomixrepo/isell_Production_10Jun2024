@@ -262,7 +262,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                 #---------------renamed 'Subchannel Desc' as Channel Name---------------------
                 staahfile2.rename(columns={'Subchannel Desc':'Channel Name'},inplace=True)
                 #---------------removing ['PMS','Brand.com'] from Channel Name---------------
-                staahfile3 = staahfile2[~staahfile2['Channel Name'].isin(['PMS','Brand.com'])]
+                staahfile3 = staahfile2[~staahfile2['Channel Name'].isin(['PMS','Brand.com','CALL-HOTEL'])]
                 
                 #------------------remove House Bookings for YO1----------------------------
                 if names in ["YO1 India's Holistic Wellness Center_OTA"]:
