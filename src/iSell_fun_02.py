@@ -37,6 +37,7 @@ def UKhnfconv(df_hnf,maxcap,isellrange):
   
     
 def hnfconv(hnf,totalcap,isellrange):
+    hnf.dropna(axis=0, subset=['Date'],inplace=True)
     hnf.fillna(value=0,inplace=True)
     
     logging.debug('------------------------------------------------------------')
