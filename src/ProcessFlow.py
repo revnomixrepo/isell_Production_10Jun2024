@@ -840,9 +840,9 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                         sys.exit()
                         
                     if names == 'Leaf Hotel Dover':
-                        htlsold,htlavail = iSell_fun_02.TBhnfconv(df_hnf,name_maxcap[names],isellrange) 
+                        htlsold,htlavail,oooflag = iSell_fun_02.TBhnfconv(df_hnf,name_maxcap[names],isellrange) 
                     else:
-                        htlsold,htlavail = iSell_fun_02.UKhnfconv(df_hnf,name_maxcap[names],isellrange)     
+                        htlsold,htlavail,oooflag = iSell_fun_02.UKhnfconv(df_hnf,name_maxcap[names],isellrange)     
                         
 #                    htlsold,htlavail = iSell_fun_02.UKhnfconv(df_hnf,name_maxcap[names],isellrange) 
                     
@@ -856,7 +856,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                         
                 elif name_chman[names] =='TravelBook':
                     df_hnf = pd.read_csv(basepath+'\{}\{}\{}'.format('HNF',tdayfold,names+str('_HNF.csv')), delimiter =",", index_col=False, header=0, low_memory=False, quoting=csv.QUOTE_ALL,encoding='utf8')
-                    htlsold,htlavail = iSell_fun_02.TBhnfconv(df_hnf,name_maxcap[names],isellrange) 
+                    htlsold,htlavail,oooflag = iSell_fun_02.TBhnfconv(df_hnf,name_maxcap[names],isellrange) 
                     
                     iSelldf444_1 = iSell_fun_02.merging(iSelldf44,htlsold)
                     iSelldf444 = iSell_fun_02.merging(iSelldf444_1,htlavail)

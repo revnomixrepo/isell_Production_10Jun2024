@@ -19,7 +19,8 @@ def TBhnfconv(df_hnf,maxcap,isellrange):
     df_hnf4=df_hnf3.loc[:,['Date','Hotel Sold']]
     df_hnf5=df_hnf3.loc[:,['Date','Hotel Availability']]
     logging.info('hotel availability and Sold returned')
-    return(df_hnf4,df_hnf5)
+    oooflag=0
+    return(df_hnf4,df_hnf5,oooflag)
 
 def UKhnfconv(df_hnf,maxcap,isellrange):
     logging.debug('------------------------------------------------------------')
@@ -32,8 +33,9 @@ def UKhnfconv(df_hnf,maxcap,isellrange):
     df_hnf3.rename(columns={'Avail':'Hotel Availability','Total':'Hotel Sold'},inplace=True)
     
     df_hnf4=df_hnf3.loc[:,['Date','Hotel Sold']]
-    df_hnf5=df_hnf3.loc[:,['Date','Hotel Availability']]    
-    return(df_hnf4,df_hnf5)
+    df_hnf5=df_hnf3.loc[:,['Date','Hotel Availability']]  
+    oooflag=0
+    return(df_hnf4,df_hnf5,oooflag)
   
     
 def hnfconv(hnf,totalcap,isellrange):
@@ -696,8 +698,8 @@ def Adopcal(df,day180,day90):
     
     df=pd.DataFrame(df.loc[:,['Recommended Rate','Pickup']])
 #    df.to_csv(r'E:\iSell_Project\Djubo\df.csv')
-    df180 = df.iloc[:day180,:]
-    df90 = df.iloc[:day90,:]
+    df180 = pd.DataFrame(df.iloc[:day180,:])
+    df90 = pd.DataFrame(df.iloc[:day90,:])
 #    df30 = df.iloc[:30,:]
 #    df15 = df.iloc[:15,:] 
    
