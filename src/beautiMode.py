@@ -26,7 +26,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     df = pd.DataFrame(df)
     
     logging.debug('df contains isell dataframe ::')
-    logging.debug(df.to_string())
+    logging.debug(df)
     #=============================df to wb conv =============================================   
     logging.debug('dataframe to Workbook conversion:')
     wb = Workbook()    
@@ -481,7 +481,7 @@ def isellbeautify(defaultpath, df, htlname, pth2, name_win2, isellrange, glossar
     df.rename(columns={'OTA_Sold':'OTA Sold','LowestRate':'Lowest Rate'},inplace=True)
     
     logging.debug('isell dataframe (df) before beautify function ::')
-    logging.debug(df.to_string())    
+    logging.debug(df)    
     
     #-----------------------------beautify function call------------------------------    
     beautify(defaultpath, df,'internal',isellrange+6,htlname,pth,glossary,ftr,pgdf,finaladop,rateshopfile,hcap2) 
@@ -529,7 +529,7 @@ def isellbeautify(defaultpath, df, htlname, pth2, name_win2, isellrange, glossar
             logging.debug("so Client iSell will be prepared for 30 days")            
             df = df.iloc[:30,:]
             logging.debug('iSell dataframe (df) is Sliced till 30 days ::')
-            logging.debug(df.to_string())            
+            logging.debug(df)            
             
             df.drop('Recommended Rate',axis=1,inplace=True)
             try:

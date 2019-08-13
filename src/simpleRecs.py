@@ -23,7 +23,7 @@ def simRecs(htl,otbdf,jump,szrates,chman,cmflag,htlcur,psy,useceiling,usefloor):
     otbdf['Recommended Rate'] = otbdf['Recommended Rate'].apply(lambda row: fun2.applyPsychologicalFactor(row,psy))
     otbdf.drop(['min_rate','max_rate'],axis=1,inplace=True)    
     logging.debug('dataframe otbdf ::')
-    logging.debug(otbdf.to_string())
+    logging.debug(otbdf)
     
     
     if cmflag==0:
@@ -38,7 +38,7 @@ def simRecs(htl,otbdf,jump,szrates,chman,cmflag,htlcur,psy,useceiling,usefloor):
             logging.debug('set Ceiling Rate condition is ON: (useceiling == 1)')
             otbdf['Recommended Rate'] = np.where(otbdf['Recommended Rate'] > otbdf['Max_Rate'],otbdf['Max_Rate'],otbdf['Recommended Rate'])
             logging.debug('Recommendations Higher than Max_Rate are replaced with Max Rate ::')
-            logging.debug(otbdf.to_string())
+            logging.debug(otbdf)
         else:
             pass
         #-------------------------------set floor threshold---------------------------------
@@ -46,7 +46,7 @@ def simRecs(htl,otbdf,jump,szrates,chman,cmflag,htlcur,psy,useceiling,usefloor):
             logging.debug('set Floor Rate condition is ON: (usefloor == 1)')
             otbdf['Recommended Rate'] = np.where(otbdf['Recommended Rate'] < otbdf['Min_Rate'],otbdf['Min_Rate'],otbdf['Recommended Rate'])
             logging.debug('Recommendations less than Minimum Rate are replaced with Minimum Rate ::')
-            logging.debug(otbdf.to_string())
+            logging.debug(otbdf)
         else:
             pass              
         #---------------------------------------------------------------------------------------        
@@ -61,7 +61,7 @@ def simRecs(htl,otbdf,jump,szrates,chman,cmflag,htlcur,psy,useceiling,usefloor):
             logging.debug('set Ceiling Rate condition is ON: (useceiling == 1)')
             otbdf['Recommended Rate'] = np.where(otbdf['Recommended Rate'] > otbdf['Max_Rate'],otbdf['Max_Rate'],otbdf['Recommended Rate'])
             logging.debug('Recommendations Higher than Max_Rate are replaced with Max Rate ::')
-            logging.debug(otbdf.to_string())
+            logging.debug(otbdf)
         else:
             pass
          #-------------------------------set floor threshold---------------------------------
@@ -69,7 +69,7 @@ def simRecs(htl,otbdf,jump,szrates,chman,cmflag,htlcur,psy,useceiling,usefloor):
             logging.debug('set Floor Rate condition is ON: (usefloor == 1)')
             otbdf['Recommended Rate'] = np.where(otbdf['Recommended Rate'] < otbdf['Min_Rate'],otbdf['Min_Rate'],otbdf['Recommended Rate'])
             logging.debug('Recommendations less than Minimum Rate are replaced with Minimum Rate ::')
-            logging.debug(otbdf.to_string())
+            logging.debug(otbdf)
         else:
             pass              
         #--------------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ def simRecs(htl,otbdf,jump,szrates,chman,cmflag,htlcur,psy,useceiling,usefloor):
     
     logging.debug('Recommendations and SeasonalRate DataFrames returned ::')
     logging.debug('Recommendations dataframe ::')
-    logging.debug(otbdf.to_string())
+    logging.debug(otbdf)
     logging.debug('SeasonalRate dataframe ::')
     logging.debug(szratedf)    
     return(otbdf,szratedf)

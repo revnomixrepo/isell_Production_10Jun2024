@@ -70,17 +70,17 @@ def Gridcreator(htl,isell,mnthminrates,wts,htlcluster,mnthjumps,jumpfact,jType,p
     #--------------------------------------------------------------------------
     logging.debug('Appended monthdata list with dataframes (csondata2) ::')
     csondata2 = pd.concat(monthdata)
-    logging.debug(csondata2.to_string())
+    logging.debug(csondata2)
     
     #-------------------min rate calculation-----------------------------------
     logging.debug("Applied dow_weights and 'min_rate' column calculated for recommendation ::")
     csondata2['min_rate'] = csondata2['Min_Rate']*csondata2['DowWt']
-    logging.debug(csondata2.to_string())
+    logging.debug(csondata2)
     
     #-------------------create new column['Dow','min_rate','Jfact']--------------------------------------    
     csondata2['new_col'] = list(zip(csondata2.Dow,csondata2.min_rate,csondata2.Jfact))
     logging.debug("new_col added which contains ['Dow','min_rate','Jfact'] values ::")
-    logging.debug(csondata2.to_string())
+    logging.debug(csondata2)
     
     steps=[0,1,2,3,4,5,6,7,8,9]
     
@@ -120,11 +120,11 @@ def Gridcreator(htl,isell,mnthminrates,wts,htlcluster,mnthjumps,jumpfact,jType,p
         
     logging.debug('Rates calculated using compound interest formula, using(min_rate,Jfact,steps) ::')
     finalczongrid2= pd.concat(finalczongrid)
-    logging.debug(finalczongrid2.to_string())
+    logging.debug(finalczongrid2)
     
     finalczongrid3 = finalczongrid2.loc[:,['Hotel','Cluster','Min_Rate','Jump',filtername,'Occ','Mon','Tue','Wed','Thu','Fri','Sat','Sun']]
     logging.debug('Final Grid for {} ::'.format(htl))    
-    logging.debug(finalczongrid3.to_string())    
+    logging.debug(finalczongrid3)    
     return(finalczongrid3)
     
         
