@@ -60,7 +60,7 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
     testisell['min_rate'] = testisell['Min_Rate']*testisell['Dow_wt']
     testisell['min_rate'] = testisell['min_rate'].astype(float,errors='ignore')
     logging.debug('min_rate column added, where min_rate = Min_Rate * Dow_wt ::')
-    logging.debug(testisell.to_string())
+    logging.debug(testisell)
     logging.info('Checking MaxRate Flag..')
     #---------------------USE MAX Rate Flag Condition-----------------------------------
     if flag_mRate == 0:
@@ -70,7 +70,7 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
         if ceilingRate == 1:
             logging.debug('ceilingRate = 1, setting Max_Rate from maxRdict ::')
             testisell['Max_Rate'] = testisell['Month'].map(maxRdict)
-            logging.debug(testisell.to_string())
+            logging.debug(testisell)
         else:
             pass
             
@@ -78,7 +78,7 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
         monthdow11= pd.DataFrame(testisell)
         monthdow11['new_col'] = list(zip(monthdow11.min_rate, monthdow11.Jfact)) 
         logging.debug('new_col added to the dataframe which contains (minimum rate, jumpfactor) monthdow11 ::')   
-        logging.debug(monthdow11.to_string())
+        logging.debug(monthdow11)
         
         #--------------------pass min_rate and jfact to calculate max_rate------------
         max_rate=[]
@@ -90,7 +90,7 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
         monthdow11['max_rate']= max_rate
                   
         logging.debug('max_rate column calculated using compound_interest function')   
-        logging.debug(monthdow11.to_string())                  
+        logging.debug(monthdow11)                  
         monthdow2 = monthdow11.drop(['Month','Dow_wt','JumpNum','Jump','Jfact','new_col'],axis=1)
                   
     elif flag_mRate == 1:
@@ -100,14 +100,14 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
          #-----------------map monthly max rates for mRateflag = 1 --------------------------------------   
         logging.debug('maxRdict mapped on Month column and calculated Max_Rate ::')
         testisell['Max_Rate'] = testisell['Month'].map(maxRdict)
-        logging.debug(testisell.to_string())
+        logging.debug(testisell)
         
         monthdow22= testisell.drop(['Jfact','Jump'],axis=1)
         logging.debug("dropped 'Jfact','Jump' columns as it is to be calculated")
         #Create list of Min_Rate,Max_Rate and time ->9
         monthdow22['new_col2'] = list(zip(monthdow22.Min_Rate, monthdow22.Max_Rate)) 
         logging.debug("new_col2 added in dataframe which contains ('Min_Rate', 'Max_Rate') monthdow22 ::")
-        logging.debug(monthdow22.to_string())
+        logging.debug(monthdow22)
         
         #--------------------------Calculation of Jump and Jfact--------------------
         jumprate=[]
@@ -125,7 +125,7 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
         logging.debug('mapped Jump factors in Jfact column ::')
         monthdow22['new_col'] = list(zip(monthdow22.min_rate, monthdow22.Jfact)) 
         logging.debug('new_col added which contains (min_rate,Jfact) monthdow22::')
-        logging.debug(monthdow22.to_string())
+        logging.debug(monthdow22)
         #--------------------pass min_rate and jfact to calculate max_rate------------        
         max_rate=[]
         #max rate calculation using compound interest
@@ -137,7 +137,7 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
         
         monthdow11 = pd.DataFrame(monthdow22)
         logging.debug('max_rate column calculated using compound_interest function (monthdow11) ::')
-        logging.debug(monthdow11.to_string())
+        logging.debug(monthdow11)
         monthdow2 = monthdow11.drop(['Month','Dow_wt','JumpNum','Jump','Jfact','new_col','new_col2'],axis=1)
         
     else:
@@ -146,10 +146,10 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
     
     logging.info("Monthly values fetched returned two dataframes ::")
     logging.debug("monthdow2 ::")
-    logging.debug(monthdow2.to_string())
+    logging.debug(monthdow2)
     
     logging.debug("monthdow11 ::")
-    logging.debug(monthdow11.to_string())     
+    logging.debug(monthdow11)     
     return(monthdow2,monthdow11)
 
     

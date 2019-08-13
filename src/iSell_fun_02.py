@@ -57,12 +57,12 @@ def hnfconv(hnf,totalcap,isellrange):
         oooflag=1
         logging.debug('Actual Availability calculated when out of order is given,Hotel Availability=availability-OOO')
         logging.debug('oooflag set to 1 , Calculated availability by using OOO (hnf)::')
-        logging.debug(hnf.to_string())       
+        logging.debug(hnf)       
         
     except:
         oooflag=0
         logging.debug('oooflag set to 0 (hnf) ::')
-        logging.debug(hnf.to_string())
+        logging.debug(hnf)
         
         
     hnf['Hotel Availability']=hnf['Hotel Availability'].astype(int)   
@@ -77,10 +77,10 @@ def hnfconv(hnf,totalcap,isellrange):
     
     logging.debug('Hotel Sold, Hotel Availability Returned ::')
     logging.debug('Hotel Sold(hnf3) ::')    
-    logging.debug(hnf3.to_string())
+    logging.debug(hnf3)
     
     logging.debug('Hotel Availability(hnf4) ::')
-    logging.debug(hnf4.to_string())
+    logging.debug(hnf4)
     return(hnf3,hnf4,oooflag)
     
     
@@ -95,7 +95,7 @@ def occframe(df1,isellrange):
     df_all = pd.merge(frame,df1,on='occupancydate',how='left')
     
     logging.debug('Data merged on occupancydate column ::')
-    logging.debug(df_all.to_string())
+    logging.debug(df_all)
     return(df_all)
 
 def frame(df1,isellrange):
@@ -110,7 +110,7 @@ def frame(df1,isellrange):
     merged = pd.merge(frame,df1,on='Date',how='left')
     
     logging.debug("Merged with iSellFrame on 'Date' column ::")
-    logging.debug(merged.to_string())
+    logging.debug(merged)
     return(merged)
 
 def merging(df1,df2):
@@ -119,7 +119,7 @@ def merging(df1,df2):
     mergedf=pd.merge(df1,df2,on='Date',how='left')
     
     logging.debug("Merged two DataFrames on 'Date' column ::")
-    logging.debug(mergedf.to_string())
+    logging.debug(mergedf)
     return(mergedf)
     
 def dfconv(stdpth,cmfile2,htl,chman):
@@ -150,7 +150,7 @@ def dfconv(stdpth,cmfile2,htl,chman):
     logging.debug("Set dateformats as per 'Date Format mapping'") 
     
     logging.debug("DataFrame before exploading the dates ::")
-    logging.debug(cmfile2.to_string())
+    logging.debug(cmfile2)
     
     df_date=pd.concat([pd.DataFrame({
             'occupancydate' : pd.date_range(row.CheckIn, row.CheckOut),
@@ -165,7 +165,7 @@ def dfconv(stdpth,cmfile2,htl,chman):
        'No_of_Rooms','Total_Amount']) for i, row in cmfile2.iterrows()], ignore_index=True)
     
     logging.debug("DataFrame after exploading the dates ::")
-    logging.debug(df_date.to_string())
+    logging.debug(df_date)
 
     df_date['dtDif'] = (df_date['CheckOut']-df_date['occupancydate']).apply(lambda x: x/np.timedelta64(1,'D'))
     logging.debug("dtDif column added,where dtDif = CheckOut - occupancydate")
@@ -188,11 +188,11 @@ def dfconv(stdpth,cmfile2,htl,chman):
 
     df_date2 = df_date.query('(dtDif > 0)') 
     logging.debug("data sliced as per condition (dtDif > 0) ::")
-    logging.debug(df_date2.to_string())
+    logging.debug(df_date2)
 
     df_date3 = pd.DataFrame(df_date2[df_date2.statuscode == 1])
     logging.debug("data sliced as per condition statuscode == 1 ::")
-    logging.debug(df_date3.to_string())
+    logging.debug(df_date3)
 
     #Add LOS , ADR, RPD
     df_date3['LOS'] = (df_date3['CheckOut'] - df_date3['CheckIn']).apply(lambda x: x/np.timedelta64(1,'D')) #Length of stay
@@ -203,13 +203,13 @@ def dfconv(stdpth,cmfile2,htl,chman):
     
     df_date3['ADR'] = df_date3.loc[:,'Total_Amount'].div(df_date3.loc[:,'LOS']*df_date3.loc[:,'No_of_Rooms']) #Average Daily Rate
     logging.debug("ADR(Average Daily Rate) column added where ADR = Total_Amount/(LOS x No_of_Rooms) ::")
-    logging.debug(df_date3.to_string())
+    logging.debug(df_date3)
 
     #df_totalsold
     ttlsold = pd.DataFrame(df_date3.groupby(['occupancydate'])['No_of_Rooms'].sum())
     ttlsold.reset_index(inplace=True)
     logging.debug("ttlsold dataframe calculated ::")
-    logging.debug(ttlsold.to_string())
+    logging.debug(ttlsold)
     
     #df_total
     df_total = pd.DataFrame(df_date3.groupby(['occupancydate'])['No_of_Rooms','RevPD'].sum())
@@ -217,13 +217,13 @@ def dfconv(stdpth,cmfile2,htl,chman):
     df_total['RevPD'] = df_total['RevPD'].round(2)
     
     logging.debug("df_total dataframe calculated :")
-    logging.debug(df_total.to_string())
+    logging.debug(df_total)
 
     #df_ota
     df_ota = pd.DataFrame(df_date3.groupby(['occupancydate','Channel'])['No_of_Rooms'].sum())
     df_ota.reset_index(inplace=True)
     logging.debug("df_ota dataframe calculated :")
-    logging.debug(df_ota.to_string())        
+    logging.debug(df_ota)        
     return(df_total,df_ota,ttlsold)
     
 
@@ -390,11 +390,11 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         df_rcp_season['ratio_top'] =np.where((df_rcp_season['ota_max']==0),1,
                  (np.where((df_rcp_season['OTA_Sold']==0), df_rcp_season['cma_sqrt'], 
                            df_rcp_season['OTA_Sold'])/df_rcp_season['ota_max']))
-        logging.debug(df_rcp_season.to_string())
+        logging.debug(df_rcp_season)
     else:
         logging.debug('cussion set to 0, so cussion will not be applied, set ratio_top = 1 ::')
         df_rcp_season['ratio_top'] = 1 
-        logging.debug(df_rcp_season.to_string())
+        logging.debug(df_rcp_season)
     #--------------------------------------------------------------------------------------------------------------------------   
     
         
@@ -408,11 +408,11 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
     logging.debug('blank rcp replaced with value -1')
     df_rcp_season['rcp']=df_rcp_season['rcp'].astype(int)
     logging.debug('rcp column datatype set to int ::')
-    logging.debug(df_rcp_season.to_string())
+    logging.debug(df_rcp_season)
     
     df_rcp_season['rcp'] = df_rcp_season['rcp'].apply(lambda row: applyPsychologicalFactor(row,psy))
     logging.debug('PsychologicalFactor Applied to rcp column  ::')
-    logging.debug(df_rcp_season.to_string())
+    logging.debug(df_rcp_season)
     
     #============================Setting for Djubo============================================================
     
@@ -423,13 +423,13 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         logging.info("calculated SeasonRate column from df_rcp_season, where 'rcp':'SeasonalRate' ")
         df_rcp_season = merging(df_rcp_season,lastsz)
         logging.info("merged last seasonal rates from LR ::") 
-        logging.debug(df_rcp_season.to_string())
+        logging.debug(df_rcp_season)
         
         #-------------------------------set ceiling threshold---------------------------------
         if useceiling == 1:
             df_rcp_season['rcp'] = np.where(df_rcp_season['rcp'] > df_rcp_season['Max_Rate'],df_rcp_season['Max_Rate'],df_rcp_season['rcp'])
             logging.debug('rcp set to Max_Rate where rcp > Max_Rate , as useceiling condition is 1 ::')
-            logging.debug(df_rcp_season.to_string())
+            logging.debug(df_rcp_season)
             
         else:
             logging.debug('useceiling = 0 , no setting of ceiling rate')
@@ -438,7 +438,7 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         if usefloor == 1:
             df_rcp_season['rcp'] = np.where(df_rcp_season['rcp'] < df_rcp_season['Min_Rate'],df_rcp_season['Min_Rate'],df_rcp_season['rcp'])
             logging.debug('rcp set to Min_Rate where rcp < Min_Rate , as usefloor condition is 1 ::')
-            logging.debug(df_rcp_season.to_string())
+            logging.debug(df_rcp_season)
         else:
             logging.debug('usefloor = 0 , no setting of floor rate')
             pass
@@ -453,10 +453,10 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         
         logging.debug('Recommendations and SeasonalRate Returned ::')
         logging.debug('Recommendations (recdf2) ::')
-        logging.debug(recdf2.to_string())
+        logging.debug(recdf2)
         
         logging.debug('SeasonalRate(seasonalrate) ::')
-        logging.debug(seasonalrate.to_string())  
+        logging.debug(seasonalrate)  
         
         return(recdf2,seasonalrate)
     
@@ -469,7 +469,7 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         if useceiling == 1:
             df_rcp_season['rcp'] = np.where(df_rcp_season['rcp'] > df_rcp_season['Max_Rate'],df_rcp_season['Max_Rate'],df_rcp_season['rcp'])
             logging.debug('rcp set to Max_Rate where rcp > Max_Rate , as useceiling condition is 1 ::')
-            logging.debug(df_rcp_season.to_string())
+            logging.debug(df_rcp_season)
         else:
             logging.debug('useceiling = 0 , no setting of ceiling rate')
             pass
@@ -477,7 +477,7 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         if usefloor == 1:
             df_rcp_season['rcp'] = np.where(df_rcp_season['rcp'] < df_rcp_season['Min_Rate'],df_rcp_season['Min_Rate'],df_rcp_season['rcp'])
             logging.debug('rcp set to Min_Rate where rcp < Min_Rate , as usefloor condition is 1 ::')
-            logging.debug(df_rcp_season.to_string())
+            logging.debug(df_rcp_season)
         else:
             logging.debug('usefloor = 0 , no setting of floor rate')
             pass
@@ -489,7 +489,7 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         
         logging.debug('Recommendations and SeasonalRate Returned ::')
         logging.debug('Recommendations(recdf2) ::')
-        logging.debug(recdf2.to_string())
+        logging.debug(recdf2)
         
         
         return(recdf2,seasonalrate)
@@ -588,10 +588,10 @@ def hnf_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloo
         
         logging.debug('Recommendations and SeasonalRate Returned ::')
         logging.debug('Recommendations (recdf2) ::')
-        logging.debug(recdf2.to_string())
+        logging.debug(recdf2)
         
         logging.debug('SeasonalRate(seasonalrate) ::')
-        logging.debug(seasonalrate.to_string())        
+        logging.debug(seasonalrate)        
         
         return(recdf2,seasonalrate)
     
@@ -681,13 +681,13 @@ def RateShop(rsfile,isellrange):
     
     logging.debug('lowest rate df, Pivoted RS_Data , Current Average Rates Returned ::')
     logging.debug('lowst rate df (lrate4) ::')
-    logging.debug(lrate4.to_string())
+    logging.debug(lrate4)
     
     logging.debug('Pivoted RS_Data (rstable2) ::')
-    logging.debug(rstable2.to_string())
+    logging.debug(rstable2)
     
     logging.debug('Current Average Rates  (cavg) ::')
-    logging.debug(cavg.to_string())
+    logging.debug(cavg)
     
     return(lrate4,rstable2,cavg)
 
@@ -738,7 +738,7 @@ def Adopcal(df,day180,day90):
     finaldf2.reset_index(inplace=True)
     finaldf2.columns = ['Adoption','Pct(%)']    
     logging.debug('Returned Adoption DataFrame(finaldf2) ::')
-    logging.debug(finaldf2.to_string())
+    logging.debug(finaldf2)
     return(finaldf2)
 
 

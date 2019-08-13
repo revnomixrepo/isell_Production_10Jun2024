@@ -102,7 +102,7 @@ def backup_cm(condition,cm_splitpath,cm_backupath, accman_fold, cm_file):
         df_list4 = []
                 
         for i in accman_fold:
-            #  print(i)
+            print(i)
             # split_file = cm_splitpath + r'\{}\'.format(accman_fold[i]) +'InputConditionMaster_{}.xlsx'.format(i)
             split_file = cm_splitpath + '\\' + str(accman_fold[i])+r'\All_In_One_iSell\masters\InputConditionMaster_{}.xlsx'.format(i)
 #            print(split_file)

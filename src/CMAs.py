@@ -27,7 +27,7 @@ def ezee_new_pc_data(file, ratepaln):
 
     #------------returning only rateonCM from new eZee Extranet------------------
     logging.debug('RateonCM Frame (new eZee Extranet) ::')
-    logging.debug(df_rate.to_string()) 
+    logging.debug(df_rate) 
     
     return df_rate
 
@@ -85,10 +85,10 @@ def TravelClick(rfile, ifile, ftr, msrate, rateplan, isellrange):
     cm_df = iSell_fun_02.merging(flt_df, rt_df)
     
     logging.debug('Availability Frame ::')
-    logging.debug(inv_df.to_string())    
+    logging.debug(inv_df)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(cm_df.to_string()) 
+    logging.debug(cm_df) 
     
     return (inv_df, cm_df)
 
@@ -148,10 +148,10 @@ def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
     cm_df = iSell_fun_02.merging(delx_df, rt_df)
     
     logging.debug('Availability Frame ::')
-    logging.debug(inv_df.to_string())    
+    logging.debug(inv_df)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(cm_df.to_string()) 
+    logging.debug(cm_df) 
     
     return(inv_df, cm_df)
 
@@ -176,10 +176,10 @@ def CM_TB(otadata,cmrate):
     cmrate4 =  iSell_fun_02.merging(otadata4,cmrate3)
     
     logging.debug('Availability Frame ::')
-    logging.debug(otadata3.to_string())    
+    logging.debug(otadata3)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(cmrate4.to_string())  
+    logging.debug(cmrate4)  
     
     return(otadata3,cmrate4)
     
@@ -218,10 +218,10 @@ def CM_RezNext(cmdf,msrate,ftr,chnnel,isellrange):
     availdf['Date'] = pd.to_datetime(availdf['Date'],format="%Y-%m-%d")    
     
     logging.debug('Availability Frame ::')
-    logging.debug(availdf.to_string())    
+    logging.debug(availdf)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(cmdf5.to_string())  
+    logging.debug(cmdf5)  
     
     return(availdf,cmdf5)
 
@@ -281,10 +281,10 @@ def CM_ResAvenue(cmdata,pcdata,ftr,isellrange):
     
     
     logging.debug('Availability Frame ::')
-    logging.debug(ddf9.to_string())    
+    logging.debug(ddf9)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(df6.to_string())  
+    logging.debug(df6)  
     
     
     return(ddf9,df6)
@@ -329,10 +329,10 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     cm_ezee4.drop_duplicates(subset='Date', inplace=True)
     
     logging.debug('Availability Frame ::')
-    logging.debug(rmsdf444.to_string())    
+    logging.debug(rmsdf444)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(cm_ezee4.to_string())  
+    logging.debug(cm_ezee4)  
 
     return(rmsdf444,cm_ezee4)
 
@@ -357,10 +357,10 @@ def CM_UK(otadata,cmrate,msrate,isellrange):
     cmrate4 =  iSell_fun_02.merging(otadata4,cmrate3)   
     
     logging.debug('Availability Frame ::')
-    logging.debug(otadata3.to_string())    
+    logging.debug(otadata3)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(cmrate4.to_string())  
+    logging.debug(cmrate4)  
     
     return(otadata3,cmrate4)
     
@@ -413,10 +413,10 @@ def CM_Djubo(ttlsold,cap,isellrange):
     
     
     logging.debug('Availability Frame ::')
-    logging.debug(dfa.to_string())    
+    logging.debug(dfa)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(dfb.to_string())  
+    logging.debug(dfb)  
     
     return(dfa,dfb)
 
@@ -469,10 +469,10 @@ def CM_Maximojo(cmdata,msrate,rateid,ftr,isellrange):
     cmrate4 = iSell_fun_02.frame(cmrate3,isellrange)
     
     logging.debug('Availability Frame ::')
-    logging.debug(df_avail22.to_string())    
+    logging.debug(df_avail22)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(cmrate4.to_string())  
+    logging.debug(cmrate4)  
     
     return(df_avail22,cmrate4)
 
@@ -552,10 +552,10 @@ def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):
     cm_df4=iSell_fun_02.frame(cm_df3,isellrange)
     
     logging.debug('Availability Frame ::')
-    logging.debug(df33.to_string())    
+    logging.debug(df33)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(cm_df4.to_string())    
+    logging.debug(cm_df4)    
 
     return(df33,cm_df4)
 
@@ -592,10 +592,10 @@ def CM_Staah(cmdata,msrate,ftr,isellrange):
     availframe2 = pd.merge(availframe,fthrou,on='Date',how='left')
     
     logging.debug('Availability Frame ::')
-    logging.debug(availframe2.to_string())    
+    logging.debug(availframe2)    
     
     logging.debug('RateonCM Frame ::')
-    logging.debug(msrateframe.to_string())    
+    logging.debug(msrateframe)    
     
     return(availframe2,msrateframe)
 
