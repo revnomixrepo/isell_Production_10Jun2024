@@ -67,7 +67,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         inputdf = pd.DataFrame(inputdf2[inputdf2['AccManager'].isin(accMan)]) 
         logging.info('############# Preparing iSells for {} #################'.format(accMan))
         logging.debug('InputConditionMaster_{} File ::'.format(accMan))    
-        logging.debug(inputdf.to_string())      
+        logging.debug(inputdf)      
     
                            
     monthlyrates = pd.read_excel(inputmaster,'Monthly_MinRates') #Monthly_Rates Sheet
@@ -85,7 +85,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     dow_cluster2.reset_index(inplace=True)
     dow_cluster2.rename(columns={'index':'Dow'},inplace=True) 
     logging.debug('dow_cluster dataframe ::')
-    logging.debug(dow_cluster2.to_string())   
+    logging.debug(dow_cluster2)   
     
     
     #============================Monthly==========================================================
@@ -98,7 +98,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     monthMinRate2.reset_index(inplace=True)
     monthMinRate2.rename(columns={'index':'Month'},inplace=True)
     logging.debug('MinRate dataframe ::')
-    logging.debug(monthMinRate2.to_string())   
+    logging.debug(monthMinRate2)   
     
     
     
@@ -110,7 +110,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     monthJump2.rename(columns={'index':'Month'},inplace=True)
     
     logging.debug('Monthlyjump dataframe ::')
-    logging.debug(monthJump2.to_string())   
+    logging.debug(monthJump2)   
     
     
     
@@ -121,7 +121,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     monthMaxRate2.reset_index(inplace=True)
     monthMaxRate2.rename(columns={'index':'Month'},inplace=True) 
     logging.debug('MonthlyMax Rate dataframe ::')
-    logging.debug(monthMaxRate2.to_string())   
+    logging.debug(monthMaxRate2)   
     
     #==========================Seasonal========================================
     
@@ -379,7 +379,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'],format="%d/%m/%Y")
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'],format="%d-%b-%Y")
                 logging.debug('Best Western CMRate(cmrates2) ::')
-                logging.debug(cmrates2.to_string())
+                logging.debug(cmrates2)
             
         
         elif name_chman[names] == 'TravelBook':
@@ -441,21 +441,21 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         
         try:
             logging.debug('{}_CM dataframe ::'.format(names))
-            logging.debug(cmdata.to_string())
+            logging.debug(cmdata)
         except:
             logging.debug('No cmdata needed')
         
         #--------------------------------------staahfile(ota data)------------------------
         try:
             logging.debug('{}_OTAData dataframe ::'.format(names))
-            logging.debug(staahfile.to_string())
+            logging.debug(staahfile)
         except:
             logging.debug('No OTAData needed') 
         
         #--------------------------------------PC data(price calander)------------------------
         try:
             logging.debug('{}_PC dataframe ::'.format(names))
-            logging.debug(pcdata.to_string())
+            logging.debug(pcdata)
         except:
             logging.debug('No pcdata needed') 
         
@@ -492,34 +492,34 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         #--------------------------------------(Demand Calendar)---------------------------------
         try:
             logging.debug('{} Demand Calendar dataframe ::'.format(names))
-            logging.debug(dc.to_string())
+            logging.debug(dc)
         except:
             logging.debug('Demand calendar is needed, not found')         
         #-----------------------------------(last isell report)----------------------------------
         try:
             logging.debug('{} Last iSell Report dataframe ::'.format(names))
-            logging.debug(df_LR.to_string())
+            logging.debug(df_LR)
         except:
             logging.debug('Last iSell Report is needed, not found') 
             
          #-----------------------------------(RSData Report)----------------------------------
         try:
             logging.debug('{}_RSData Report dataframe ::'.format(names))
-            logging.debug(rsfile.to_string())
+            logging.debug(rsfile)
         except:
             logging.debug('RSData Report is needed, not found')
             
          #-----------------------------------(Rateshop Report)----------------------------------
         try:
             logging.debug('{}_RateShop Report dataframe ::'.format(names))
-            logging.debug(rateshopfile.to_string())
+            logging.debug(rateshopfile)
         except:
             logging.debug('RateShop Report is needed, not found')
         
         #------------------------------------Pricing Grid----------------------------------------
         try:
             logging.debug('{}_PG dataframe ((use_Grid=1)::'.format(names))
-            logging.debug(df_PG.to_string())
+            logging.debug(df_PG)
         except:
             logging.debug('External Pricing Grid is not found (use_Grid=0)')
             
@@ -532,7 +532,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         frame=pd.DataFrame({'Date':index})
         frame['Dow'] = frame['Date'].apply(lambda x:x.strftime('%a')) 
         logging.debug('Frame with {} days(isellwindow) range'.format(isellrange))
-        logging.debug(frame.to_string())
+        logging.debug(frame)
         
         #---------------------# df_total,df_ota,df_ttlsold #--------------------------------------------
         
@@ -553,7 +553,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             df_ota2 = df_ota.pivot(index='occupancydate', columns='Channel',values='No_of_Rooms')
             df_ota2.reset_index(inplace=True)
             logging.debug('OTA Pivote Table (df_ota2) ::')
-            logging.debug(df_ota2.to_string())
+            logging.debug(df_ota2)
 
             #df_all2
             df_all2= pd.merge(df_all,df_ota2,on='occupancydate',how='left')
@@ -562,23 +562,23 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             ddff=df_all3.set_index('Date')
             
             logging.debug('final dataframe (ddff) ::')
-            logging.debug(ddff.to_string())
+            logging.debug(ddff)
             
 
             otabreak=pd.DataFrame(ddff.iloc[:,2:])
             otabreak.reset_index(inplace=True)
             logging.debug('otabreak dataframe ::')
-            logging.debug(otabreak.to_string())
+            logging.debug(otabreak)
 
             otasold =pd.DataFrame(ddff.loc[:,'OTA_Sold'])
             otasold.reset_index(inplace=True)
             logging.debug('otasold dataframe ::')
-            logging.debug(otasold.to_string())
+            logging.debug(otasold)
 
             otarev = pd.DataFrame(ddff.loc[:,'OTA Revenue'])
             otarev.reset_index(inplace=True)
             logging.debug('otarev dataframe ::')
-            logging.debug(otarev.to_string())
+            logging.debug(otarev)
         
         
     #----------------------# df merging #---------------------------------------------
@@ -591,7 +591,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         dc3['Capacity']=name_cap[names]
         
         logging.info('Demand Calendar attached and capacity added ::')
-        logging.debug(dc3.to_string())
+        logging.debug(dc3)
 
         #2)---------------# CM_Avail #----------------------------------------------
         
@@ -637,14 +637,14 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
        
         iSelldf1 = iSell_fun_02.merging(dc3,rmsavail)
         logging.info('Demand calendar and Availability merged ::')
-        logging.debug(iSelldf1.to_string())
+        logging.debug(iSelldf1)
         
         if name_chman[names] in ['UK','TravelBook']:
             iSelldf2 = iSelldf1
         else:
             iSelldf2 = iSell_fun_02.merging(iSelldf1,otasold)
             logging.info('OTA Sold merged ::')
-            logging.debug(iSelldf2.to_string())
+            logging.debug(iSelldf2)
             
         #==================== HNF On The FLY =======================================
         logging.debug("Checking for 'Hybrid' Condition in GridType Column...")
@@ -657,7 +657,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             flyHNF2 = pd.DataFrame(flyHNF.loc[:,['Date','Sold']])
             flyHNF2.to_excel(basepath +'\\'+'HNF\{}\{}_HNF.xlsx'.format(tdayfold,names))
             logging.info("HNF On the fly Calculated and dumped in today's HNF folder")
-            logging.debug(flyHNF2.to_string())            
+            logging.debug(flyHNF2)            
         else:
             logging.debug('GridType is not Hybrid') 
             pass
@@ -946,7 +946,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             iSelldf7.rename(columns={'OTA Revenue':'Revenue'},inplace=True)
             logging.info('UK or TravelBook iSell dataframe ::')
             iSelldf8 = iSelldf7
-            logging.debug(iSelldf8.to_string())
+            logging.debug(iSelldf8)
             
         else:    
             iSelldf8 = iSell_fun_02.merging(iSelldf7,otabreak)
@@ -955,7 +955,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         if name_cmflag[names] == 0:
             iSelldf8 = iSell_fun_02.merging(iSelldf8,szRates)
             logging.info('Seasonal Rates merged for comparison')
-            logging.debug(iSelldf8.to_string())            
+            logging.debug(iSelldf8)            
         else:
             pass
         
@@ -977,7 +977,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             pass
         
         logging.debug('handled oooflag ::')
-        logging.debug(iSelldf8.to_string())
+        logging.debug(iSelldf8)
         
         
         #----------------------------------------------------------------------
@@ -1014,7 +1014,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         #12)--------------------# Adoption #------------------------------------------   
         finaladop = iSell_fun_02.Adopcal(iSelldf10,179,89)
         logging.info("Adoption calculated ::") 
-        logging.debug(finaladop.to_string())
+        logging.debug(finaladop)
         
                        
         
@@ -1061,7 +1061,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             logging.info('Format2 condition (format2flag ==1) ::')            
             outcsvpath = basepath+'\\'+'OutPut_CSV\{}'.format(tdayfold)            
             combine_iSell,finaladop = form2.total_ota_merging(names[:-4] ,name_ftr[names], iselldt, outcsvpath)            
-            logging.debug(combine_iSell.to_string())
+            logging.debug(combine_iSell)
             beautiMode.isellbeautify(defaultpath, combine_iSell, names[:-4]+'_Combine', beautipth, int(name_win2[names]), isellrange, glossary, name_ftr[names], pgdf, finaladop, name_accman[names], rateshopfile, name_cap[names])
         else:
             pass         
