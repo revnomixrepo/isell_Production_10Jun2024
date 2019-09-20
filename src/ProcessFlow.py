@@ -399,7 +399,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             
             cmdata=''
             pcdata=''
-            
+
+        elif name_chman[names] == 'Rategain':
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
+            cmdata = ''
+            pcdata = ''
+
         elif name_chman[names] == 'AsiaTech':
             staahfile = pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')), delimiter =",", index_col=False, header=0)
             cmdata=''
@@ -604,7 +609,13 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             cap = int(name_cap[names])
             logging.info(cap)
             rmsavail,cmdf = CMAs.CM_Djubo(df_ttlsold,cap,isellrange)
-            
+
+        elif name_chman[names] == 'Rategain':
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
+
+
         elif name_chman[names] == 'BookingCentre':
             cap = int(name_cap[names])
             logging.info(cap)
