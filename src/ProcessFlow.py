@@ -312,6 +312,8 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             cmdata = pd.read_csv(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.csv')))
             if names == 'Hotel Emerald':
                 pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
+            elif names == 'The Emory Hotel':
+                pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
             else:
                 pcdata=''
 

@@ -321,6 +321,9 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     if htlname == 'Hotel Emerald':
         cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
         cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+    elif htlname == 'The Emory Hotel':
+        cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+        cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
     else:
         cm_ezee4 = iSell_fun_02.frame(cm_ezee3, isellrange)
     #--------------------------------------------------------------------------
