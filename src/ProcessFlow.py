@@ -1028,7 +1028,6 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         
         try:
             iSelldf10.drop(colnames,axis=1,inplace=True)
-            print(colnames)
         except:
             pass
         
