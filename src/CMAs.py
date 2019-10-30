@@ -22,7 +22,10 @@ def ezee_new_pc_data(file, ratepaln):
     df_file['Date'] = pd.to_datetime(df_file['Date'], format='%Y-%m-%d')
     df_rate = df_file[['Date', ratepaln]]
     df_rate = pd.DataFrame(df_rate)
-    df_rate[ratepaln] = df_rate[ratepaln].astype(int)
+    try:
+        df_rate[ratepaln] = df_rate[ratepaln].astype(int)
+    except:
+        df_rate[ratepaln] = df_rate[ratepaln].astype(float)
     df_rate.rename(columns={ratepaln: 'Rate on CM'}, inplace=True)
 
     #------------returning only rateonCM from new eZee Extranet------------------
@@ -324,6 +327,9 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     elif htlname == 'The Emory Hotel':
         cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
         cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+    elif htlname == 'Xanadu Collection All Suite Hotel':
+        cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+        cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
     else:
         cm_ezee4 = iSell_fun_02.frame(cm_ezee3, isellrange)
     #--------------------------------------------------------------------------
@@ -603,6 +609,22 @@ def CM_Staah(cmdata,msrate,ftr,isellrange):
     return(availframe2,msrateframe)
 
 
+def CM_TB_Normal(cmdata,msrate,rateid,ftr,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_Maximojo')
+    cmdata.rename(columns={'Unnamed: 0': 'Date', 'Unnamed: 8': 'Minimum price', 'Avail': 'Rooms Avail To Sell Online'}, inplace=True)
+    cmdata['Date'] = pd.to_datetime(cmdata.Date, format='%d/%m/%Y')
+    cmdata['Date'] = pd.to_datetime(cmdata.Date, format='%Y-%m-%d')
+
+    dfa = cmdata[['Date', 'Rooms Avail To Sell Online']]
+    dfa = pd.DataFrame(dfa)
+    dfb = cmdata[['Date', ftr]]
+    dfb = pd.DataFrame(dfb)
+    dfb.rename(columns={ftr: 'Rate on CM'}, inplace=True)
+    dfb = pd.DataFrame(dfb)
+    return dfa, dfb
+
+
 def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:CMAs, SubModule:CM_Avails')
@@ -619,7 +641,10 @@ def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange):
         
     elif chman == 'eZee':
         dfa,dfb = CM_eZee(cmdata,ratepl, pcdata,ftr,isellrange, htlname)
-        
+
+    elif chman == 'TB':
+        dfa,dfb = CM_TB_Normal(cmdata,ratepl, pcdata,ftr,isellrange)
+
     elif chman == 'ResAvenue':
         print("ResAvenue - CM Availability and Rate Fetch")
         dfa,dfb = CM_ResAvenue(cmdata,pcdata,ftr,isellrange)
