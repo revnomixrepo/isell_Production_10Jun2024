@@ -295,6 +295,12 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
             pcdata=''
+        # TB: TravelBook Normal iSell
+        elif name_chman[names] == 'TB':
+            staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
+            cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xls')), skiprows=1)
+            staahfile['Rooms'] = 1
+            pcdata=''
         elif name_chman[names] == 'Djubo':
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')),skiprows=1)
             cmdata=''
@@ -311,6 +317,10 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             
             cmdata = pd.read_csv(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.csv')))
             if names == 'Hotel Emerald':
+                pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
+            elif names == 'The Emory Hotel':
+                pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
+            elif names == 'Xanadu Collection All Suite Hotel':
                 pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
             else:
                 pcdata=''
