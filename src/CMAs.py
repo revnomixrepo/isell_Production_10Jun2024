@@ -96,7 +96,6 @@ def TravelClick(rfile, ifile, ftr, msrate, rateplan, isellrange):
     return (inv_df, cm_df)
 
 
-
 def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:CMAs, SubModule:BookingHotel_CM')
@@ -298,7 +297,10 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     logging.debug('Module:CMAs, SubModule:CM_eZee')
     
     cmdata = pd.DataFrame(cmdata)
-    cmdata['Date'] = pd.to_datetime(cmdata['Date'],format="%d-%m-%Y")
+    try:
+        cmdata['Date'] = pd.to_datetime(cmdata['Date'],format="%d-%m-%Y")
+    except:
+         cmdata['Date'] = pd.to_datetime(cmdata['Date'],format="%Y-%m-%d")
     rmsdf = cmdata.loc[:,['Date','roomtype','availablity']]
     rmsdf.drop_duplicates(inplace=True)
     rmsdf2 = pd.DataFrame(rmsdf.groupby(['Date'])['availablity'].sum())
@@ -568,11 +570,61 @@ def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):
 
     return(df33,cm_df4)
 
-        
+def CM_Eglobe(cmdata,pcdata, ftr,msrate, ratepl,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_Eglobe')
+    cm_p = pd.DataFrame(pcdata)
+    cmdata1 = cm_p[cm_p['Channel'] == 'Booking.com']
+    cmdata1 = pd.DataFrame(cmdata1)
+    cmdata_room = cmdata1[cmdata1['Room'] == msrate]
+    cmdata_room = pd.DataFrame(cmdata_room)
+    df_cmdata = cmdata_room.transpose().reset_index()
+    new_header = df_cmdata.iloc[2]
+    df_cmdata = df_cmdata[3:]
+    df_cmdata.columns = new_header
+    df_cmdata.rename(columns={'Room':'Date'},inplace=True)
+    df_cmdata['Date']= pd.to_datetime(df_cmdata['Date'],format='%b %d %Y')
+    msratecode = msrate
+    cmfin11 = df_cmdata.loc[:, ['Date', msratecode]]
+    cmfin111 = cmfin11.rename(columns={cmfin11.columns[1]: 'Rate on CM'})
+    msrateframe = iSell_fun_02.frame(cmfin111, isellrange)
+
+
+    in_data = pd.DataFrame(cmdata)
+    in_data1 = in_data[in_data['Channel'] == 'Booking.com']
+    in_data1 = pd.DataFrame(in_data1)
+    in_data1 = in_data1.transpose().reset_index()
+
+    new_header = in_data1.iloc[2]
+    in_data1 = in_data1[3:]
+    in_data1.columns = new_header
+    #### Change Column Name And date format ####
+    in_data1.rename(columns={'Room':'Date'},inplace=True)
+    in_data1['Date1']= pd.to_datetime(in_data1['Date'],format='%b %d %Y')
+    in_data1 =in_data1.drop(['Date'],axis =1)
+    in_data1.rename(columns={'Date1':'Date'},inplace=True)
+    ### Changing Place on Date column ####
+    cols=in_data1.columns.tolist()
+    cols = cols[-1:] + cols[:-1]
+    in_data1 = in_data1[cols]
+    reqcols = list(in_data1.columns[1:])
+    in_data1['Rooms Avail To Sell Online'] = in_data1[reqcols].sum(axis=1)
+    cmfin3 = in_data1.loc[:, ['Date', 'Rooms Avail To Sell Online']]
+    availframe = iSell_fun_02.frame(cmfin3, isellrange)
+    fthrou = in_data1.loc[:, ['Date', ftr]]  # flowthrough
+    fthrou.columns = ['Date', ftr]
+    availframe2 = pd.merge(availframe, fthrou, on='Date', how='left')
+    logging.debug('Availability Frame ::')
+    logging.debug(availframe2)
+
+    logging.debug('RateonCM Frame ::')
+    logging.debug(msrateframe)
+
+    return availframe2, msrateframe
+
 def CM_Staah(cmdata,msrate,ftr,isellrange):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:CMAs, SubModule:CM_Staah')
-    
     cm2=pd.DataFrame(cmdata[cmdata.isnull().all(axis=1)])
     cm3=list(cm2.index)
     cmdata1=pd.DataFrame(cmdata.iloc[1:cm3[0],:])
@@ -642,7 +694,7 @@ def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange):
     elif chman == 'eZee':
         dfa,dfb = CM_eZee(cmdata,ratepl, pcdata,ftr,isellrange, htlname)
 
-    elif chman == 'TB':
+    elif chman in ['TB','TB1']:
         dfa,dfb = CM_TB_Normal(cmdata,ratepl, pcdata,ftr,isellrange)
 
     elif chman == 'ResAvenue':
@@ -654,7 +706,9 @@ def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange):
     elif chman == 'TravelClick':
         print("TravelClick - CM Availability and Rate Fetch")
         dfa, dfb = TravelClick(pcdata, cmdata, ftr, msrate, ratepl, isellrange)
-        
+    elif chman == 'Eglobe':
+        dfa, dfb = CM_Eglobe(cmdata,pcdata,ftr, msrate, ratepl, isellrange)
+
     logging.debug('availability and rateonCM frames returned to ProcessFlow')
     return(dfa,dfb)
 
