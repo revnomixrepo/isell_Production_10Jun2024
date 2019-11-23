@@ -238,10 +238,14 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         
         
         if name_chman[names] == 'Staah':
-            cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))            
+            cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
             staahfile.dropna(subset=['CheckIn Date','CheckOut Date'],inplace=True)
             pcdata=''
+        elif name_chman[names] == 'Eglobe':
+            cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
+            staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
+            pcdata = pd.read_excel(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.xlsx')))
         elif name_chman[names] == 'AxisRooms':
             staahfile = pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')))
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xls')))
@@ -296,7 +300,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
             pcdata=''
         # TB: TravelBook Normal iSell
-        elif name_chman[names] == 'TB':
+        elif name_chman[names] in ['TB','TB1']:
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xls')), skiprows=1)
             staahfile['Rooms'] = 1
@@ -410,7 +414,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             cmdata=''
             pcdata=''
 
-        elif name_chman[names] == 'Rategain':
+        elif name_chman[names] in ['Rategain','Rategain1']:
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata = ''
             pcdata = ''
@@ -620,7 +624,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             logging.info(cap)
             rmsavail,cmdf = CMAs.CM_Djubo(df_ttlsold,cap,isellrange)
 
-        elif name_chman[names] == 'Rategain':
+        elif name_chman[names] in ['Rategain','Rategain1']:
             cap = int(name_cap[names])
             logging.info(cap)
             rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
