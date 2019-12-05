@@ -12,7 +12,6 @@ def TBhnfconv(df_hnf,maxcap,isellrange):
     df_hnf2=frame(df_hnf,isellrange) 
     df_hnf2['Cap'] = int(maxcap)
     df_hnf2['Avail'] = df_hnf2['Cap'] - df_hnf2['Sold']
-    
     df_hnf3=df_hnf2.loc[:,['Date','Avail','Sold']]
     df_hnf3.rename(columns={'Avail':'Hotel Availability','Sold':'Hotel Sold'},inplace=True)
     df_hnf3.fillna(value=0,inplace=True)
@@ -41,7 +40,6 @@ def UKhnfconv(df_hnf,maxcap,isellrange):
 def hnfconv(hnf,totalcap,isellrange):
     hnf.dropna(axis=0, subset=['Date'],inplace=True)
     hnf.fillna(value=0,inplace=True)
-    
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:hnfconv')
     hnf['Date']=pd.to_datetime(hnf['Date'],format="%d-%b-%Y")
@@ -112,6 +110,18 @@ def frame(df1,isellrange):
     logging.debug("Merged with iSellFrame on 'Date' column ::")
     logging.debug(merged)
     return(merged)
+def frameMax(df1, isellrange):
+    df1 = pd.DataFrame(df1)
+    ddmmyy = datetime.now()
+    tday = ddmmyy.strftime("%b-%d-%Y")
+    index = pd.date_range(tday, periods=isellrange)
+    frame = pd.DataFrame({'Date': index})
+    df1 = pd.DataFrame(df1)
+    # df1['Date'] = pd.to_datetime(df1['Date'], format="%Y-%d-%m")
+    df1['Date'] = pd.to_datetime(df1['Date'])
+    merged = pd.merge(frame, df1, on='Date', how='left')
+    return (merged)
+
 
 def merging(df1,df2):
     logging.debug('------------------------------------------------------------')
@@ -308,24 +318,34 @@ def mergecol(df2):
 def cmreshape(df1):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:cmreshape')
-    
     new_header = df1.iloc[0] 
     cmdata11 = df1[1:] 
     cmdata11.columns = new_header
     cmdata111=cmdata11.T
     new_head = cmdata111.iloc[0]
     cmdatafin = cmdata111[1:] 
-    cmdatafin.columns = new_head 
-
+    cmdatafin.columns = new_head
     cmdatafin.reset_index(inplace=True)
     cmfin1=cmdatafin.rename(columns={cmdatafin.columns[0]:'Date'})
     cmfin1['Date'] = pd.to_datetime(cmfin1['Date'])
     return(cmfin1)
-    
+
+def cmreshapeMax(df1):
+    new_header = df1.iloc[1]
+    cmdata11 = df1[2:]
+    cmdata11.columns = new_header
+    cmdata111 = cmdata11.T
+    new_head = cmdata111.iloc[0]
+    cmdatafin = cmdata111[1:]
+    cmdatafin.columns = new_head
+    cmdatafin.reset_index(inplace=True)
+    cmfin1 = cmdatafin.rename(columns={cmdatafin.columns[0]: 'Date'})
+    cmfin1['Date'] = pd.to_datetime(cmfin1['Date'],format='%d-%m-%Y')
+    return (cmfin1)
+
 def seasonminmax(df1):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:seasonminmax')
-    
     df2=df1.iloc[[0,9]]
     df3=df2.loc[:,'Mon':]
     df4=df3.T
