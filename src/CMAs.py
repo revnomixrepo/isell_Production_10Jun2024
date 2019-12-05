@@ -660,6 +660,31 @@ def CM_Staah(cmdata,msrate,ftr,isellrange):
     
     return(availframe2,msrateframe)
 
+def CM_Staah_Max(cmdata, msrate, ftr, isellrange):
+    cm2 = pd.DataFrame(cmdata[cmdata.isnull().all(axis=1)])
+    cm3 = list(cm2.index)
+    cmdata1 = pd.DataFrame(cmdata.iloc[1:cm3[0], :])
+    cmdata2 = pd.DataFrame(cmdata.iloc[cm3[1] + 1:, :])
+    # strip
+    ll = list(cmdata2.columns)
+    cmdata1[ll[0]] = cmdata1[ll[0]].map(lambda x: x.strip())  # strip 1st column
+    msratecode = msrate
+    cmshaped = iSell_fun_02.cmreshapeMax(cmdata2)
+    cmfin11 = cmshaped.loc[:, ['Date', ftr]]
+    cmfin111 = cmfin11.rename(columns={cmfin11.columns[1]: 'Rate on CM'})
+    cmfin111['Date'] = pd.to_datetime(cmfin111['Date'], format="%Y-%d-%m")
+    cmfin111['Date'] = pd.to_datetime(cmfin111['Date'])
+    msrateframe = iSell_fun_02.frameMax(cmfin111, isellrange)
+    availshaped = iSell_fun_02.cmreshapeMax(cmdata1)
+    reqcols = list(availshaped.columns[1:])
+    availshaped['Rooms Avail To Sell Online'] = availshaped.loc[:, reqcols].sum(axis=1)
+    cmfin3 = availshaped.loc[:, ['Date', 'Rooms Avail To Sell Online']]
+    availframe = iSell_fun_02.frameMax(cmfin3, isellrange)
+    fthrou = availshaped.loc[:, ['Date', ftr]]  # flowthrough
+    fthrou.columns = ['Date', ftr]
+    availframe2 = pd.merge(availframe, fthrou, on='Date', how='left')
+    return (availframe2, msrateframe)
+
 
 def CM_TB_Normal(cmdata,msrate,rateid,ftr,isellrange):
     logging.debug('------------------------------------------------------------')
@@ -708,6 +733,8 @@ def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange):
         dfa, dfb = TravelClick(pcdata, cmdata, ftr, msrate, ratepl, isellrange)
     elif chman == 'Eglobe':
         dfa, dfb = CM_Eglobe(cmdata,pcdata,ftr, msrate, ratepl, isellrange)
+    elif chman == 'Staah Max':
+        dfa, dfb = CM_Staah_Max(cmdata,ftr, msrate, isellrange)
 
     logging.debug('availability and rateonCM frames returned to ProcessFlow')
     return(dfa,dfb)
