@@ -242,9 +242,9 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
             staahfile.dropna(subset=['CheckIn Date','CheckOut Date'],inplace=True)
             pcdata=''
-        if name_chman[names] == 'Staah Max':
+        elif name_chman[names] == 'Staah Max':
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
-            otafile= pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
+            otafile= pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')),header=2)
             otafile.dropna(subset=['Arrival Date', 'Departure Date'], inplace=True)
             staahfile  = pd.DataFrame(otafile)
             staahfile['Arrival Date'] = staahfile['Arrival Date'].str.split(',', expand=True)[0]
