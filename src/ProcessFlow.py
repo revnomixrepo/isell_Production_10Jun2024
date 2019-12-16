@@ -1030,7 +1030,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         #11)-------------------------# Drop col list #------------------------------
         if name_hnf[names] == 'Yes':
             #iSelldf10.drop('Rooms Avail To Sell Online',axis=1,inplace=True)
-			iSelldf10 = pd.DataFrame(iSelldf10)
+	    iSelldf10 = pd.DataFrame(iSelldf10)
         else:
             pass         
     
