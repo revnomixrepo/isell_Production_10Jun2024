@@ -242,9 +242,9 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
             staahfile.dropna(subset=['CheckIn Date','CheckOut Date'],inplace=True)
             pcdata=''
-        if name_chman[names] == 'Staah Max':
+        elif name_chman[names] == 'Staah Max':
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
-            otafile= pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
+            otafile= pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')),header=2)
             otafile.dropna(subset=['Arrival Date', 'Departure Date'], inplace=True)
             staahfile  = pd.DataFrame(otafile)
             staahfile['Arrival Date'] = staahfile['Arrival Date'].str.split(',', expand=True)[0]
@@ -334,9 +334,10 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                 pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
             elif names == 'Xanadu Collection All Suite Hotel':
                 pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
+			elif names == 'Kingfisher Casa':
+                pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
             else:
                 pcdata=''
-
         elif name_chman[names] == 'LeafDover':
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             cmData1 = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
@@ -1028,7 +1029,8 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         
         #11)-------------------------# Drop col list #------------------------------
         if name_hnf[names] == 'Yes':
-            iSelldf10.drop('Rooms Avail To Sell Online',axis=1,inplace=True)
+            #iSelldf10.drop('Rooms Avail To Sell Online',axis=1,inplace=True)
+	    iSelldf10 = pd.DataFrame(iSelldf10)
         else:
             pass         
     
