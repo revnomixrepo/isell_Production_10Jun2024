@@ -332,6 +332,9 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     elif htlname == 'Xanadu Collection All Suite Hotel':
         cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
         cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+    elif htlname == 'Kingfisher Casa':
+        cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+        cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
     else:
         cm_ezee4 = iSell_fun_02.frame(cm_ezee3, isellrange)
     #--------------------------------------------------------------------------

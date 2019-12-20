@@ -334,7 +334,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
                 pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
             elif names == 'Xanadu Collection All Suite Hotel':
                 pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
-			elif names == 'Kingfisher Casa':
+            elif names == 'Kingfisher Casa':
                 pcdata = pd.read_csv(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.csv')))
             else:
                 pcdata=''
