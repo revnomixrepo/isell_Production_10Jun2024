@@ -16,7 +16,7 @@ import csv
 import Leaf_Module as leaf
 
 
-def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
+def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag, mstr_flag='No', hnf_flag='No'):
     import logging
     
     from datetime import datetime
@@ -48,9 +48,19 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
     
     #----------------------Master Input Conditions---------------------      
 
-    inputmaster = pd.ExcelFile(accpath+'\\'+'InputConditionMaster_{}.xlsx'.format(accMan[0]))
-    
-    format2file = pd.read_excel(masterpath+'\\'+'Format2_iSells.xlsx')
+    if mstr_flag == 'Yes':
+        inputmaster = pd.ExcelFile(masterpth + '\\' + 'InputConditionMaster.xlsx')
+        inputdf2 = pd.read_excel(inputmaster, 'Accounts')  # Accounts Sheet
+        if hnf_flag == 'No':
+            inputdf2 = inputdf2[inputdf2['HNF'] == 'No']
+        elif hnf_flag == 'Yes':
+            inputdf2 = inputdf2[inputdf2['HNF'] == 'Yes']
+        else:
+            print('please select hnf flag')
+    else:
+        inputmaster = pd.ExcelFile(accpath + '\\' + 'InputConditionMaster_{}.xlsx'.format(accMan[0]))
+        inputdf2 = pd.read_excel(inputmaster, 'Accounts')  # Accounts Sheet
+    format2file = pd.read_excel(masterpath + '\\' + 'Format2_iSells.xlsx')
     format2isells = list(format2file['HotelNames'])
 
     
