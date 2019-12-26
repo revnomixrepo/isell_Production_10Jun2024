@@ -238,7 +238,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag):
         
         
         if name_chman[names] == 'Staah':
-            cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
+            cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xls')))
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xls')))
             staahfile.dropna(subset=['CheckIn Date','CheckOut Date'],inplace=True)
             pcdata=''
