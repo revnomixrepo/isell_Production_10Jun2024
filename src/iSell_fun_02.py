@@ -242,7 +242,7 @@ def dfLR(df1,chman):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:dfLR') 
     
-    if chman in ['UK','TravelBook']:
+    if chman in ['UK','TravelBook', 'BW']:
         df1.rename(columns={'Hotel Sold':'OTA_Sold'},inplace=True)
     else:
         pass

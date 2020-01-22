@@ -263,7 +263,9 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag, mstr_flag='No', 
         elif name_chman[names] == 'Eglobe':
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xlsx')))
             staahfile = pd.read_excel(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.xlsx')))
+            staahfile['Rooms'] = 1
             pcdata = pd.read_excel(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PC.xlsx')))
+
         elif name_chman[names] == 'AxisRooms':
             staahfile = pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')))
             cmdata = pd.read_excel(basepath+'\{}\{}\{}'.format('CM_Availability',tdayfold,names+str('_CM.xls')))
@@ -415,7 +417,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag, mstr_flag='No', 
                 logging.debug(cmrates2)
             
         
-        elif name_chman[names] == 'TravelBook':
+        elif name_chman[names] in ['TravelBook', 'BW']:
             pcdata=''
             staahfile = pd.read_csv(basepath+'\{}\{}\{}'.format('HNF',tdayfold,names+str('_HNF.csv')), delimiter =",", index_col=False, header=0, low_memory=False, quoting=csv.QUOTE_ALL,encoding='utf8')
             
@@ -574,7 +576,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag, mstr_flag='No', 
         
         #---------------------# df_total,df_ota,df_ttlsold #--------------------------------------------
         
-        if name_chman[names] in ['UK','TravelBook']:
+        if name_chman[names] in ['UK','TravelBook', 'BW']:
             pass   
             
             
@@ -668,7 +670,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag, mstr_flag='No', 
                 rmsavail,cmdf = CMAs.CM_UK(staahfile,cmrates2,name_msrate[names],isellrange)
 
             
-        elif name_chman[names] == 'TravelBook':
+        elif name_chman[names] in ['TravelBook', 'BW']:
             rmsavail,cmdf = CMAs.CM_TB(staahfile,cmrates2)           
             
         elif name_chman[names] == 'RezNext':
@@ -683,7 +685,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag, mstr_flag='No', 
         logging.info('Demand calendar and Availability merged ::')
         logging.debug(iSelldf1)
         
-        if name_chman[names] in ['UK','TravelBook']:
+        if name_chman[names] in ['UK','TravelBook', 'BW']:
             iSelldf2 = iSelldf1
         else:
             iSelldf2 = iSell_fun_02.merging(iSelldf1,otasold)
@@ -749,7 +751,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag, mstr_flag='No', 
         
         #5)---------------# OTA Revenue #------------------------------------------
         
-        if name_chman[names] in ['UK','TravelBook']:
+        if name_chman[names] in ['UK','TravelBook', 'BW']:
             iSelldf4=iSell_fun_02.merging(iSelldf2,cmdf)
             
             logging.info('\tRevenue, ADR, CM Rate Added !!!')
@@ -898,7 +900,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag, mstr_flag='No', 
                 
                 #-----------------------I)TB----------------------------------------------          
                         
-                elif name_chman[names] =='TravelBook':
+                elif name_chman[names] in ['TravelBook', 'BW']:
                     df_hnf = pd.read_csv(basepath+'\{}\{}\{}'.format('HNF',tdayfold,names+str('_HNF.csv')), delimiter =",", index_col=False, header=0, low_memory=False, quoting=csv.QUOTE_ALL,encoding='utf8')
                     htlsold,htlavail,oooflag = iSell_fun_02.TBhnfconv(df_hnf,name_maxcap[names],isellrange) 
                     
@@ -986,7 +988,7 @@ def Flow(masterpth,defaultpath,LRdate,accMan, accpath, logflag, mstr_flag='No', 
         iSelldf7.drop(['LAvg', 'CAvg'],axis=1,inplace=True)
         logging.info('Market Trend added !!!')
         
-        if name_chman[names] in ['UK','TravelBook']:
+        if name_chman[names] in ['UK','TravelBook', 'BW']:
             iSelldf7.rename(columns={'OTA Revenue':'Revenue'},inplace=True)
             logging.info('UK or TravelBook iSell dataframe ::')
             iSelldf8 = iSelldf7
