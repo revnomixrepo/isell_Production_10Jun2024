@@ -36,7 +36,9 @@ def Gridcreator(htl,isell,mnthminrates,wts,htlcluster,mnthjumps,jumpfact,jType,p
         logging.info('Undefined PricingType, It should be (Monthly/Seasonal)')
         sys.exit()          
     
-    jumpdict = {1:'Base',2:'Short',3:'High',4:'Long'}
+    # jumpdict = {1:'Base',2:'Short',3:'High',4:'Long'}
+    jumpfact1 =dict(zip(jumpfact['Val'],jumpfact['JumpName']))
+    jumpdict =jumpfact1
     logging.debug('Jump Dictionary ::')
     logging.debug(jumpdict)
     
