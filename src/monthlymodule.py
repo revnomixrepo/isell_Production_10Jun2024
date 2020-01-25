@@ -48,8 +48,8 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
     testisell['Dow_wt'] = testisell['Dow'].map(htl_dowWt)    
     
     #-----------------map monthly jump number with isell--------------------------
-    jumpdict = {1:'Base',2:'Short',3:'High',4:'Long'}
-    
+    # jumpdict = {1:'Base',2:'Short',3:'High',4:'Long'}
+    jumpdict =dict(zip(jumpfact['Val'],jumpfact['JumpName']))
     testisell['JumpNum'] = testisell['Month'].map(mnthJumpdict)
     #-----------------map jump names from numbers with isell----------------------
     testisell['Jump'] = testisell['JumpNum'].map(jumpdict)
