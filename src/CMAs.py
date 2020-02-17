@@ -71,6 +71,7 @@ def TravelClick(rfile, ifile, ftr, msrate, rateplan, isellrange):
 
     i_df['Date'].astype('datetime64[ns]')
     i_df['Date'] = pd.to_datetime(i_df['Date'])
+    i_df['Property level'] = np.where(i_df['Property level'].isnull, i_df['Total'], i_df['Property level'])
     i_df[[0, 1]] = i_df['Property level'].str.split('/', expand=True)
     i_df[0] = i_df[0].astype(int)
     i_df = i_df.rename(columns={0: 'Rooms Avail To Sell Online'})
