@@ -30,59 +30,63 @@ def ezee_new_pc_data(file, ratepaln):
 
     #------------returning only rateonCM from new eZee Extranet------------------
     logging.debug('RateonCM Frame (new eZee Extranet) ::')
-    logging.debug(df_rate) 
-    
+    logging.debug(df_rate)
+
     return df_rate
 
 
-def TravelClick(rfile, ifile, ftr, msrate, rateplan, isellrange):
+def TravelClick(rfile, ifile, cmdata2, ftr, msrate, rateplan, isellrange):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:CMAs, SubModule:TravelClick')
     tdate = datetime.today().date()
     year = tdate.year
     month = tdate.month
-
+    flr_date = tdate.strftime("%Y-%m-%d")
     # READ RATE FILE
     raw_rdf = pd.DataFrame(rfile)
-    raw_rdf = raw_rdf[raw_rdf['Ratetype'] == msrate]
+    raw_rdf = raw_rdf[raw_rdf['Rate Plan'] == msrate]
 
-    raw_rdf = raw_rdf[raw_rdf['Roomtype'] == ftr]
-    rt_df = raw_rdf[['Date', rateplan]]
+    raw_rdf = raw_rdf[raw_rdf['Room'] == ftr]
+    # raw_rdf = raw_rdf.loc[flr_date:, :]
+
+    rt_df = raw_rdf[['Stay Date', rateplan]]
     rt_df = pd.DataFrame(rt_df)
     rt_df = rt_df.rename(columns={rateplan: 'Rate on CM'})
+    rt_df = rt_df.rename(columns={'Stay Date': 'Date'})
     rt_df.Date = pd.to_datetime(rt_df.Date, format='%Y-%m-%d')
 
     # READ INVENTORY FILE
     i_df = pd.DataFrame(ifile)
-    i_df = i_df.rename(columns={'Room': 'Raw_Date'})
+    # i_df = i_df.loc[flr_date:, :]
+    cm_d = pd.DataFrame(cmdata2)
+    cm_d = cm_d[cm_d['Room'] == ftr]
+    # cm_d = cm_d.loc[flr_date:, :]
 
-    def date_conv(s):
-        s.strip()
-        i = s.split("/")
-        mm = str(i[0])
-        if int(mm) < month:
-            n_year = year + 1
-        else:
-            n_year = year
-        s = str(n_year) + str(s)
-        return s
-
-    i_df['Date'] = i_df['Raw_Date'].apply(lambda x: date_conv(str(x)))
-
+    i_df = i_df.rename(columns={'Stay Date': 'Date'})
+    i_df.Date = pd.to_datetime(i_df.Date, format='%Y-%m-%d')
+    cm_d = cm_d.rename(columns={'Stay Date': 'Date'})
+    # cm_d.Date = pd.to_datetime(cm_d.Date, format='%Y-%m-%d')
     i_df['Date'].astype('datetime64[ns]')
     i_df['Date'] = pd.to_datetime(i_df['Date'])
-    i_df['Property level'] = np.where(i_df['Property level'].isnull, i_df['Total'], i_df['Property level'])
-    i_df[[0, 1]] = i_df['Property level'].str.split('/', expand=True)
-    i_df[0] = i_df[0].astype(int)
-    i_df = i_df.rename(columns={0: 'Rooms Avail To Sell Online'})
+    # i_df['Property level'] = np.where(i_df['Property level'].isnull, i_df['Total'], i_df['Property level'])
+    # i_df[[0, 1]] = i_df['Property level'].str.split('/', expand=True)
+    # i_df[0] = i_df[0].astype(int)
+    i_df = i_df.rename(columns={'Available': 'Rooms Avail To Sell Online'})
+
     inv_df = i_df[['Date', 'Rooms Avail To Sell Online']]
 
-    flt_df = i_df[['Date', ' ' + ftr + ' ']]
-    flt_df = pd.DataFrame(flt_df)
-    flt_df[[0, 1]] = pd.DataFrame(flt_df[' ' + ftr + ' '].str.split('/', expand=True))
-    flt_df[0] = flt_df[0].astype(int)
-    flt_df = flt_df.rename(columns={0: ftr})
-    flt_df = flt_df[['Date', ftr]]
+    # flt_df = i_df[['Date', ' ' + ftr + ' ']]
+    # flt_df = pd.DataFrame(flt_df)
+    # flt_df[[0, 1]] = pd.DataFrame(flt_df[' ' + ftr + ' '].str.split('/', expand=True))
+    # flt_df[0] = flt_df[0].astype(int)
+    # flt_df = flt_df.rename(columns={0: ftr})
+    cm_d['Date'].astype('datetime64[ns]')
+
+
+    cm_d['Date'] = pd.to_datetime(cm_d['Date'])
+    cm_d = cm_d.rename(columns={'Available': ftr})
+    flt_df = cm_d[['Date', ftr]]
+    # flt_df = flt_df[['Date', ftr]]
     rt_df = iSell_fun_02.frame(rt_df, isellrange)
     inv_df = iSell_fun_02.frame(inv_df, isellrange)
     flt_df = iSell_fun_02.frame(flt_df, isellrange)
@@ -734,7 +738,7 @@ def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange):
         dfa,dfb = BookingHotel_CM(pcdata, cmdata, ftr, msrate, isellrange)
     elif chman == 'TravelClick':
         print("TravelClick - CM Availability and Rate Fetch")
-        dfa, dfb = TravelClick(pcdata, cmdata, ftr, msrate, ratepl, isellrange)
+        dfa, dfb = TravelClick(pcdata, cmdata,cmdata2, ftr, msrate, ratepl, isellrange)
     elif chman == 'Eglobe':
         dfa, dfb = CM_Eglobe(cmdata,pcdata,ftr, msrate, ratepl, isellrange)
     elif chman == 'Staah Max':

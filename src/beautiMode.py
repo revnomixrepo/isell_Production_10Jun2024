@@ -359,7 +359,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     worksheet.insert_image('A2', defaultpath+r'\masters\logo\isell.jpg',{'x_offset': 15, 'y_offset': 0,'x_scale': 0.65, 'y_scale': 0.65})
     logging.debug("isell image inserted")
     
-    if htlname in ['Getfam Hotel Addis Ababa', 'Best Western Plus Westlands']:
+    if htlname in ['Getfam Hotel Addis Ababa', 'Best Western Plus Westlands', 'Hakuna Majiwe Beach Lodge', 'Moja Tuu Luxury Villas & Nature Retreat']:
         worksheet.insert_image('G2', defaultpath+r'\masters\logo\Aleph.png',{'x_offset': 15, 'y_offset': 0,'x_scale': 0.85, 'y_scale': 0.85})
         logging.debug("getfam logo inserted")
     else:
