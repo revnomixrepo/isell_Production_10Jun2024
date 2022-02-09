@@ -156,8 +156,23 @@ def dfconv(stdpth,cmfile2,htl,chman):
     logging.debug("Dropped rows having 'CheckIn','CheckOut' values blank") 
     
     cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'],format="{}".format(dtformat['CheckIn']))
-    cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'],format="{}".format(dtformat['CheckOut']))
-    logging.debug("Set dateformats as per 'Date Format mapping'") 
+    try:
+        cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'],format="{}".format(dtformat['CheckOut']))
+    except:
+        cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'],format="%d-%m-%Y")
+
+
+    cmfile2['CheckIn'] = cmfile2['CheckIn'].dt.floor('d')
+    cmfile2['CheckOut'] = cmfile2['CheckOut'].dt.floor('d')
+
+    # # YK, added for datetime con to match frame and occ date.
+    # cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'], format="{}".format(dtformat['CheckIn'])).dt.strftime(('%Y-%m-%d'))
+    # cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'], format="{}".format(dtformat['CheckOut'])).dt.strftime(('%Y-%m-%d'))
+    # cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'])
+    # cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'])
+
+
+    logging.debug("Set dateformats as per 'Date Format mapping'")
     
     logging.debug("DataFrame before exploading the dates ::")
     logging.debug(cmfile2)
@@ -192,7 +207,7 @@ def dfconv(stdpth,cmfile2,htl,chman):
     
     df_date['Status'].fillna(value='Cancelled',inplace=True)
     logging.debug("Replaced Blank Status values with 'Cancelled'")
-    
+     
     df_date['statuscode'] = df_date['Status'].map(statuscode)
     logging.debug("statuscode binary column added by mapping Status in data with statuscode dictionary")
 
@@ -207,7 +222,14 @@ def dfconv(stdpth,cmfile2,htl,chman):
     #Add LOS , ADR, RPD
     df_date3['LOS'] = (df_date3['CheckOut'] - df_date3['CheckIn']).apply(lambda x: x/np.timedelta64(1,'D')) #Length of stay
     logging.debug("LOS column added where LOS = CheckOut - CheckIn")
-     
+
+     ### Y.K. 07"Dec Below function added for total amount & no. rooms column to conv object into required dtype.
+    try:
+        df_date3["Total_Amount"] = df_date3["Total_Amount"].str.replace(',', '').astype(float)
+        df_date3["No_of_Rooms"] = df_date3["No_of_Rooms"].astype(np.int64)
+    except:
+        pass
+
     df_date3['RevPD'] = df_date3.loc[:,'Total_Amount'].div(df_date3.loc[:,'LOS'])  #Rev per Day
     logging.debug("RevPD column added where RevPD = Total_Amount/LOS")
     
@@ -365,6 +387,7 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
     
     df_rcp_season['rate_dif']= (df_rcp_season['max_rate'] - df_rcp_season['min_rate'])
     logging.debug('rate_dif column added , where rate_dif = max_rate - min_rate')
+    df_rcp_season =df_rcp_season.rename(columns={"Available Rooms": "Rooms Avail To Sell Online"})  #Y.K. addded for testing
     df_rcp_season['ota_max']= (df_rcp_season['Rooms Avail To Sell Online'] + df_rcp_season['OTA_Sold'])
     logging.debug('ota_max column added , where ota_max = Rooms Avail To Sell Online + OTA_Sold')
 #    Changed by Sameer Kulkarni on 10-OCT-2018

@@ -6,7 +6,7 @@ import ProcessFlow
 # ==============================================================================
 
 # ----------All_In_One_iSell folder structure path------------------------------
-stdpth = r'E:\All_In_One_iSell'
+stdpth = r'C:\All_In_One_iSell'
 splitpath = r"D:"
 path = stdpth+r'\masters'
 
