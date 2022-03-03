@@ -280,6 +280,13 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             staahfile['Arrival Date'] = staahfile['Arrival Date'].str.split(',', expand=True)[0]
             staahfile['Departure Date'] = staahfile['Departure Date'].str.split(',', expand=True)[0]
             pcdata = ''
+
+            if names == "Hotel EnglishPoint & Spa":
+                staahfile["Total Amount: (All Inclusive)"] = np.where(staahfile['Room Type'].str.contains('KES', regex=True),
+                                                               staahfile["Total Amount: (All Inclusive)"] * 0.0088,
+                                                               staahfile["Total Amount: (All Inclusive)"])
+
+
         elif name_chman[names] == 'Eglobe':
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))

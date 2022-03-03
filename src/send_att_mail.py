@@ -13,13 +13,14 @@ def send_alert_msg(beautipth,h_name,name_accman,email_id,number,date,tdayfold):
     fileToSend = beautipth + '/'+ tdayfold +'/' + name_accman
     filename='iSell_{}_{}.xlsx'.format(h_name,date)
     # fileToSend = "hi.csv"
-    username = 'paritosh.palkar@revnomix.com'
-    password = 'pari#2103'
+    username = 'revseed@revnomix.com'
+    password = 'Revenue@123'
     recipients = email_id
+    alias = 'revnomix.RMS@revnomix.com'
 
 
     msg = MIMEMultipart()
-    msg['From'] = username
+    msg['From'] = alias
     msg['To'] = ' ,'.join([str(elem) for elem in recipients.split(',')[:int(-number)]])
     msg['Cc'] = ' ,'.join([str(elem) for elem in recipients.split(',')[int(-number):]])
     msg["Subject"] = 'iSell ' +  ' | '  +  h_name  +  ' | '   + date
@@ -60,7 +61,7 @@ def send_alert_msg(beautipth,h_name,name_accman,email_id,number,date,tdayfold):
     server = smtplib.SMTP("smtp.gmail.com",587)
     server.starttls()
     server.login(username,password)
-    server.sendmail(username,  recipients.split(','), msg.as_string())
+    server.sendmail(msg['From'],  recipients.split(','), msg.as_string())
     server.quit()
 # if __name__ =='__main__':
 

@@ -582,7 +582,15 @@ def CM_Eglobe(cmdata,pcdata, ftr,msrate, ratepl,isellrange):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:CMAs, SubModule:CM_Eglobe')
     cm_p = pd.DataFrame(pcdata)
-    cmdata1 = cm_p[cm_p['Channel'] == 'Booking.com']
+    cmdata2 = cm_p[cm_p['Channel'] == 'Booking.com']
+    cmdata_ = cmdata2.iloc[:, 3:].fillna(0)                                                 #Y.K. 09"feb
+    if all(i == 0 for j in cmdata_.values.tolist() for i in j):
+        cmdata1 = cm_p[cm_p['Channel'] == 'GoIBIBO MMT V3']
+        # print(True)
+    else:
+        cmdata1 = cmdata2
+        # print(False)                                                                       ##
+
     cmdata1 = pd.DataFrame(cmdata1)
     cmdata_room = cmdata1[cmdata1['Room'] == msrate]
     cmdata_room = pd.DataFrame(cmdata_room)
