@@ -16,7 +16,7 @@ def send_alert_msg(beautipth,h_name,name_accman,email_id,number,date,tdayfold):
     username = 'revseed@revnomix.com'
     password = 'Revenue@123'
     recipients = email_id
-    alias = 'revnomix.RMS@revnomix.com'
+    alias = 'Revnomix Revenue Management Services <revnomix.RMS@revnomix.com>'
 
 
     msg = MIMEMultipart()

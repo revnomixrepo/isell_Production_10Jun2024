@@ -363,6 +363,9 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     if htlname in ['Getfam Hotel Addis Ababa', 'Best Western Plus Westlands', 'Hakuna Majiwe Beach Lodge', 'Moja Tuu Luxury Villas & Nature Retreat']:
         worksheet.insert_image('G2', defaultpath+r'\masters\logo\Aleph.png',{'x_offset': 15, 'y_offset': 0,'x_scale': 0.85, 'y_scale': 0.85})
         logging.debug("getfam logo inserted")
+    elif htlname in ['The Boutique Hotel Museum']:
+        worksheet.insert_image('G2', defaultpath+r'\masters\logo\Hotelwise.png',{'x_offset': 15, 'y_offset': 0,'x_scale': 0.85, 'y_scale': 0.85})
+        logging.debug("getfam logo inserted")
     else:
         worksheet.insert_image('G2', defaultpath+r'\masters\logo\logo.jpg',{'x_offset': 15, 'y_offset': 0,'x_scale': 0.85, 'y_scale': 0.85})
         logging.debug("isell logo inserted")

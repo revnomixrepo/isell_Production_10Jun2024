@@ -232,8 +232,9 @@ def dfconv(stdpth,cmfile2,htl,chman):
 
     df_date3['RevPD'] = df_date3.loc[:,'Total_Amount'].div(df_date3.loc[:,'LOS'])  #Rev per Day
     logging.debug("RevPD column added where RevPD = Total_Amount/LOS")
-    
+
     df_date3['ADR'] = df_date3.loc[:,'Total_Amount'].div(df_date3.loc[:,'LOS']*df_date3.loc[:,'No_of_Rooms']) #Average Daily Rate
+
     logging.debug("ADR(Average Daily Rate) column added where ADR = Total_Amount/(LOS x No_of_Rooms) ::")
     logging.debug(df_date3)
 
@@ -441,7 +442,13 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
     #--------------------------------------------------------------------------------------------------------------------------   
     
         
-    df_rcp_season['rcp']= (((df_rcp_season['rate_dif']*df_rcp_season['numarator'])/df_rcp_season['denominator'])*df_rcp_season['ratio_top']) + df_rcp_season['min_rate']
+    #df_rcp_season['rcp']= (((df_rcp_season['rate_dif']*df_rcp_season['numarator'])/df_rcp_season['denominator'])*df_rcp_season['ratio_top']) + df_rcp_season['min_rate']
+    
+    df_rcp_season['rcp_incre']= (((df_rcp_season['rate_dif']*df_rcp_season['numarator'])/df_rcp_season['denominator'])*df_rcp_season['ratio_top'])
+    
+    df_rcp_season['rcp']= np.where(df_rcp_season['rcp_incre'] <= 0, df_rcp_season['min_rate'], df_rcp_season['rcp_incre'] + df_rcp_season['min_rate'])
+    
+    
     logging.debug('rcp column calculated')
     #remove cussion limit for HNF
 #    df_rcp_season['rcp']= ((df_rcp_season['rate_dif']*df_rcp_season['numarator'])/df_rcp_season['denominator']) + df_rcp_season['min_rate']
@@ -525,8 +532,9 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
             logging.debug('usefloor = 0 , no setting of floor rate')
             pass
         #---------------------------------------------------------------------------------------       
+        # df_rcp_season = df_rcp_season['Rate on CM'].astype("int64")
         df_rcp_season['rcp']=np.where(df_rcp_season['rcp'] == df_rcp_season['Rate on CM'],np.nan,df_rcp_season['rcp'])
-                    
+
         recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
         

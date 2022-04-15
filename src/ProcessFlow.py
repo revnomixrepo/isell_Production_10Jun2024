@@ -14,8 +14,10 @@ import GRID as grid
 import simpleRecs as simp
 import csv
 import Leaf_Module as leaf
-
+import warnings
+warnings.filterwarnings('ignore')
 import send_att_mail as mail
+
 def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No', hnf_flag='No'):
     import logging
 
@@ -238,6 +240,17 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')))
             staahfile.dropna(subset=['CheckIn Date', 'CheckOut Date'], inplace=True)
+
+            # try:
+            #     staahfile.dropna(subset=['CheckIn Date', 'CheckOut Date'], inplace=True)
+            # except:
+            #     staahfile.columns = staahfile.iloc[1]
+            #     staahfile = staahfile[3:]
+            #     try:
+            #         staahfile.dropna(subset=['Arrival Date', 'Departure Date'], inplace=True)
+            #     except:
+            #         staahfile.dropna(subset=['CheckIn Date', 'CheckOut Date'], inplace=True)
+
             pcdata = ''
             cmdata2=''
 
@@ -271,9 +284,16 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             pcdata = ''
 
         elif name_chman[names] == 'Staah Max':
-            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
-            otafile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')),
-                                    header=2)
+            try:
+                cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
+            except:
+                cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')),encoding="latin1")
+
+            try:
+                otafile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')),header=2)
+            except:
+                otafile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')),header=2)
+
             cmdata2=''
             otafile.dropna(subset=['Arrival Date', 'Departure Date'], inplace=True)
             staahfile = pd.DataFrame(otafile)
@@ -376,6 +396,14 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                                       skiprows=1)
             cmdata = ''
             pcdata = ''
+
+        elif name_chman[names] == 'Ease Room':
+            # cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
+            cmdata = ''
+            cmdata2 = ''
+            pcdata = ''
+
         elif name_chman[names] == 'eZee':
             checkIn = dict(zip(ezeedates['Hotel'], ezeedates['Checkin']))
             checkOut = dict(zip(ezeedates['Hotel'], ezeedates['Checkout']))
@@ -718,6 +746,12 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             logging.info(cap)
             rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
 
+        elif name_chman[names] in ['Ease Room']:
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
+
+
         elif name_chman[names] in ['Synxis']:
             cap = int(name_cap[names])
             logging.info(cap)
@@ -1027,6 +1061,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                         except FileNotFoundError:
                             logging.info(
                                 'HNF Not Found please update HNF or set No in HNF column of Input Conditions Master')
+                            print('HNF Not Found please update HNF or set No in HNF column of Input Conditions Master')
                             sys.exit()
 
                         logging.info("\tHNF read for {}".format(names))
