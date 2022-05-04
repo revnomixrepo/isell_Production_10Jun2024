@@ -297,63 +297,153 @@ def CM_ResAvenue(cmdata,pcdata,ftr,isellrange):
     return(ddf9,df6)
 
 
+# def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
+#     logging.debug('------------------------------------------------------------')
+#     logging.debug('Module:CMAs, SubModule:CM_eZee')
+#
+#     cmdata = pd.DataFrame(cmdata)
+#     try:
+#         cmdata['Date'] = pd.to_datetime(cmdata['Date'],format="%d-%m-%Y")
+#     except:
+#          cmdata['Date'] = pd.to_datetime(cmdata['Date'],format="%Y-%m-%d")
+#     rmsdf = cmdata.loc[:,['Date','roomtype','availablity']]
+#     rmsdf.drop_duplicates(inplace=True)
+#     rmsdf2 = pd.DataFrame(rmsdf.groupby(['Date'])['availablity'].sum())
+#     rmsdf2.reset_index(inplace=True)
+#     rmsdf2.rename(columns={'availablity':'Rooms Avail To Sell Online'},inplace=True)
+#     rmsdf3= rmsdf2.loc[:,['Date','Rooms Avail To Sell Online']]
+#     rmsdf4 = iSell_fun_02.frame(rmsdf3,isellrange)
+#
+#     #---------------------FTR Frame -----------------
+#     rmsdff = pd.DataFrame(rmsdf[rmsdf['roomtype']==ftr])
+#     rmsdff.drop(['roomtype'],axis=1,inplace=True)
+#     rmsdff.rename(columns={'availablity':ftr},inplace=True)
+#
+#     #-------------merging--------------------------------
+#     rmsdf444 = pd.merge(rmsdf4,rmsdff,on='Date',how='left')
+#
+#     cm_ezee2 = cmdata[cmdata['rateplan'] == ratepl]
+#     cm_ezee3 = cm_ezee2.loc[:,['Date','baserate']]
+#     cm_ezee3['Date']=pd.to_datetime(cm_ezee3['Date'])
+#     cm_ezee3.rename(columns={'baserate':'Rate on CM'},inplace=True)
+#
+#     #------------------change by Chakradhar------------------------------------
+#     if htlname == 'Hotel Emerald':
+#         cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+#         cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+#     elif htlname == 'The Emory Hotel':
+#         cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+#         cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+#     elif htlname == 'Xanadu Collection All Suite Hotel':
+#         cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+#         cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+#     elif htlname == 'Leisure Lodge Beach & Golf Resort':
+#         cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+#         cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+#     else:
+#         cm_ezee4 = iSell_fun_02.frame(cm_ezee3, isellrange)
+#     #--------------------------------------------------------------------------
+#
+#     rmsdf444.drop_duplicates(subset='Date', inplace=True)
+#     cm_ezee4.drop_duplicates(subset='Date', inplace=True)
+#
+#     logging.debug('Availability Frame ::')
+#     logging.debug(rmsdf444)
+#
+#     logging.debug('RateonCM Frame ::')
+#     logging.debug(cm_ezee4)
+#
+#     return(rmsdf444,cm_ezee4)
+
 def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:CMAs, SubModule:CM_eZee')
 
     cmdata = pd.DataFrame(cmdata)
+    cmdata = cmdata[cmdata['Room Type'] == ftr]
+    in_data1 = cmdata.drop(columns=['Room Type ID', 'Rate Plan ID', 'Rate Plan', 'Operation'])
+    in_data1 = in_data1.transpose().reset_index()
+    new_header = in_data1.iloc[0]
+    in_data1.columns = new_header
+    in_data1 = in_data1.iloc[1:, :]
+
+    # df_cmdata.rename(columns={'Room Type': 'Date'}, inplace=True)
+    # try:
+    #     df_cmdata['Date'] = pd.to_datetime(df_cmdata['Date'], format='@%Y-%m-%d')
+    # except:
+    #     df_cmdata['Date'] = pd.to_datetime(df_cmdata['Date'], format='%Y-%m-%d')
+    # df_cmdata = pd.DataFrame(df_cmdata)
+
+    # df_cmdata = df_cmdata.loc[:, ['Date', ftr]]
+    # df_cmdata.rename(columns={ftr: 'Rooms Avail To Sell Online'}, inplace=True)
+    # df_cmdata = iSell_fun_02.frame(df_cmdata,isellrange)
+    # new_header = in_data1.iloc[2]
+    # in_data1 = in_data1[3:]
+    # in_data1.columns = new_header
+    #### Change Column Name And date format ####
+    in_data1.rename(columns={'Room Type': 'Date'}, inplace=True)
+
     try:
-        cmdata['Date'] = pd.to_datetime(cmdata['Date'],format="%d-%m-%Y")
+        in_data1['Date1'] = pd.to_datetime(in_data1['Date'], format='@%Y-%m-%d')
     except:
-         cmdata['Date'] = pd.to_datetime(cmdata['Date'],format="%Y-%m-%d")
-    rmsdf = cmdata.loc[:,['Date','roomtype','availablity']]
-    rmsdf.drop_duplicates(inplace=True)
-    rmsdf2 = pd.DataFrame(rmsdf.groupby(['Date'])['availablity'].sum())
-    rmsdf2.reset_index(inplace=True)
-    rmsdf2.rename(columns={'availablity':'Rooms Avail To Sell Online'},inplace=True)
-    rmsdf3= rmsdf2.loc[:,['Date','Rooms Avail To Sell Online']]
-    rmsdf4 = iSell_fun_02.frame(rmsdf3,isellrange)
+        in_data1['Date1'] = pd.to_datetime(in_data1['Date'], format='%Y-%m-%d')
 
-    #---------------------FTR Frame -----------------
-    rmsdff = pd.DataFrame(rmsdf[rmsdf['roomtype']==ftr])
-    rmsdff.drop(['roomtype'],axis=1,inplace=True)
-    rmsdff.rename(columns={'availablity':ftr},inplace=True)
+    in_data1 = in_data1.drop(['Date'], axis=1)
+    in_data1.rename(columns={'Date1': 'Date'}, inplace=True)
+    ### Changing Place on Date column ####
+    cols = in_data1.columns.tolist()
+    cols = cols[-1:] + cols[:-1]
+    in_data1 = in_data1[cols]
+    reqcols = list(in_data1.columns[1:])
+    in_data1['Rooms Avail To Sell Online'] = in_data1[reqcols].sum(axis=1)
+    cmfin3 = in_data1.loc[:, ['Date', 'Rooms Avail To Sell Online']]
+    availframe = iSell_fun_02.frame(cmfin3, isellrange)
+    fthrou = in_data1.loc[:, ['Date', ftr]]  # flowthrough
+    fthrou.columns = ['Date', ftr]
+    availframe2 = pd.merge(availframe, fthrou, on='Date', how='left')
 
-    #-------------merging--------------------------------
-    rmsdf444 = pd.merge(rmsdf4,rmsdff,on='Date',how='left')
+    pc_ezee = ezee_new_pc_data(pcdata, ratepl)
+    pc_ezee_frame = iSell_fun_02.frame(pc_ezee, isellrange)
 
-    cm_ezee2 = cmdata[cmdata['rateplan'] == ratepl]
-    cm_ezee3 = cm_ezee2.loc[:,['Date','baserate']]
-    cm_ezee3['Date']=pd.to_datetime(cm_ezee3['Date'])
-    cm_ezee3.rename(columns={'baserate':'Rate on CM'},inplace=True)
+    # #---------------------FTR Frame -----------------
+    # rmsdff = pd.DataFrame(rmsdf[rmsdf['roomtype']==ftr])
+    # rmsdff.drop(['roomtype'],axis=1,inplace=True)
+    # rmsdff.rename(columns={'availablity':ftr},inplace=True)
+    #
+    # #-------------merging--------------------------------
+    # rmsdf444 = pd.merge(rmsdf4,rmsdff,on='Date',how='left')
+    # cm_ezee2 = cmdata[cmdata['rateplan'] == ratepl]
+    # cm_ezee3 = cm_ezee2.loc[:,['Date','baserate']]
+    # cm_ezee3['Date']=pd.to_datetime(cm_ezee3['Date'])
+    # cm_ezee3.rename(columns={'baserate':'Rate on CM'},inplace=True)
 
     #------------------change by Chakradhar------------------------------------
-    if htlname == 'Hotel Emerald':
-        cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
-        cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
-    elif htlname == 'The Emory Hotel':
-        cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
-        cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
-    elif htlname == 'Xanadu Collection All Suite Hotel':
-        cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
-        cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
-    elif htlname == 'Leisure Lodge Beach & Golf Resort':
-        cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
-        cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
-    else:
-        cm_ezee4 = iSell_fun_02.frame(cm_ezee3, isellrange)
+    # if htlname == 'Hotel Emerald':
+    #     cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+    #     cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+    # elif htlname == 'The Emory Hotel':
+    #     cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+    #     cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+    # elif htlname == 'Xanadu Collection All Suite Hotel':
+    #     cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+    #     cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+    # elif htlname == 'Leisure Lodge Beach & Golf Resort':
+    #     cm_ezee5 = ezee_new_pc_data(pcdata, ratepl)
+    #     cm_ezee4 = iSell_fun_02.frame(cm_ezee5, isellrange)
+    # else:
+    #     cm_ezee4 = iSell_fun_02.frame(cm_ezee3, isellrange)
     #--------------------------------------------------------------------------
 
-    rmsdf444.drop_duplicates(subset='Date', inplace=True)
-    cm_ezee4.drop_duplicates(subset='Date', inplace=True)
+    # df_cmdata.drop_duplicates(subset='Date', inplace=True)
+    # cm_ezee4.drop_duplicates(subset='Date', inplace=True)
 
-    logging.debug('Availability Frame ::')
-    logging.debug(rmsdf444)
+    logging.debug('Rooms Avail To Sell Online ::')
+    logging.debug(availframe2)
 
     logging.debug('RateonCM Frame ::')
-    logging.debug(cm_ezee4)
+    logging.debug(pc_ezee_frame)
 
-    return(rmsdf444,cm_ezee4)
+    return(availframe2,pc_ezee_frame)
 
 
 def CM_UK(otadata,cmrate,msrate,isellrange):

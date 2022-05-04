@@ -404,6 +404,31 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             cmdata2 = ''
             pcdata = ''
 
+        # elif name_chman[names] == 'eZee':
+        #     checkIn = dict(zip(ezeedates['Hotel'], ezeedates['Checkin']))
+        #     checkOut = dict(zip(ezeedates['Hotel'], ezeedates['Checkout']))
+        #
+        #     staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+        #     staahfile.dropna(axis=0, subset=['Arrival', 'Dept'], inplace=True)
+        #     staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'], format=checkIn[names])
+        #     staahfile['Dept'] = pd.to_datetime(staahfile['Dept'], format=checkOut[names])
+        #     staahfile['Rooms'] = 1
+        #
+        #     cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
+        #     cmdata2=''
+        #     if names == 'Hotel Emerald':
+        #         pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+        #     elif names == 'The Emory Hotel':
+        #         pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+        #     elif names == 'Xanadu Collection All Suite Hotel':
+        #         pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+        #     elif names == 'Kingfisher Casa':
+        #         pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+        #     elif names == 'Leisure Lodge Beach & Golf Resort':
+        #         pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+        #     else:
+        #         pcdata = ''
+
         elif name_chman[names] == 'eZee':
             checkIn = dict(zip(ezeedates['Hotel'], ezeedates['Checkin']))
             checkOut = dict(zip(ezeedates['Hotel'], ezeedates['Checkout']))
@@ -415,19 +440,27 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             staahfile['Rooms'] = 1
 
             cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
-            cmdata2=''
-            if names == 'Hotel Emerald':
-                pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            elif names == 'The Emory Hotel':
-                pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            elif names == 'Xanadu Collection All Suite Hotel':
-                pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            elif names == 'Kingfisher Casa':
-                pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            elif names == 'Leisure Lodge Beach & Golf Resort':
-                pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            else:
+            cmdata2 = ''
+
+            try:
+                pcdata = pd.read_csv(
+                    basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))  ##
+            except:
                 pcdata = ''
+
+            # if names == 'Theory9 Premium Service Apts, Khar West':
+            #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+            # elif names == 'The Emory Hotel':
+            #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+            # elif names == 'Xanadu Collection All Suite Hotel':
+            #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+            # elif names == 'Kingfisher Casa':
+            #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+            # elif names == 'Leisure Lodge Beach & Golf Resort':
+            #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+            # else:
+            #     pcdata = ''
+
         elif name_chman[names] == 'LeafDover':
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             cmData1 = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
