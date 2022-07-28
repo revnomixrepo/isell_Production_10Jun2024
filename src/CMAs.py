@@ -360,47 +360,25 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     logging.debug('Module:CMAs, SubModule:CM_eZee')
 
     cmdata = pd.DataFrame(cmdata)
-    cmdata = cmdata[cmdata['Room Type'] == ftr]
-    in_data1 = cmdata.drop(columns=['Room Type ID', 'Rate Plan ID', 'Rate Plan', 'Operation'])
-    in_data1 = in_data1.transpose().reset_index()
-    new_header = in_data1.iloc[0]
-    in_data1.columns = new_header
-    in_data1 = in_data1.iloc[1:, :]
-
-    # df_cmdata.rename(columns={'Room Type': 'Date'}, inplace=True)
-    # try:
-    #     df_cmdata['Date'] = pd.to_datetime(df_cmdata['Date'], format='@%Y-%m-%d')
-    # except:
-    #     df_cmdata['Date'] = pd.to_datetime(df_cmdata['Date'], format='%Y-%m-%d')
-    # df_cmdata = pd.DataFrame(df_cmdata)
-
-    # df_cmdata = df_cmdata.loc[:, ['Date', ftr]]
-    # df_cmdata.rename(columns={ftr: 'Rooms Avail To Sell Online'}, inplace=True)
-    # df_cmdata = iSell_fun_02.frame(df_cmdata,isellrange)
-    # new_header = in_data1.iloc[2]
-    # in_data1 = in_data1[3:]
-    # in_data1.columns = new_header
-    #### Change Column Name And date format ####
-    in_data1.rename(columns={'Room Type': 'Date'}, inplace=True)
-
+    cmdata = cmdata.replace("-", np.nan)
+    cmdata.dropna(axis=1, how='all', inplace=True)
+    cmdata = cmdata.dropna(subset=["Room Type"])
+    cmdata = cmdata.drop(columns=['Room Type ID', 'Operation'])
+    cmdata1 = cmdata.transpose().reset_index()
+    cmdata1.columns = cmdata1.iloc[0]
+    cmdata1 = cmdata1.iloc[1:, :].reset_index(drop=True)
+    cmdata1.rename(columns={'Room Type': 'Date'}, inplace=True)
     try:
-        in_data1['Date1'] = pd.to_datetime(in_data1['Date'], format='@%Y-%m-%d')
+        cmdata1['Date'] = pd.to_datetime(cmdata1['Date'], format='@%Y-%m-%d')
     except:
-        in_data1['Date1'] = pd.to_datetime(in_data1['Date'], format='%Y-%m-%d')
+        cmdata1['Date'] = pd.to_datetime(cmdata1['Date'], format='%Y-%m-%d')
+    cmdata1["Rooms Avail To Sell Online"] = cmdata1.iloc[:, 1:].astype('int64').sum(axis=1)
+    # cmdata_ = cmdata1[cmdata1.columns[~cmdata1.columns == ftr]]
 
-    in_data1 = in_data1.drop(['Date'], axis=1)
-    in_data1.rename(columns={'Date1': 'Date'}, inplace=True)
-    ### Changing Place on Date column ####
-    cols = in_data1.columns.tolist()
-    cols = cols[-1:] + cols[:-1]
-    in_data1 = in_data1[cols]
-    reqcols = list(in_data1.columns[1:])
-    in_data1['Rooms Avail To Sell Online'] = in_data1[reqcols].sum(axis=1)
-    cmfin3 = in_data1.loc[:, ['Date', 'Rooms Avail To Sell Online']]
+    cmfin3 = cmdata1.loc[:, ['Date',ftr, 'Rooms Avail To Sell Online']]
     availframe = iSell_fun_02.frame(cmfin3, isellrange)
-    fthrou = in_data1.loc[:, ['Date', ftr]]  # flowthrough
-    fthrou.columns = ['Date', ftr]
-    availframe2 = pd.merge(availframe, fthrou, on='Date', how='left')
+    availframe['Rooms Avail To Sell Online'] = availframe['Rooms Avail To Sell Online'].fillna(0).astype(int)
+    availframe[ftr] = availframe[ftr].fillna(0).astype(int)
 
     pc_ezee = ezee_new_pc_data(pcdata, ratepl)
     pc_ezee_frame = iSell_fun_02.frame(pc_ezee, isellrange)
@@ -438,12 +416,12 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     # cm_ezee4.drop_duplicates(subset='Date', inplace=True)
 
     logging.debug('Rooms Avail To Sell Online ::')
-    logging.debug(availframe2)
+    logging.debug(availframe)
 
     logging.debug('RateonCM Frame ::')
     logging.debug(pc_ezee_frame)
 
-    return(availframe2,pc_ezee_frame)
+    return(availframe,pc_ezee_frame)
 
 
 def CM_UK(otadata,cmrate,msrate,isellrange):

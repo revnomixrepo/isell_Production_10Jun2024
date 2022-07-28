@@ -156,6 +156,8 @@ def dfconv(stdpth,cmfile2,htl,chman):
     logging.debug("Dropped rows having 'CheckIn','CheckOut' values blank") 
     
     cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'],format="{}".format(dtformat['CheckIn']))
+
+
     try:
         cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'],format="{}".format(dtformat['CheckOut']))
     except:
@@ -223,9 +225,11 @@ def dfconv(stdpth,cmfile2,htl,chman):
     df_date3['LOS'] = (df_date3['CheckOut'] - df_date3['CheckIn']).apply(lambda x: x/np.timedelta64(1,'D')) #Length of stay
     logging.debug("LOS column added where LOS = CheckOut - CheckIn")
 
-     ### Y.K. 07"Dec Below function added for total amount & no. rooms column to conv object into required dtype.
+     ### updated by Y.K. 14 June Below function added for total amount & no. rooms column to conv object into required dtype.
     try:
-        df_date3["Total_Amount"] = df_date3["Total_Amount"].str.replace(',', '').astype(float)
+        # df_date3["Total_Amount"] = df_date3["Total_Amount"].str.replace(',', '').astype(float)
+        df_date3['Total_Amount'] = df_date3['Total_Amount'].replace(r'[^\w\s]|_|[a-z]|[A-Z]', 0, regex=True)
+        df_date3["Total_Amount"] = df_date3["Total_Amount"].astype(float)
         df_date3["No_of_Rooms"] = df_date3["No_of_Rooms"].astype(np.int64)
     except:
         pass
