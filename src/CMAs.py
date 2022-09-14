@@ -373,9 +373,12 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     cmdata = cmdata.dropna(subset=["Room Type"])
     cmdata = cmdata.drop(columns=['Room Type ID', 'Operation'])
     cmdata1 = cmdata.transpose().reset_index()
-    cmdata1.columns = cmdata1.iloc[0]
-    cmdata1 = cmdata1.iloc[1:, :].reset_index(drop=True)
-    cmdata1.rename(columns={'Room Type': 'Date'}, inplace=True)
+    cmdata1.columns = cmdata1.iloc[0]        ## Change in linecode 1Sep2022 at durgesh request(Y.K.)
+    # cmdata1.columns = cmdata1.iloc[2]
+    cmdata1 = cmdata1.iloc[1:, :].reset_index(drop=True)    ## Change in linecode 1Sep2022 at durgesh request(Y.K.)
+    # cmdata1 = cmdata1.iloc[3:, :].reset_index(drop=True)
+    cmdata1.rename(columns={'Room Type': 'Date'}, inplace=True)     ## Change in linecode 1Sep2022 at durgesh request(Y.K.)
+    # cmdata1.rename(columns={'Rate Plan': 'Date'}, inplace=True)
     try:
         cmdata1['Date'] = pd.to_datetime(cmdata1['Date'], format='@%Y-%m-%d')
     except:
@@ -474,7 +477,6 @@ def CM_Djubo(ttlsold,cap,isellrange):
         ttlsold['Date']=pd.to_datetime(ttlsold['Date'])
 
     ttlsold = iSell_fun_02.frame(ttlsold,isellrange)
-
 
 
     ttlsold['cap'] = cap
@@ -866,7 +868,33 @@ def CM_StayFlexi(cmdata, msrate, ftr, isellrange):
     dfb = pd.DataFrame(dfb)
     return dfa, dfb
 
+def CM_Phobs(cmdata, isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_Phobs')
+    # cmdata.rename(columns={'Available Rooms': 'Rooms Avail To Sell Online'},inplace=True)
+    cmdata.dropna(how='any', inplace=True)
+    cmdata = cmdata.rename(columns={'Unnamed: 1': 'Date', 'Vacant': 'Available Rooms'})
+    cmdata['Date'] = pd.to_datetime(cmdata['Date'],format='%a %b %d %Y',errors='coerce')
+    cmdata['Date'] = pd.to_datetime(cmdata.Date, format='%Y-%m-%d')
 
+    dfa = cmdata[['Date', 'Available Rooms']]
+    dfa = pd.DataFrame(dfa)
+    dfa = dfa.rename(columns={"Available Rooms": 'Rooms Avail To Sell Online'})
+    # cmdata['ftr'] = 'Deluxe'
+    # dfb = cmdata[['Date', ftr]]
+    # dfb = pd.DataFrame(dfb)
+    # dfb.rename(columns={"ftr" : 'Rate on CM', "Available Rooms" :'Rooms Avail To Sell Online'}, inplace=True)
+    dfb = pd.DataFrame()
+
+    ##---------------------------------------
+    ddmmyy=datetime.now()
+    tday = ddmmyy.strftime("%d-%b-%Y")
+    index=pd.date_range(tday,periods=isellrange)
+    frame=pd.DataFrame({'Date':index})
+    frame['Rate on CM']=np.nan
+    dfb=frame
+
+    return dfa, dfb
 
 def CM_Synxis(cmdata, msrate, ftr, isellrange):
     logging.debug('------------------------------------------------------------')
@@ -896,6 +924,9 @@ def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange,cmdata2):
 
     elif chman == 'Synxis':
         dfa, dfb = CM_Synxis(cmdata, msrate, ftr, isellrange)
+
+    elif chman == 'Phobs':
+        dfa, dfb = CM_Phobs(cmdata,isellrange)
 
     elif chman == 'AsiaTech1':
         dfa, dfb = CM_AsiaTech1(cmdata,pcdata,ftr, msrate, ratepl, isellrange)

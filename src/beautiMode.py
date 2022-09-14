@@ -11,7 +11,8 @@ import logging
 from openpyxl import Workbook
 from datetime import datetime
 from openpyxl.utils.dataframe import dataframe_to_rows
-from openpyxl.utils import coordinate_from_string, column_index_from_string
+# from openpyxl.utils import coordinate_from_string, column_index_from_string
+from openpyxl.utils import column_index_from_string
 from openpyxl.utils.cell import coordinate_from_string
 
 
@@ -363,7 +364,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     if htlname in ['Getfam Hotel Addis Ababa', 'Best Western Plus Westlands', 'Hakuna Majiwe Beach Lodge', 'Moja Tuu Luxury Villas & Nature Retreat']:
         worksheet.insert_image('G2', defaultpath+r'\masters\logo\Aleph.png',{'x_offset': 15, 'y_offset': 0,'x_scale': 0.85, 'y_scale': 0.85})
         logging.debug("getfam logo inserted")
-    elif htlname in ['The Boutique Hotel Museum']:
+    elif htlname in ['The Boutique Hotel Museum','Mark Hotel Belgrade']:
         worksheet.insert_image('G2', defaultpath+r'\masters\logo\Hotelwise.png',{'x_offset': 15, 'y_offset': 0,'x_scale': 0.85, 'y_scale': 0.85})
         logging.debug("getfam logo inserted")
     else:

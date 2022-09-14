@@ -263,7 +263,13 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             cmdata2=''
 
         elif name_chman[names] == 'StayFlexi':  #Y.K. 06"Dec
-            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+            cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
+            try:
+                staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
+            except:
+                staahfile = pd.read_csv(
+                    basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+            staahfile['Rooms'] = 1
             staahfile = staahfile.dropna(thresh=5)
             # cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
             cmdata2 =''
@@ -290,6 +296,17 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             staahfile['Rooms'] = 1
             cmdata2 = ''
             pcdata = ''
+
+        elif name_chman[names] == 'Phobs':
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')),header=1)
+            staahfile = staahfile.dropna(how='all', axis=1)
+            staahfile['Total'] = staahfile['Total'].str.replace(",", ".").astype(float)
+            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')),
+                                   encoding="latin1", skiprows=13)
+            staahfile['Rooms'] = 1
+            cmdata2 = ''
+            pcdata = ''
+
 
         elif name_chman[names] == 'Staah Max':
             try:
@@ -559,8 +576,8 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         elif name_chman[names] == 'SiteMinder':
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             #staahfile['Total Amount'] = staahfile['Total Amount'].str.extract('(\d+)').astype(int)
-            #staahfile['Rooms'] = 1
-
+            staahfile['Total Amount'] = staahfile['Total Amount'].str.split('(', 1).str[0].str.strip().astype(float)
+            staahfile['Rooms'] = 1
             cmdata = ''
             pcdata = ''
 
@@ -717,8 +734,6 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
         if name_chman[names] in ['UK', 'TravelBook', 'BW']:
             pass
-
-
         else:
             logging.debug('Exploading data ...')
             df_total, df_ota, df_ttlsold = iSell_fun_02.dfconv(defaultpath, staahfile, names, name_chman[names])
@@ -786,6 +801,11 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             cap = int(name_cap[names])
             logging.info(cap)
             rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
+
+        elif name_chman[names] in ['Phobs']:
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_Phobs(cmdata,isellrange)
 
         elif name_chman[names] in ['Ease Room']:
             cap = int(name_cap[names])
