@@ -22,9 +22,11 @@ import GRID as grid
 import simpleRecs as simp
 import csv
 import Leaf_Module as leaf
+import newpatch_functionality as npf
 import warnings
 warnings.filterwarnings('ignore')
 import send_att_mail as mail
+
 
 def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No', hnf_flag='No'):
     import logging
@@ -346,10 +348,12 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xls')))
             cmdata2 =  ''
             staahfile = staahfile.rename(columns=cm_col)
+
         elif name_chman[names] == 'BookingHotel':
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
             pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
+            cmdata2 = ''
 
         elif name_chman[names] == 'TravelClick':
 
@@ -658,8 +662,12 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                                  encoding='cp1252')
             dc = pd.read_excel(basepath + '\{}\{}'.format('Demand_Calendar', names[:-4] + str('.xlsx')))
             # ---------------------------------LastReport name should have OTA-------------------------------------------
-            df_LR = pd.read_csv(basepath + '\{}\{}\{}'.format('OutPut_CSV', lastfoldname,
+            try:
+                df_LR = pd.read_csv(basepath + '\{}\{}\{}'.format('OutPut_CSV', lastfoldname,
                                                               str('iSell_') + names + str('_{}.csv'.format(LRdt))))
+            except:
+                path_LR = npf.Lrdate_outputCSV(LRdt,basepath,names)
+                df_LR = pd.read_csv(path_LR)
             # ------------------------------------------------------------------------------------------------------------
             if use_Grid[names] == 1:
                 df_PG = pd.read_excel(basepath + '\{}\{}'.format('Pricing_Grid', names[:-4] + str('_PG.xlsx')))
@@ -673,8 +681,14 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             rsfile = pd.read_csv(basepath + '\{}\{}\{}'.format('RS_Data', tdayfold, names + str('_RSData.csv')),
                                  encoding='cp1252')
             dc = pd.read_excel(basepath + '\{}\{}'.format('Demand_Calendar', names + str('.xlsx')))
-            df_LR = pd.read_csv(basepath + '\{}\{}\{}'.format('OutPut_CSV', lastfoldname,
-                                                              str('iSell_') + names + str('_{}.csv'.format(LRdt))))
+           ##-------------------------------------------------------------------------------------------------
+            try:
+                df_LR = pd.read_csv(basepath + '\{}\{}\{}'.format('OutPut_CSV', lastfoldname,
+                                                                  str('iSell_') + names + str('_{}.csv'.format(LRdt))))
+            except:
+                path_LR = npf.Lrdate_outputCSV(LRdt,basepath,names)
+                df_LR = pd.read_csv(path_LR)
+            ## ------------------------------------------------------------------------------------------------
 
             if use_Grid[names] == 1:
                 df_PG = pd.read_excel(basepath + '\{}\{}'.format('Pricing_Grid', names + str('_PG.xlsx')))

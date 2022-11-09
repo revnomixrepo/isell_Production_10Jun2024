@@ -16,7 +16,8 @@ def send_alert_msg(beautipth,h_name,name_accman,email_id,number,date,tdayfold):
     username = 'revseed@revnomix.com'
     password = 'Revenue@123'
     recipients = email_id
-    alias = 'Revnomix Revenue Management Services <revnomix.RMS@revnomix.com>'
+    # alias = 'Revnomix Revenue Management Services <revnomix.RMS@revnomix.com>'
+    alias = 'revseed@revnomix.com>'
 
 
     msg = MIMEMultipart()
@@ -58,11 +59,14 @@ def send_alert_msg(beautipth,h_name,name_accman,email_id,number,date,tdayfold):
     attachment.add_header("Content-Disposition", "attachment", filename=filename)
     msg.attach(attachment)
 
-    server = smtplib.SMTP("smtp.gmail.com",587)
+    server = smtplib.SMTP("smtp.office365.com",587)
     server.starttls()
     server.login(username,password)
     server.sendmail(msg['From'],  recipients.split(','), msg.as_string())
     server.quit()
+    print(f"{h_name} iSell is sent Successfully")
+
+
 # if __name__ =='__main__':
 
     # send_alert_msg(email_id,sub)

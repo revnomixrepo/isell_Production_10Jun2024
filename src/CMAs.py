@@ -108,67 +108,130 @@ def TravelClick(rfile, ifile, cmdata2, ftr, msrate, rateplan, isellrange):
 
     return (inv_df, cm_df)
 
-
-def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
+def BookingHotel_CM(pcdata, cmdata, ftr, msrate, isellrange):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:CMAs, SubModule:BookingHotel_CM')
 
     def exsplit(df, column):
         numb_df = df[column].str.split('_', expand=True)
         return numb_df[1]
-    # READ RATE FILE
-    raw_df = pd.DataFrame(rfile)
-    df = raw_df.transpose().reset_index()
-#    df.fillna(value='Date', inplace=True)
-    df = pd.DataFrame(df)
-    new_header = df.iloc[0]
-    df = df[1:]
-    df.columns = new_header
 
-    colLoc = df.columns.get_loc(msrate)
-    rt_df = df.iloc[:, [colLoc + 1, colLoc + 2]]
-    rt_df.columns= ['Date', 'SingleRate']
-    rt_df = rt_df.rename(columns={'SingleRate': 'Rate on CM'})
-    rt_df = rt_df[['Date', 'Rate on CM']]
-    rt_df['Date'] = pd.to_datetime(rt_df.Date, format='%a, %d %b %Y')
-    rt_df.Date = pd.to_datetime(rt_df.Date, format='%Y-%m-%d')
+    in_data = pd.DataFrame(cmdata)
+    indata1 = in_data.rename(columns = {"Unnamed: 0":"Room Type"})
+    in_data1 = indata1.transpose().reset_index()
+    new_header = in_data1.iloc[0]
+    # in_data1 = in_data1[0:]
+    in_data1.columns = new_header
+    in_data1 = in_data1[1:]
 
-    # READ INVENTORY FILE
-    raw_idf = pd.DataFrame(ifile)
-    i_df = raw_idf.transpose().reset_index()        # Transpose file
-    i_df = pd.DataFrame(i_df)
-    # CHANGE HEADER LOCATION IN DF
-    new_header = i_df.iloc[0]
-    i_df = i_df[1:]
-    i_df.columns = new_header
+    #### Change Column Name And date format ####
+    in_data1.rename(columns={'Room Type': 'Date'}, inplace=True)
+    in_data1['Date1'] = pd.to_datetime(in_data1['Date'], format='%a, %d %b %Y')
+    in_data1 = in_data1.drop(['Date'], axis=1)
+    in_data1.rename(columns={'Date1': 'Date'}, inplace=True)
 
-    i_df = i_df.rename(columns={'Unnamed: 0': 'Date'})
-    colList = list(i_df.columns)
-    colList.pop(0)
-    i_df['Rooms Avail To Sell Online'] = 0
+    colList = list(in_data1.columns)
+    colList.pop(2)
     for i in colList:
-        i_df[i] = pd.to_numeric(exsplit(i_df, i))
-        i_df['Rooms Avail To Sell Online'] += i_df[i]
+        in_data1[i] = pd.to_numeric(exsplit(in_data1, i))
+        in_data1[ftr] += in_data1[i]
 
-    i_df['Date'] = pd.to_datetime(i_df.Date, format='%a, %d %b %Y')
-    i_df['Date'] = pd.to_datetime(i_df.Date, format='%Y-%m-%d')
+    ### Changing Place on Date column ####
+    cols = in_data1.columns.tolist()
+    cols = cols[-1:] + cols[:-1]
+    in_data1 = in_data1[cols]
+    reqcols = list(in_data1.columns[1:])
+    in_data1['Rooms Avail To Sell Online'] = in_data1[reqcols].sum(axis=1)
+    cmfin3 = in_data1.loc[:, ['Date', 'Rooms Avail To Sell Online']]
+    availframe = iSell_fun_02.frame(cmfin3, isellrange)
+    fthrou = in_data1.loc[:, ['Date', ftr]]  # flowthrough
+    fthrou.columns = ['Date', ftr]
+    availframe2 = pd.merge(availframe, fthrou, on='Date', how='left')
 
-    # i_df.Date = pd.to_datetime(i_df.Date).dt.date
-    inv_df = i_df[['Date', 'Rooms Avail To Sell Online']]
-    delx_df = i_df[['Date', ftr]]
+### READ RATE FILE
+    pcdata11 = pcdata.rename(columns={"Unnamed: 0": "Room Type"})
+    pcdata11 = pcdata11.dropna(thresh=5)
+    pcdata11['Room Type'] = pcdata11['Room Type'].fillna("Date")
+    df_cmdata = pcdata11.transpose().reset_index()
+    df_cmdata.columns = df_cmdata.iloc[0]
+    df_cmdata = df_cmdata.iloc[1:]
+    df_cmdata = df_cmdata[['Date', msrate]]
+    df2 = df_cmdata.T.groupby(level=0).first().T
+    df2['Date'] = pd.to_datetime(df2['Date'], format='%a, %d %b %Y')
+    df2 = df2.rename(columns={'Single': 'Rate on CM'})
+    df2 = df2[['Date', 'Rate on CM']]
 
-    rt_df = iSell_fun_02.frame(rt_df, isellrange)
-    inv_df = iSell_fun_02.frame(inv_df, isellrange)
-    delx_df = iSell_fun_02.frame(delx_df, isellrange)
-    cm_df = iSell_fun_02.merging(delx_df, rt_df)
+    msrateframe = iSell_fun_02.frame(df2, isellrange)
+    msrateframe = msrateframe.fillna(0)
 
     logging.debug('Availability Frame ::')
-    logging.debug(inv_df)
+    logging.debug(availframe2)
 
     logging.debug('RateonCM Frame ::')
-    logging.debug(cm_df)
+    logging.debug(msrateframe)
+    return availframe2,msrateframe
 
-    return(inv_df, cm_df)
+
+# def BookingHotel_CM(rfile, ifile, ftr,msrate,isellrange):
+#     logging.debug('------------------------------------------------------------')
+#     logging.debug('Module:CMAs, SubModule:BookingHotel_CM')
+#
+#     def exsplit(df, column):
+#         numb_df = df[column].str.split('_', expand=True)
+#         return numb_df[1]
+#     # READ RATE FILE
+#     raw_df = pd.DataFrame(rfile)
+#     df = raw_df.transpose().reset_index()
+# #    df.fillna(value='Date', inplace=True)
+#     df = pd.DataFrame(df)
+#     new_header = df.iloc[0]
+#     df = df[1:]
+#     df.columns = new_header
+#
+#     colLoc = df.columns.get_loc(msrate)
+#     rt_df = df.iloc[:, [colLoc + 1, colLoc + 2]]
+#     rt_df.columns= ['Date', 'SingleRate']
+#     rt_df = rt_df.rename(columns={'SingleRate': 'Rate on CM'})
+#     rt_df = rt_df[['Date', 'Rate on CM']]
+#     rt_df['Date'] = pd.to_datetime(rt_df.Date, format='%a, %d %b %Y')
+#     rt_df.Date = pd.to_datetime(rt_df.Date, format='%Y-%m-%d')
+#
+#     # READ INVENTORY FILE
+#     raw_idf = pd.DataFrame(ifile)
+#     i_df = raw_idf.transpose().reset_index()        # Transpose file
+#     i_df = pd.DataFrame(i_df)
+#     # CHANGE HEADER LOCATION IN DF
+#     new_header = i_df.iloc[0]
+#     i_df = i_df[1:]
+#     i_df.columns = new_header
+#
+#     i_df = i_df.rename(columns={'Unnamed: 0': 'Date'})
+#     colList = list(i_df.columns)
+#     colList.pop(0)
+#     i_df['Rooms Avail To Sell Online'] = 0
+#     for i in colList:
+#         i_df[i] = pd.to_numeric(exsplit(i_df, i))
+#         i_df['Rooms Avail To Sell Online'] += i_df[i]
+#
+#     i_df['Date'] = pd.to_datetime(i_df.Date, format='%a, %d %b %Y')
+#     i_df['Date'] = pd.to_datetime(i_df.Date, format='%Y-%m-%d')
+#
+#     # i_df.Date = pd.to_datetime(i_df.Date).dt.date
+#     inv_df = i_df[['Date', 'Rooms Avail To Sell Online']]
+#     delx_df = i_df[['Date', ftr]]
+#
+#     rt_df = iSell_fun_02.frame(rt_df, isellrange)
+#     inv_df = iSell_fun_02.frame(inv_df, isellrange)
+#     delx_df = iSell_fun_02.frame(delx_df, isellrange)
+#     cm_df = iSell_fun_02.merging(delx_df, rt_df)
+#
+#     logging.debug('Availability Frame ::')
+#     logging.debug(inv_df)
+#
+#     logging.debug('RateonCM Frame ::')
+#     logging.debug(cm_df)
+#
+#     return(inv_df, cm_df)
 
 def CM_TB(otadata,cmrate):
     logging.debug('------------------------------------------------------------')
@@ -947,9 +1010,11 @@ def CM_Avails(cmdata,htlname,msrate,ftr,chman,pcdata,ratepl,isellrange,cmdata2):
     elif chman == 'ResAvenue':
         print("ResAvenue - CM Availability and Rate Fetch")
         dfa,dfb = CM_ResAvenue(cmdata,pcdata,ftr,isellrange)
+
     elif chman == 'BookingHotel':
         print("BookingHotel - CM Availability and Rate Fetch")
         dfa,dfb = BookingHotel_CM(pcdata, cmdata, ftr, msrate, isellrange)
+
     elif chman == 'TravelClick':
         print("TravelClick - CM Availability and Rate Fetch")
         dfa, dfb = TravelClick(pcdata, cmdata,cmdata2, ftr, msrate, ratepl, isellrange)
