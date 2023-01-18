@@ -94,7 +94,6 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         logging.debug(inputdf)
 
     monthlyrates = pd.read_excel(inputmaster, 'Monthly_MinRates')  # Monthly_Rates Sheet
-
     monthlyjump = pd.read_excel(inputmaster, 'Monthly_Jump')
     monthlymax = pd.read_excel(inputmaster, 'Monthly_MaxRates')
 
@@ -240,17 +239,21 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         logging.debug('Hotel Day of Week Weights:{}'.format(htl_dowWt))
 
         # ----------------------------------------------------------------------------------
+        print("========================================================================================================")
         print('{}.Creating {}_iSell ...'.format(sr, names))
         logging.info('{}.Creating {}_iSell ...'.format(sr, names))
         logging.info('Channel Manager :{}'.format(name_chman[names]))
         isellrange = int(name_win[names])
         logging.info('isellwindow:{}'.format(isellrange))
-
+        # --------------------------------------------------------------------------------------------------------------
+        print(f"Channel Manger: {name_chman[names]}")
+        # --------------------------------------------------------------------------------------------------------------
         if name_chman[names] == 'Staah':
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')))
             staahfile.dropna(subset=['CheckIn Date', 'CheckOut Date'], inplace=True)
-
+            pcdata = ''
+            cmdata2 = ''
             # try:
             #     staahfile.dropna(subset=['CheckIn Date', 'CheckOut Date'], inplace=True)
             # except:
@@ -260,10 +263,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             #         staahfile.dropna(subset=['Arrival Date', 'Departure Date'], inplace=True)
             #     except:
             #         staahfile.dropna(subset=['CheckIn Date', 'CheckOut Date'], inplace=True)
-
-            pcdata = ''
-            cmdata2=''
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'StayFlexi':  #Y.K. 06"Dec
             cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
             try:
@@ -276,7 +276,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             # cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
             cmdata2 =''
             pcdata = ''
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names]  == 'AsiaTech1':
             #staahfile = staahfile.dropna(thresh=5)
             cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
@@ -289,7 +289,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         # staahfile['Rooms'] = 1
         # pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
         # cmdata2 = ''
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Synxis':    #Y.K. 06"Dec
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             # cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
@@ -298,7 +298,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             staahfile['Rooms'] = 1
             cmdata2 = ''
             pcdata = ''
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Phobs':
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')),header=1)
             staahfile = staahfile.dropna(how='all', axis=1)
@@ -309,7 +309,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             cmdata2 = ''
             pcdata = ''
 
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Staah Max':
             try:
                 cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
@@ -322,7 +322,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                 otafile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')),header=2)
 
             cmdata2=''
-            otafile.dropna(subset=['Arrival Date', 'Departure Date'], inplace=True)
+            otafile.dropna(subset=['Arrival Date', 'Departure Date','Room Type'], inplace=True)
             staahfile = pd.DataFrame(otafile)
             staahfile['Arrival Date'] = staahfile['Arrival Date'].str.split(',', expand=True)[0]
             staahfile['Departure Date'] = staahfile['Departure Date'].str.split(',', expand=True)[0]
@@ -333,13 +333,14 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                                                                staahfile["Total Amount: (All Inclusive)"] * 0.0088,
                                                                staahfile["Total Amount: (All Inclusive)"])
 
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Eglobe':
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             #staahfile['Rooms'] = 1               # Comment this line for room calculation 22"Dec
             pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
             cmdata2=''
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'AxisRooms':
             cm_col = dict(zip( cm_colname['AxisRooms'], cm_colname['stdname']))
             #staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
@@ -348,13 +349,13 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xls')))
             cmdata2 =  ''
             staahfile = staahfile.rename(columns=cm_col)
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'BookingHotel':
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
             pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
             cmdata2 = ''
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'TravelClick':
 
             # ===========================Travel Click OTA Condition===============================
@@ -407,12 +408,13 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                 pcdata = pd.read_csv(
                     basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
                 staahfile['Rooms'] = 1
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Maximojo':
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
             pcdata = ''
             cmdata2=''
+        # --------------------------------------------------------------------------------------------------------------
         # TB: TravelBook Normal iSell
         elif name_chman[names] in ['TB', 'TB1']:
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
@@ -420,19 +422,20 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                                    skiprows=1)
             staahfile['Rooms'] = 1
             pcdata = ''
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Djubo':
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')),
                                       skiprows=1)
             cmdata = ''
             pcdata = ''
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Ease Room':
             # cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata = ''
             cmdata2 = ''
             pcdata = ''
-
+        # --------------------------------------------------------------------------------------------------------------
         # elif name_chman[names] == 'eZee':
         #     checkIn = dict(zip(ezeedates['Hotel'], ezeedates['Checkin']))
         #     checkOut = dict(zip(ezeedates['Hotel'], ezeedates['Checkout']))
@@ -457,7 +460,26 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         #         pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
         #     else:
         #         pcdata = ''
+        # --------------------------------------------------------------------------------------------------------------
+        elif name_chman[names] == 'eZeeNoCM':
+            checkIn = dict(zip(ezeedates['Hotel'], ezeedates['Checkin']))
+            checkOut = dict(zip(ezeedates['Hotel'], ezeedates['Checkout']))
 
+            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+            staahfile.dropna(axis=0, subset=['Arrival', 'Dept'], inplace=True)
+            # staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'])
+            # staahfile['Dept'] = pd.to_datetime(staahfile['Dept'])
+            staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'], format=checkIn[names])
+            staahfile['Dept'] = pd.to_datetime(staahfile['Dept'], format=checkOut[names])
+            staahfile['Rooms'] = 1
+
+            # cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
+            cmdata2 = ''
+
+            pcdata = pd.read_csv(
+                 basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))  ##
+
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'eZee':
             checkIn = dict(zip(ezeedates['Hotel'], ezeedates['Checkin']))
             checkOut = dict(zip(ezeedates['Hotel'], ezeedates['Checkout']))
@@ -467,16 +489,17 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'], format=checkIn[names])
             staahfile['Dept'] = pd.to_datetime(staahfile['Dept'], format=checkOut[names])
             staahfile['Rooms'] = 1
-
             cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
             cmdata2 = ''
 
-            try:
-                pcdata = pd.read_csv(
-                    basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))  ##
-            except:
-                pcdata = ''
-
+            pcdata = pd.read_csv(
+                basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+            # try:
+            #     pcdata = pd.read_csv(
+            #         basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))  ##
+            # except:
+            #     pcdata = ''
+            # ------------------------------------------------------------------------------------------------------------
             # if names == 'Theory9 Premium Service Apts, Khar West':
             #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
             # elif names == 'The Emory Hotel':
@@ -489,7 +512,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
             # else:
             #     pcdata = ''
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'LeafDover':
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             cmData1 = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
@@ -509,7 +532,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             # cmdata = pd.DataFrame(staahfile)
             cmrates2 = pd.DataFrame(cmdata.loc[:, ['Date', 'CMRate']])
             cmrates2['Date'] = pd.to_datetime(cmrates2['Date'], format="%Y-%m-%d")
-
+        # ------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'UK':
             pcdata = ''
 
@@ -531,7 +554,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                 cmdata = pd.DataFrame(staahfile)
                 cmrates2 = pd.DataFrame(cmdata.loc[:, ['Date', 'CMRate']])
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'], format="%Y-%m-%d")
-
+        # ------------------------------------------------------------------------------------------------------------
             elif names == 'Best Western Clifton':
 
                 staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('HNF', tdayfold, names + str('_HNF.csv')),
@@ -557,14 +580,13 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                 cmrates = pd.concat(data)
                 #        cmrates.reset_index(inplace=True)
                 cmrates.rename(columns={'index': 'Date'}, inplace=True)
-
                 cmrates2 = pd.DataFrame(cmrates)
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'], format="%d/%m/%Y")
                 cmrates2['Date'] = pd.to_datetime(cmrates2['Date'], format="%d-%b-%Y")
                 logging.debug('Best Western CMRate(cmrates2) ::')
                 logging.debug(cmrates2)
 
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] in ['TravelBook', 'BW']:
             pcdata = ''
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('HNF', tdayfold, names + str('_HNF.csv')),
@@ -572,11 +594,10 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                                     encoding='utf8')
 
             cmdata = pd.DataFrame(staahfile)
-
             cmrates2 = pd.DataFrame(cmdata.loc[:, ['Date', 'CMRate']])
             cmrates2['Date'] = pd.to_datetime(cmrates2['Date'], format="%Y-%m-%d")
 
-
+        # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'SiteMinder':
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             #staahfile['Total Amount'] = staahfile['Total Amount'].str.extract('(\d+)').astype(int)
@@ -584,24 +605,23 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             staahfile['Rooms'] = 1
             cmdata = ''
             pcdata = ''
-
+        # ------------------------------------------------------------------------------------------------------------
         elif name_chman[names] in ['Rategain', 'Rategain1']:
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata = ''
             pcdata = ''
-
+        # ------------------------------------------------------------------------------------------------------------
         # elif name_chman[names] == 'AsiaTech':
         #     staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')),
         #                             delimiter=",", index_col=False, header=0)
         #     cmdata = ''
         #     pcdata = ''
-
+        # ------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'BookingCentre':
             staahfile2 = pd.read_excel(
                 basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')), skiprows=9)
             # staahfile2['Cost2']=staahfile2['Cost'].apply(lambda x: x.str.replace(',',''))
             staahfile2['Cost'] = staahfile2['Cost'].str.replace('₨', '')
-
             staahfile2['Cost'] = pd.to_numeric(staahfile2['Cost'].apply(lambda x: re.sub(',', '', str(x))))
             # staahfile2.to_csv(r'E:\iSell_Project\All_In_One_iSell\InputData\OTA_Data\16_Oct_2018\staahfile.csv')
             staahfile2['Rooms'] = 1
@@ -610,7 +630,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
             cmdata = ''
             pcdata = ''
-
+        # ------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'ResAvenue':
             staahfile2 = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')),
                                        skiprows=2)
@@ -621,7 +641,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                                    skiprows=1)
             pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xls')),
                                    skiprows=3)
-
+        # ------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'RezNext':
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
@@ -688,8 +708,12 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             except:
                 path_LR = npf.Lrdate_outputCSV(LRdt,basepath,names)
                 df_LR = pd.read_csv(path_LR)
-            ## ------------------------------------------------------------------------------------------------
 
+            # ------------------------------(After Read Last OutPutCSV Drop Duplicates on Date Column)---------------------------------
+            # -----------------------@03/01/2022 Added the below line code---------------------------------
+            # df_LR = df_LR.drop_duplicates(subset='Date',keep='first').reset_index(drop=True)
+
+            ## ------------------------------------------------------------------------------------------------
             if use_Grid[names] == 1:
                 df_PG = pd.read_excel(basepath + '\{}\{}'.format('Pricing_Grid', names + str('_PG.xlsx')))
             else:
@@ -821,11 +845,15 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             logging.info(cap)
             rmsavail, cmdf = CMAs.CM_Phobs(cmdata,isellrange)
 
+        elif name_chman[names] in ['eZeeNoCM']:
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_eZeeNoCM(otasold,name_rateplan[names],pcdata,cap,name_ftr[names],isellrange)
+
         elif name_chman[names] in ['Ease Room']:
             cap = int(name_cap[names])
             logging.info(cap)
             rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
-
 
         elif name_chman[names] in ['Synxis']:
             cap = int(name_cap[names])
@@ -1005,7 +1033,6 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                     pgdf.to_excel(basepath + '\{}\{}'.format('Pricing_Grid', names + '_PG.xlsx'))
                 else:
                     pass
-
 
 
         elif priceType[names] == 'Seasonal':
@@ -1308,6 +1335,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
 
             print('{}_iSell Generated _#{} !!!----------------'.format(names, name_chman[names]))
+            print("------------------------------------------------------------------------------------------------------------------")
             logging.info('{}_iSell Generated _#{} !!!----------------'.format(names, name_chman[names]))
         else:
             logging.info('Please set 0 or 1 to RateOnCM column of Accounts sheet')
@@ -1326,19 +1354,26 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             pass
         mapping = pd.read_excel(defaultpath + '/masters/ExpMailMapping.xlsx')
         map = mapping[mapping['Hotel Name'] == names]
-        status_name = dict(zip(map['Hotel Name'], map['Status']))
-        status = status_name[names]
-        if status == 'Yes':
-            ema_name = dict(zip(map['Hotel Name'], map['Email Id']))
-            num_name = dict(zip(map['Hotel Name'], map['Number']))
-            email_id = ema_name[names]
-            number = num_name[names]
-            mail.send_alert_msg(beautipth, names, name_accman[names], email_id, number, iselldt, tdayfold)
+        ### Change the lin code
+        # if mail autodelivery is not set for that property it is pass to the next #y.k.14 Dec 2022
+        if len(map) >0:
+            status_name = dict(zip(map['Hotel Name'], map['Status']))
+            status = status_name[names]
+            if status == 'Yes':
+                ema_name = dict(zip(map['Hotel Name'], map['Email Id']))
+                num_name = dict(zip(map['Hotel Name'], map['Number']))
+                email_id = ema_name[names]
+                number = num_name[names]
+                mail.send_alert_msg(beautipth, names, name_accman[names], email_id, number, iselldt, tdayfold)
+            else:
+                print('Auto_Delivery Mail Status is no for {} hotel'.format(names))
         else:
-            print('Status is no for this {} hotel'.format(names))
-    logging.info("################## ALL iSell Generated for {} , Thanks ! ########################".format(accMan))
-    print("###### ALL iSell Generated for {} , Thanks ! #######".format(accMan))
+            pass
 
+    logging.info("################## ALL iSell Generated for {} , Thanks ! ########################".format(accMan))
+    # print("###### ALL iSell Generated for {} , Thanks ! #######".format(accMan))
+    print("-------------------------------ALL iSell Generated for {} Account, Thanks:)-------------------".format(accMan[0]))
+    print("===========================================================================================================")
 
 
 

@@ -132,9 +132,13 @@ def BookingHotel_CM(pcdata, cmdata, ftr, msrate, isellrange):
 
     colList = list(in_data1.columns)
     colList.pop(2)
+
     for i in colList:
         in_data1[i] = pd.to_numeric(exsplit(in_data1, i))
-        in_data1[ftr] += in_data1[i]
+        try:
+            in_data1[ftr] += in_data1[i]
+        except:
+            pass
 
     ### Changing Place on Date column ####
     cols = in_data1.columns.tolist()
@@ -152,13 +156,17 @@ def BookingHotel_CM(pcdata, cmdata, ftr, msrate, isellrange):
     pcdata11 = pcdata.rename(columns={"Unnamed: 0": "Room Type"})
     pcdata11 = pcdata11.dropna(thresh=5)
     pcdata11['Room Type'] = pcdata11['Room Type'].fillna("Date")
-    df_cmdata = pcdata11.transpose().reset_index()
-    df_cmdata.columns = df_cmdata.iloc[0]
-    df_cmdata = df_cmdata.iloc[1:]
-    df_cmdata = df_cmdata[['Date', msrate]]
-    df2 = df_cmdata.T.groupby(level=0).first().T
+    df_pcdata = pcdata11.transpose().reset_index()
+    # duplicate_cols = df_pcdata.columns[df_pcdata.columns.duplicated()]
+    # df_pcdata.drop(columns=duplicate_cols, inplace=True)
+    df_pcdata.columns = df_pcdata.iloc[0]
+    df_pcdata = df_pcdata.iloc[1:]
+    final_pcdata = df_pcdata[['Date', msrate]]
+    df2 = final_pcdata.iloc[:, -2:]
+    # df2 = final_pcdata.T.groupby(level=0).first().T
     df2['Date'] = pd.to_datetime(df2['Date'], format='%a, %d %b %Y')
-    df2 = df2.rename(columns={'Single': 'Rate on CM'})
+    # df2 = df2.rename(columns={'Single': 'Rate on CM'})
+    df2 = df2.rename(columns={msrate: 'Rate on CM'})
     df2 = df2[['Date', 'Rate on CM']]
 
     msrateframe = iSell_fun_02.frame(df2, isellrange)
@@ -425,6 +433,58 @@ def CM_ResAvenue(cmdata,pcdata,ftr,isellrange):
 #     logging.debug(cm_ezee4)
 #
 #     return(rmsdf444,cm_ezee4)
+def CM_eZeeNoCM(otasold,ratepl,pcdata,cap,ftr,isellrange):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:CMAs, SubModule:CM_eZee')
+
+    # cmdata = pd.DataFrame(cmdata)
+    # cmdata = cmdata.replace("-", np.nan)
+    # cmdata.dropna(axis=1, how='all', inplace=True)
+    # cmdata = cmdata.dropna(subset=["Room Type"])
+    # cmdata = cmdata.drop(columns=['Room Type ID', 'Operation'])
+    # cmdata1 = cmdata.transpose().reset_index()
+    # cmdata1.columns = cmdata1.iloc[0]        ## Change in linecode 1Sep2022 at durgesh request(Y.K.)
+    # # cmdata1.columns = cmdata1.iloc[2]
+    # cmdata1 = cmdata1.iloc[1:, :].reset_index(drop=True)    ## Change in linecode 01Sep2022 by durgesh request(Y.K.)
+    # # cmdata1 = cmdata1.iloc[3:, :].reset_index(drop=True)           ## Change in linecode 10NOV2022 by durgesh request(Y.K.)
+    #
+    # cmdata1.rename(columns={'Room Type': 'Date'}, inplace=True)     ## Change in linecode 1Sep2022 at durgesh request(Y.K.)
+    # # cmdata1.rename(columns={'Rate Plan': 'Date'}, inplace=True)
+    # try:
+    #     cmdata1['Date'] = pd.to_datetime(cmdata1['Date'], format='@%Y-%m-%d')
+    # except:
+    #     cmdata1['Date'] = pd.to_datetime(cmdata1['Date'], format='%Y-%m-%d')
+    # cmdata1["Rooms Avail To Sell Online"] = cmdata1.iloc[:, 1:].astype('int64').sum(axis=1)
+    # # cmdata_ = cmdata1[cmdata1.columns[~cmdata1.columns == ftr]]
+    #
+    # cmfin3 = cmdata1.loc[:, ['Date',ftr, 'Rooms Avail To Sell Online']]
+    # availframe = iSell_fun_02.frame(cmfin3, isellrange)
+    # availframe['Rooms Avail To Sell Online'] = availframe['Rooms Avail To Sell Online'].fillna(0).astype(int)
+    # availframe[ftr] = availframe[ftr].fillna(0).astype(int)
+
+    #------blank Rate on CM----------------------------------------------------
+    ddmmyy=datetime.now()
+    tday = ddmmyy.strftime("%d-%b-%Y")
+    index=pd.date_range(tday,periods=isellrange)
+    frame=pd.DataFrame({'Date':index})
+    # staahfile.rename(columns= {'Total':""})
+    frame['Rooms Avail To Sell Online'] = cap - otasold['OTA_Sold']
+    frame['Rooms Avail To Sell Online'] = frame['Rooms Avail To Sell Online'].fillna(0).astype(int)
+    # frame['Rooms Avail To Sell Online']=np.nan
+    # availframe=frame
+
+    pc_ezee = ezee_new_pc_data(pcdata, ratepl)
+    pc_ezee_frame = iSell_fun_02.frame(pc_ezee, isellrange)
+
+    logging.debug('Rooms Avail To Sell Online ::')
+    logging.debug(frame)
+
+    logging.debug('RateonCM Frame ::')
+    logging.debug(pc_ezee_frame)
+
+    return(frame,pc_ezee_frame)
+
+
 
 def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     logging.debug('------------------------------------------------------------')
@@ -438,8 +498,9 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     cmdata1 = cmdata.transpose().reset_index()
     cmdata1.columns = cmdata1.iloc[0]        ## Change in linecode 1Sep2022 at durgesh request(Y.K.)
     # cmdata1.columns = cmdata1.iloc[2]
-    cmdata1 = cmdata1.iloc[1:, :].reset_index(drop=True)    ## Change in linecode 1Sep2022 at durgesh request(Y.K.)
-    # cmdata1 = cmdata1.iloc[3:, :].reset_index(drop=True)
+    cmdata1 = cmdata1.iloc[1:, :].reset_index(drop=True)    ## Change in linecode 01Sep2022 by durgesh request(Y.K.)
+    # cmdata1 = cmdata1.iloc[3:, :].reset_index(drop=True)           ## Change in linecode 10NOV2022 by durgesh request(Y.K.)
+
     cmdata1.rename(columns={'Room Type': 'Date'}, inplace=True)     ## Change in linecode 1Sep2022 at durgesh request(Y.K.)
     # cmdata1.rename(columns={'Rate Plan': 'Date'}, inplace=True)
     try:
@@ -722,6 +783,8 @@ def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):
 def CM_Eglobe(cmdata,pcdata, ftr,msrate, ratepl,isellrange):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:CMAs, SubModule:CM_Eglobe')
+
+    #### Price Calendar Process
     cm_p = pd.DataFrame(pcdata)
     cmdata2 = cm_p[cm_p['Channel'] == 'Booking.com']
     cmdata_ = cmdata2.iloc[:, 3:].fillna(0)                                                 #Y.K. 09"feb
@@ -731,7 +794,6 @@ def CM_Eglobe(cmdata,pcdata, ftr,msrate, ratepl,isellrange):
     else:
         cmdata1 = cmdata2
         # print(False)                                                                       ##
-
     cmdata1 = pd.DataFrame(cmdata1)
     cmdata_room = cmdata1[cmdata1['Room'] == msrate]
     cmdata_room = pd.DataFrame(cmdata_room)
@@ -746,12 +808,17 @@ def CM_Eglobe(cmdata,pcdata, ftr,msrate, ratepl,isellrange):
     cmfin111 = cmfin11.rename(columns={cmfin11.columns[1]: 'Rate on CM'})
     msrateframe = iSell_fun_02.frame(cmfin111, isellrange)
 
-
+    ### Cm Inventoary Data Process
     in_data = pd.DataFrame(cmdata)
+
     in_data1 = in_data[in_data['Channel'] == 'Booking.com']
+    if len(in_data1) == 0:
+        in_data1 = in_data[in_data['Channel'] == 'GoIBIBO MMT V3']
+    else:
+        print("CM_Eglobe Not Found The Channel in CM data")
+
     in_data1 = pd.DataFrame(in_data1)
     in_data1 = in_data1.transpose().reset_index()
-
     new_header = in_data1.iloc[2]
     in_data1 = in_data1[3:]
     in_data1.columns = new_header

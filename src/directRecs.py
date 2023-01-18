@@ -63,12 +63,25 @@ def dRecs(iSelldf4,pgdf,isellrange,lastszrates,cmflag,priceType,hnf,ftr):
         szrate ='Not Required'
         
         if hnf == 'Yes':
-            iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+            try:
+                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+            except:
+                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,
+                                        ['Date', 'Dow', 'Event', 'Capacity', 'Hotel Sold', 'Hotel Availability',
+                                         'Rooms Avail To Sell Online','OTA_Sold', 'Pickup', 'OTA Revenue',
+                                         'ADR OTB', 'Rate on CM', 'Recommended Rate']])
         else:
-            iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
-            
-        
-#        try:
+            try:
+                 iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Rooms Avail To Sell Online',
+                                                         ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+            except:
+                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,
+                                        ['Date', 'Dow', 'Event', 'Capacity', 'Rooms Avail To Sell Online',
+                                         'OTA_Sold', 'Pickup', 'OTA Revenue', 'ADR OTB', 'Rate on CM',
+                                         'Recommended Rate']])
+
+
+    #        try:
 #            iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
 #        except:
 #            pass
@@ -92,9 +105,21 @@ def dRecs(iSelldf4,pgdf,isellrange,lastszrates,cmflag,priceType,hnf,ftr):
         logging.debug(iSelldf7)
         
         if hnf == 'Yes':
-            iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+            try:
+                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+            except:
+                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,
+                                        ['Date', 'Dow', 'Event', 'Capacity', 'Hotel Sold', 'Hotel Availability',
+                                         'Rooms Avail To Sell Online', 'OTA_Sold', 'Pickup', 'OTA Revenue',
+                                         'ADR OTB', 'Rate on CM', 'Recommended Rate']])
         else:
-            iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+            try:
+                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+            except:
+                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,
+                                        ['Date', 'Dow', 'Event', 'Capacity', 'Rooms Avail To Sell Online',
+                                         'OTA_Sold', 'Pickup', 'OTA Revenue', 'ADR OTB', 'Rate on CM',
+                                         'Recommended Rate']])
             
         
 #        iSelldf7.to_csv(r'E:\iSell_Project\All_In_One_iSell\Testing\linedf7_{}.csv')

@@ -406,7 +406,6 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
 #    df_rcp_season['cap_sqrt'] = np.sqrt(df_rcp_season['max_cap'])
     
     df_rcp_season['cap_sqrt'] = np.where(df_rcp_season['max_cap']<=0, 1, np.sqrt(df_rcp_season['max_cap']))
-    
     df_rcp_season['cap_sqrt1'] = 1.5*df_rcp_season['cap_sqrt']
     df_rcp_season['cap_sqrt2'] = 2.5*df_rcp_season['cap_sqrt']
     df_rcp_season['ota_cap'] =  np.where((df_rcp_season['ota_max']==0),df_rcp_season['max_cap'],df_rcp_season['ota_max'])
@@ -501,8 +500,14 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         df_rcp_season['rcp']=np.where(df_rcp_season['rcp'] == df_rcp_season['Last_szrate'],np.nan,df_rcp_season['rcp'])
         logging.debug('last recommendations(Last_szrate) compared with current rcp column')
         df_rcp_season.drop('Last_szrate',axis=1,inplace=True)
-        
-        recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
+
+        try:
+            recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',
+                                                    ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
+        except:
+            recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online','OTA_Sold',
+                                                    'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
+
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
         
         logging.debug('Recommendations and SeasonalRate Returned ::')
@@ -539,7 +544,13 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
         # df_rcp_season = df_rcp_season['Rate on CM'].astype("int64")
         df_rcp_season['rcp']=np.where(df_rcp_season['rcp'] == df_rcp_season['Rate on CM'],np.nan,df_rcp_season['rcp'])
 
-        recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
+        try:
+            recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
+        except:
+            recdf = pd.DataFrame(df_rcp_season.loc[:,
+                                 ['Date', 'Dow', 'Event', 'Capacity', 'Rooms Avail To Sell Online','OTA_Sold',
+                                  'Pickup', 'OTA Revenue', 'ADR OTB', 'Rate on CM', 'rcp']])
+
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
         
         logging.debug('Recommendations and SeasonalRate Returned ::')

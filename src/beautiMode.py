@@ -14,7 +14,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 # from openpyxl.utils import coordinate_from_string, column_index_from_string
 from openpyxl.utils import column_index_from_string
 from openpyxl.utils.cell import coordinate_from_string
-
+from openpyxl.utils import get_column_letter
 
 ddmmyy=datetime.now()
 dow = ddmmyy.strftime('%a')
@@ -40,7 +40,7 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
         
     logging.debug('appended each row of df to worksheet object (ws)')
     #===================== column names and index and values===================================          
-    col_index = [cell.column for cell in ws[1]]   
+    col_index = [cell.column for cell in ws[1]]
     col_name = [cell.value for cell in ws[1]]
     
     logging.debug('index -> column_name  and column_name -> index dictionaries created ::')
@@ -48,16 +48,29 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     logging.debug(ind_name)    
     
     name_ind = dict(zip(col_name,col_index))   
-    logging.debug(name_ind)    
+    logging.debug(name_ind)
+
     #=================== column value from name ================================================
-    vals=[]
-    for cs in col_name:
-        xy = coordinate_from_string('{}1'.format(name_ind[cs])) # returns ('A',-)
+    # vals=[]
+    # for cs in col_name:
+    # # for i in col_index:
+    #     xy = coordinate_from_string('{}1'.format(name_ind[cs])) # returns ('A',-)  @@@('A',1)
+    #     # xy = get_column_letter(i)
+    #     colvalue = column_index_from_string(xy[0])
+    #     vals.append(colvalue)
+    # logging.debug('name_vals dictionary ::')
+    # name_vals = dict(zip(col_name,vals))
+    # logging.debug(name_vals)
+    #=============================================================================
+    ##Y.K.@ 30/11-2022
+    vals = []
+    for i in range(1,len(col_index)):
+        xy = get_column_letter(i)
         colvalue = column_index_from_string(xy[0])
-        vals.append(colvalue)   
+        vals.append(colvalue)
     logging.debug('name_vals dictionary ::')
-    name_vals = dict(zip(col_name,vals))  
-    logging.debug(name_vals)
+    name_vals = dict(zip(col_name, vals))
+
     #=============================================================================
     if iselltype == 'internal':
         writer = pd.ExcelWriter('iSell_{}_{}-Copy.xlsx'.format(htlname,iseldt), engine='xlsxwriter')
@@ -90,7 +103,6 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     for col_num,value in enumerate(df.columns.values):
         worksheet.write(5, col_num, value, header_format)
     
-    
     #========================================================================================
     format1 = workbook.add_format({'bg_color': '#FF0000',
                                    'align':'right',
@@ -106,7 +118,6 @@ def beautify(defaultpath, df,iselltype,rowlim,htlname,pth,glossary,ftr,pgdf,fina
     format3 = workbook.add_format({'bg_color': '#FF8080',
                                    'border':1,
                                    'font_color': '#000000'}) #Pink
-    
     
     format4 = workbook.add_format({'bg_color': '#FF99CC',
                                    'border':1,

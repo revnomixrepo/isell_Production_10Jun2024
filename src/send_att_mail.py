@@ -14,7 +14,8 @@ def send_alert_msg(beautipth,h_name,name_accman,email_id,number,date,tdayfold):
     filename='iSell_{}_{}.xlsx'.format(h_name,date)
     # fileToSend = "hi.csv"
     username = 'revseed@revnomix.com'
-    password = 'Revenue@123'
+    # password = 'Revenue@123'
+    password ='@#Rev2022@321~'
     recipients = email_id
     # alias = 'Revnomix Revenue Management Services <revnomix.RMS@revnomix.com>'
     alias = 'revseed@revnomix.com>'
