@@ -73,6 +73,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         else:
             print('please select hnf flag')
     else:
+        ### Read Input Master File
         inputmaster = pd.ExcelFile(accpath + '\\' + 'InputConditionMaster_{}.xlsx'.format(accMan[0]))
         inputdf2 = pd.read_excel(inputmaster, 'Accounts')  # Accounts Sheet
     format2file = pd.read_excel(masterpath + '\\' + 'Format2_iSells.xlsx')
@@ -80,7 +81,9 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
     inputdf2 = pd.read_excel(inputmaster, 'Accounts')  # Accounts Sheet
     season_range = pd.read_excel(masterpth + '\\' + 'season_master.xlsx')
+    ## Read DOW Weights File
     dow_weight = pd.read_excel(masterpth + '\\' + 'dow_weights.xlsx')  # dow weights sheet
+    ### Read CM Master file
     cm_colname = pd.read_excel(masterpth + '\\' + 'cm_master.xlsx')  # cm col name
 
 
