@@ -131,12 +131,21 @@ def BookingHotel_CM(pcdata, cmdata, ftr, msrate, isellrange):
     in_data1.rename(columns={'Date1': 'Date'}, inplace=True)
 
     colList = list(in_data1.columns)
-    colList.pop(2)
+    # colList.pop(2)
+    try:
+        date_col = list(in_data1.select_dtypes(include='datetime'))
+        colList = list(set(colList) - set(date_col))
+    except:
+        try:
+            colList.pop(-1)
+        except:
+            colList.pop(2)
 
     for i in colList:
         in_data1[i] = pd.to_numeric(exsplit(in_data1, i))
         try:
-            in_data1[ftr] += in_data1[i]
+            # in_data1[ftr] += in_data1[i]
+            pass
         except:
             pass
 
@@ -490,6 +499,7 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:CMAs, SubModule:CM_eZee')
 
+    ## ftr(Flowthrough) & msrate from PCData of room type
     cmdata = pd.DataFrame(cmdata)
     cmdata = cmdata.replace("-", np.nan)
     cmdata.dropna(axis=1, how='all', inplace=True)
@@ -515,6 +525,7 @@ def CM_eZee(cmdata,ratepl,pcdata,ftr,isellrange, htlname):
     availframe['Rooms Avail To Sell Online'] = availframe['Rooms Avail To Sell Online'].fillna(0).astype(int)
     availframe[ftr] = availframe[ftr].fillna(0).astype(int)
 
+    #### RatePlan from PC data of room type
     pc_ezee = ezee_new_pc_data(pcdata, ratepl)
     pc_ezee_frame = iSell_fun_02.frame(pc_ezee, isellrange)
 
@@ -753,7 +764,14 @@ def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):
     #---------------------PC Data----------------------------------------------
     pcdata=pd.DataFrame(pcdata)
     cm_df=pcdata.T
-    cm_df2=pd.DataFrame(cm_df.iloc[:,0])
+    # cm_df2=pd.DataFrame(cm_df.iloc[:,0])
+    try:
+        cm_fd_copy_ = cm_df.copy()
+        cm_fd_copy = cm_fd_copy_.dropna(axis=1, how='all')
+        cm_df = cm_fd_copy.T.reset_index(drop=True).T
+    except:
+        cm_df = cm_df
+    cm_df2 = pd.DataFrame(cm_df.iloc[:, 0])
     cm_df3=pd.DataFrame(cm_df2)
 
     cm_df3.reset_index(inplace=True)
@@ -783,13 +801,26 @@ def CM_AxisRooms(cmdata,pcdata,ftr,isellrange):
 def CM_Eglobe(cmdata,pcdata, ftr,msrate, ratepl,isellrange):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:CMAs, SubModule:CM_Eglobe')
-
-    #### Price Calendar Process
+    ''' 
+    ###Rateplan from PC Data of roomtype
+    ### ftr(flowthrough) & 
+    msrate from PCData'''
+    ### Price Calendar Process @@Commented on @20/01/2023
+    # cm_p = pd.DataFrame(pcdata)
+    # cmdata2 = cm_p[cm_p['Channel'] == 'Booking.com']
+    # cmdata_ = cmdata2.iloc[:, 3:].fillna(0)                                                 #Y.K. 09"feb
+    # if all(i == 0 for j in cmdata_.values.tolist() for i in j):
+    #     cmdata1 = cm_p[cm_p['Channel'] == 'GoIBIBO MMT V3']
+    #     # print(True)
+    # else:
+    #     cmdata1 = cmdata2
+    #     # print(False)
+    #### Price Calendar Process @@Updated on @20/01/2023
     cm_p = pd.DataFrame(pcdata)
-    cmdata2 = cm_p[cm_p['Channel'] == 'Booking.com']
-    cmdata_ = cmdata2.iloc[:, 3:].fillna(0)                                                 #Y.K. 09"feb
+    cmdata2 = cm_p[cm_p['Channel'] == 'GoIBIBO MMT V3']
+    cmdata_ = cmdata2.iloc[:, 3:].fillna(0)                                                 #Y.K. 20Jan2023
     if all(i == 0 for j in cmdata_.values.tolist() for i in j):
-        cmdata1 = cm_p[cm_p['Channel'] == 'GoIBIBO MMT V3']
+        cmdata1 = cm_p[cm_p['Channel'] == 'Booking.com']
         # print(True)
     else:
         cmdata1 = cmdata2
@@ -807,16 +838,19 @@ def CM_Eglobe(cmdata,pcdata, ftr,msrate, ratepl,isellrange):
     cmfin11 = df_cmdata.loc[:, ['Date', msratecode]]
     cmfin111 = cmfin11.rename(columns={cmfin11.columns[1]: 'Rate on CM'})
     msrateframe = iSell_fun_02.frame(cmfin111, isellrange)
-
-    ### Cm Inventoary Data Process
+    ##-------------------------------------------------------------------------------------------------------------
+    ### CM Inventoary Data Process
     in_data = pd.DataFrame(cmdata)
-
-    in_data1 = in_data[in_data['Channel'] == 'Booking.com']
+    in_data1 = in_data[in_data['Channel'] == 'GoIBIBO MMT V3']
     if len(in_data1) == 0:
-        in_data1 = in_data[in_data['Channel'] == 'GoIBIBO MMT V3']
+        in_data1 = in_data[in_data['Channel'] == 'Booking.com']
+        if len(in_data1) == 0:
+            in_data1 = in_data[in_data['Channel'] == 'Expedia']
+            if len(in_data1) == 0:
+                print("CM_Eglobe Not Found The Channel in CM data")
     else:
-        print("CM_Eglobe Not Found The Channel in CM data")
-
+        # print("CM_Eglobe Not Found The Channel in CM data")
+        pass
     in_data1 = pd.DataFrame(in_data1)
     in_data1 = in_data1.transpose().reset_index()
     new_header = in_data1.iloc[2]

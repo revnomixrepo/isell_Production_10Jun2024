@@ -227,6 +227,11 @@ def dfconv(stdpth,cmfile2,htl,chman):
 
      ### updated by Y.K. 14 June Below function added for total amount & no. rooms column to conv object into required dtype.
     try:
+        df_date3['Total_Amount'] = df_date3['Total_Amount'].apply(lambda x: float(x.replace(',', '')))
+        df_date3["No_of_Rooms"] = df_date3["No_of_Rooms"].astype(np.int64)
+    except:
+        pass
+    try:
         # df_date3["Total_Amount"] = df_date3["Total_Amount"].str.replace(',', '').astype(float)
         df_date3['Total_Amount'] = df_date3['Total_Amount'].replace(r'[^\w\s]|_|[a-z]|[A-Z]', 0, regex=True)
         df_date3["Total_Amount"] = df_date3["Total_Amount"].astype(float)

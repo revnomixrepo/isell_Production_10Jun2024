@@ -385,7 +385,13 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                     basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names[:-4] + str('_CM.csv')),
                     skiprows=[1, 2], quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
                 pcdata = pd.read_csv(
-                    basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names[:-4] + str('_PC.csv')))
+                    basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names[:-4] + str('_PC.csv')),
+                    skiprows = [1, 2], quoting = csv.QUOTE_NONE, error_bad_lines = False, encoding = "latin1")
+                try:
+                    pcdata['Room'] = pcdata['Room'].apply(lambda x: x.strip("''"))  #23-03-2023 A.S. removed quotation if available in room column
+                except:
+                    pass
+
                 staahfile['Rooms'] = 1
 
             else:
@@ -402,15 +408,27 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                 cmdata = pd.read_csv(
                     basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')),
                     quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
+                cmdata2 = pd.read_csv(
+                     basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM2.csv')),
+                     quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
+                try:
+                    cmdata2['Room'] = cmdata2['Room'].apply(lambda x: x.strip("''"))    #23-03-2023 A.S. removed quotation if available in room column
+                except:
+                    pass
+
                 # cmdata2 = pd.read_csv(
                 #     basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM2.csv')),
-                #     quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
-                cmdata2 = pd.read_csv(
-                    basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM2.csv')),
-                    error_bad_lines=False, encoding="latin1")
+                #     error_bad_lines=False, encoding="latin1")
                 pcdata = pd.read_csv(
-                    basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+                     basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')),
+                    quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
+                try:
+                    pcdata['Room'] = pcdata['Room'].apply(lambda x: x.strip("''"))  #23-03-2023 A.S. removed quotation if available in room column
+                except:
+                    pass
+
                 staahfile['Rooms'] = 1
+                    
         # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Maximojo':
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
@@ -429,6 +447,12 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         elif name_chman[names] == 'Djubo':
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')),
                                       skiprows=1)
+            cmdata = ''
+            pcdata = ''
+        # --------------------------------------------------------------------------------------------------------------
+        elif name_chman[names] == 'Bookingjini':
+            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')),
+                                      skiprows=0)
             cmdata = ''
             pcdata = ''
         # --------------------------------------------------------------------------------------------------------------
@@ -604,7 +628,10 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         elif name_chman[names] == 'SiteMinder':
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             #staahfile['Total Amount'] = staahfile['Total Amount'].str.extract('(\d+)').astype(int)
-            staahfile['Total Amount'] = staahfile['Total Amount'].str.split('(', 1).str[0].str.strip().astype(float)
+            try:
+                staahfile['Total Amount'] = staahfile['Total Amount'].str.split('(', 1).str[0].str.strip().astype(float)
+            except:
+                staahfile['Total price'] = staahfile['Total price'].str.split(' ', 1).str[1].str.strip().astype(float)
             staahfile['Rooms'] = 1
             cmdata = ''
             pcdata = ''
@@ -833,6 +860,11 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             logging.info(cap)
             rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
 
+        elif name_chman[names] == 'Bookingjini':
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
+
         elif name_chman[names] == 'SiteMinder':
             cap = int(name_cap[names])
             logging.info(cap)
@@ -924,6 +956,10 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             flyHNF['Sold'] = flyHNF['Capacity'] - flyHNF['Rooms Avail To Sell Online']
             flyHNF['Date'] = flyHNF['Date'].apply(lambda x: x.strftime("%d-%b-%Y"))
             flyHNF2 = pd.DataFrame(flyHNF.loc[:, ['Date', 'Sold']])
+            if (os.path.exists(basepath + '\\HNF\\' + tdayfold)):  #patch 16th Feb 2023
+                pass
+            else:
+                os.mkdir(basepath + '\\HNF\\' + tdayfold)
             flyHNF2.to_excel(basepath + '\\' + 'HNF\{}\{}_HNF.xlsx'.format(tdayfold, names))
             logging.info("HNF On the fly Calculated and dumped in today's HNF folder")
             logging.debug(flyHNF2)
