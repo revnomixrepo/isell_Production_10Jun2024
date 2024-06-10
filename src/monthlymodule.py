@@ -35,7 +35,7 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
     jfact = dict(zip(jumpfactdf2['JumpName'],jumpfactdf2[jType]))    
     
     
-    #----------------attach min max rates to isell ----------------------------------
+    #----------------attach min max rates to iSell ----------------------------------
     
     testisell = pd.DataFrame(iSelldf4)
     testisell['Date']= pd.to_datetime(testisell['Date'],format='%Y-%m-%d')
@@ -45,7 +45,7 @@ def month_minmax(htl,iSelldf4,minRdict,htl_dowWt,jumpfact,mnthJumpdict,htl_clust
     testisell['Min_Rate'] = testisell['Month'].map(minRdict)
     
     #-------------------map dow weights to iSell---------------------------------
-    testisell['Dow_wt'] = testisell['Dow'].map(htl_dowWt)    
+    testisell['Dow_wt'] = testisell['Dow'].map(htl_dowWt)
     
     #-----------------map monthly jump number with isell--------------------------
     # jumpdict = {1:'Base',2:'Short',3:'High',4:'Long'}

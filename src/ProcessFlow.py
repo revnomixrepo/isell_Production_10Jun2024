@@ -26,6 +26,12 @@ import newpatch_functionality as npf
 import warnings
 warnings.filterwarnings('ignore')
 import send_att_mail as mail
+import Rm_type as rt
+from datetime import date,timedelta
+from datetime import datetime
+import time
+import os.path
+from os import path
 
 
 def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No', hnf_flag='No'):
@@ -36,6 +42,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
     tdayfold = ddmmyy.strftime("%d_%b_%Y")
     iselldt = ddmmyy.strftime("%d%b%Y")
 
+    cm_room_type_df = pd.DataFrame()
     # ================================Logger Addition===================================
     logpth = defaultpath + '\\' + 'logs'
     # ---------------------------------log flag-----------------------------------------------
@@ -73,7 +80,6 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         else:
             print('please select hnf flag')
     else:
-        ### Read Input Master File
         inputmaster = pd.ExcelFile(accpath + '\\' + 'InputConditionMaster_{}.xlsx'.format(accMan[0]))
         inputdf2 = pd.read_excel(inputmaster, 'Accounts')  # Accounts Sheet
     format2file = pd.read_excel(masterpath + '\\' + 'Format2_iSells.xlsx')
@@ -81,9 +87,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
     inputdf2 = pd.read_excel(inputmaster, 'Accounts')  # Accounts Sheet
     season_range = pd.read_excel(masterpth + '\\' + 'season_master.xlsx')
-    ## Read DOW Weights File
     dow_weight = pd.read_excel(masterpth + '\\' + 'dow_weights.xlsx')  # dow weights sheet
-    ### Read CM Master file
     cm_colname = pd.read_excel(masterpth + '\\' + 'cm_master.xlsx')  # cm col name
 
 
@@ -97,6 +101,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         logging.debug(inputdf)
 
     monthlyrates = pd.read_excel(inputmaster, 'Monthly_MinRates')  # Monthly_Rates Sheet
+
     monthlyjump = pd.read_excel(inputmaster, 'Monthly_Jump')
     monthlymax = pd.read_excel(inputmaster, 'Monthly_MaxRates')
 
@@ -181,7 +186,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
     # RateOnCM flag
     name_chman = dict(zip(inputdf['hotelname'], inputdf['ChannelMan']))
-    inputdf['RateOnCM'] = inputdf['RateOnCM'].astype(int)
+    inputdf['RateOnCM'] = inputdf['RateOnCM'].astype(float).astype(int)
     name_cmflag = dict(zip(inputdf['hotelname'], inputdf['RateOnCM']))
 
     # phsychological factor
@@ -219,7 +224,13 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
     logging.info("Last Report date provided is :{}".format(LRdate))
     logging.debug(LRdate)
     sysdt2 = pd.to_datetime(sysdt)
+    last7foldname1 = sysdt2 - timedelta(days=6)
     lastfoldname = sysdt2.strftime('%d_%b_%Y')
+    last7foldname = last7foldname1.strftime('%d_%b_%Y')
+    lastfoldname = sysdt2.strftime('%d_%b_%Y')
+    # last7foldname=sysdt2-timedelta(days=7)
+    # last7foldname=last7foldname.strftime('%d_%b_%Y')
+
     LRdt = sysdt2.strftime("%d%b%Y")
 
     logging.info('All folders updated !!!')
@@ -242,14 +253,26 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         logging.debug('Hotel Day of Week Weights:{}'.format(htl_dowWt))
 
         # ----------------------------------------------------------------------------------
-        print("========================================================================================================")
         print('{}.Creating {}_iSell ...'.format(sr, names))
         logging.info('{}.Creating {}_iSell ...'.format(sr, names))
         logging.info('Channel Manager :{}'.format(name_chman[names]))
         isellrange = int(name_win[names])
         logging.info('isellwindow:{}'.format(isellrange))
         # --------------------------------------------------------------------------------------------------------------
-        print(f"Channel Manger: {name_chman[names]}")
+
+        #----------A.S. 3May2023--------------------------------------------------------------------------------
+          #'Ramada by Wyndham Tashkent','The Boma Nairobi BNBO','Boma Inn Nairobi RCH','Boma Inn Eldoret BIE'
+        if names in ('Naivasha Kongoni Hotel','Qaribu Inn','Ziwa Beach Resort'):
+            df_cc=pd.read_excel(masterpath + '\\' + 'currency_mapping.xlsx')
+            cc_value = dict(zip(df_cc['Hotel_name'], df_cc['CC_Factor']))
+            cc_name =dict(zip(df_cc['Hotel_name'],df_cc['Currency']))
+
+        else:
+            cc_value=1
+
+        #use cc_value[names] where u want to multiply
+
+        #------------------------------------------------------------------------------------------
         # --------------------------------------------------------------------------------------------------------------
         if name_chman[names] == 'Staah':
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
@@ -280,19 +303,74 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             cmdata2 =''
             pcdata = ''
         # --------------------------------------------------------------------------------------------------------------
+
+        elif name_chman[names] == 'TravelBook_NoCM':  # A.S. 13"Apr2023
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')))
+            staahfile['Total'] = np.where(staahfile["Rate code"].isin(['DOM HB LM', 'DOM BB']), staahfile['Total']*0.0088,staahfile['Total'])
+            staahfile['Rooms'] = 1
+            staahfile = staahfile.dropna(thresh=5)
+            # cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
+            cmdata = ''
+            pcdata = ''
+            cmdata2= ''
+        # -----------------------------------------------------------------------------------------------------------
+
         elif name_chman[names]  == 'AsiaTech1':
             #staahfile = staahfile.dropna(thresh=5)
             cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
-            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')),encoding="latin1", index_col= False)
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')),encoding="latin1", index_col= False)
             cmdata2 = ''
-            pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PCData.csv')))
+            pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
 
         # cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
         # staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
         # staahfile['Rooms'] = 1
         # pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
         # cmdata2 = ''
-        # --------------------------------------------------------------------------------------------------------------
+
+        #-------------------------------A.S. 10May2023--------------------------------------------------------------------
+
+        elif name_chman[names]  == 'Cloudbeds':
+
+            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),skiprows=1, encoding= 'latin1')
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')), encoding= 'latin1')
+            #-----------------A.S.Oct23-------
+            staahfile['Room Number']=staahfile['Room Number'].astype('str')
+            staahfile['Nights']=staahfile['Nights']*staahfile['Room Number'].apply(lambda x:len(x.split(',')))
+            staahfile['Nights']=staahfile['Nights'].astype('int')
+            #---------------------------------
+            cmdata2 = ''
+            pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx'), encoding= 'latin1'))
+            staahfile['Rooms'] = 1
+            staahfile=staahfile.dropna(subset=['Nights','Room Type'])
+       #----------------------------------------A.S. 29May23------------------------------------------------------------
+
+        elif name_chman[names] == 'Q2B':
+
+            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')), encoding= 'latin1',skiprows=1)
+            try:
+                staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')), encoding= 'latin1')
+            except:
+                try:
+                    import OleFileIO_PL
+                    with open(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')), 'rb') as file:
+                        corrpted_file = OleFileIO_PL.OleFileIO(file)
+                        if corrpted_file.exists('Workbook'):
+                            staahfile_ = corrpted_file.openstream('Workbook')
+                            staahfile = pd.read_excel(staahfile_, engine='xlrd')
+                except:
+                    staahfile = pd.read_html(
+                        basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')),
+                        encoding='latin1') #A.S. 29May23
+
+            staahfile['TotalValue'] = np.where(staahfile["Rev_Group"].isin(['Accommodation Revenue (KES)']),staahfile['TotalValue']*0.00732,staahfile['TotalValue'])
+
+            cmdata2 = ''
+            pcdata = ''
+            #pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx'), encoding= 'latin1'))
+            staahfile['Rooms'] = 1
+
+       # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Synxis':    #Y.K. 06"Dec
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             # cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
@@ -325,11 +403,13 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                 otafile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')),header=2)
 
             cmdata2=''
-            otafile.dropna(subset=['Arrival Date', 'Departure Date','Room Type'], inplace=True)
+            otafile.dropna(subset=['Arrival Date', 'Departure Date'], inplace=True)
             staahfile = pd.DataFrame(otafile)
             staahfile['Arrival Date'] = staahfile['Arrival Date'].str.split(',', expand=True)[0]
             staahfile['Departure Date'] = staahfile['Departure Date'].str.split(',', expand=True)[0]
             pcdata = ''
+
+            # cm_room_type_df = rt.rm_StaahMax(cmdata)
 
             if names == "Hotel EnglishPoint & Spa":
                 staahfile["Total Amount: (All Inclusive)"] = np.where(staahfile['Room Type'].str.contains('KES', regex=True),
@@ -347,18 +427,117 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         elif name_chman[names] == 'AxisRooms':
             cm_col = dict(zip( cm_colname['AxisRooms'], cm_colname['stdname']))
             #staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')))
+            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
+            pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xls')))
+            cmdata2 =  ''
+            staahfile = staahfile.rename(columns=cm_col)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
+        elif name_chman[names] == 'Louvre':
+
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
+            staahfile.dropna(axis=0, subset=['Arrival', 'Departure'], inplace=True)
+            staahfile['Arrival']=staahfile['Arrival'].astype('str')
+            staahfile['Departure'] = staahfile['Departure'].astype('str')
+
+            staahfile['Arrival'] = staahfile['Arrival'].apply(lambda x: x[0:10])
+            staahfile['Departure'] = staahfile['Departure'].apply(lambda x: x[0:10])
+            # staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'], format=checkIn[names])
+            # staahfile['Dept'] = pd.to_datetime(staahfile['Dept'], format=checkOut[names])
+            staahfile['Rooms'] = 1
+            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')), skiprows=1, header=0)
+
+            pcdata = pd.read_excel( basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
+        # --------------------------------------------------------------------------------------------------------------
+
+
+
+        # --------------------------------------------------------------------------------------------------------------
+        elif name_chman[names] == 'AxisRooms1':
+            cm_col = dict(zip( cm_colname['AxisRooms1'], cm_colname['stdname']))
+            #staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')))
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
             pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xls')))
             cmdata2 =  ''
             staahfile = staahfile.rename(columns=cm_col)
         # --------------------------------------------------------------------------------------------------------------
+        
         elif name_chman[names] == 'BookingHotel':
-            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
+            try:
+                staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
+                #A.S. 21Apr2023
+
+            except:
+                staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')))
+
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
             pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx')))
             cmdata2 = ''
         # --------------------------------------------------------------------------------------------------------------
+        # elif name_chman[names] == 'TravelClick':
+        #
+        #     # ===========================Travel Click OTA Condition===============================
+        #     if '_OTA' in names:
+        #         staahfile2 = pd.read_csv(
+        #             basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names[:-4] + str('_OTAData.csv')))
+        #         staahfile2['Subchannel Desc'].fillna(value='blankval', inplace=True)
+        #         staahfile2['Subchannel Desc'] = np.where(staahfile2['Subchannel Desc'] == 'blankval',
+        #                                                  staahfile2['Channel Name'], staahfile2['Subchannel Desc'])
+        #         staahfile2.drop('Channel Name', axis=1, inplace=True)
+        #         # ---------------renamed 'Subchannel Desc' as Channel Name---------------------
+        #         staahfile2.rename(columns={'Subchannel Desc': 'Channel Name'}, inplace=True)
+        #         # ---------------removing ['PMS','Brand.com'] from Channel Name---------------
+        #         staahfile3 = staahfile2[~staahfile2['Channel Name'].isin(['PMS', 'Brand.com', 'CALL-HOTEL'])]
+        #
+        #         # ------------------remove House Bookings for YO1----------------------------
+        #         if names in ["YO1 India's Holistic Wellness Center_OTA"]:
+        #             staahfile = pd.DataFrame(staahfile3[staahfile3['Rate Plan'] != 'House'])
+        #         else:
+        #             staahfile = pd.DataFrame(staahfile3)
+        #         # -----------------------------------------------------------------------------
+        #
+        #         cmdata = pd.read_csv(
+        #             basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names[:-4] + str('_CM.csv')),
+        #             skiprows=[1, 2], quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
+        #
+        #         cmdata2 = pd.read_csv(
+        #             basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names[:-4] + str('_CM.csv')),
+        #             skiprows=[1, 2], quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
+        #
+        #
+        #         pcdata = pd.read_csv(
+        #             basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names[:-4] + str('_PC.csv')))
+        #         staahfile['Rooms'] = 1
+        #         cmdata2=''
+        #
+        #
+        #     else:
+        #         staahfile2 = pd.read_csv(
+        #             basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+        #
+        #         # ------------------remove House Bookings for YO1---------------------------------
+        #         if names in ["YO1 India's Holistic Wellness Center"]:
+        #             staahfile = pd.DataFrame(staahfile2[staahfile2['Rate Plan'] != 'House'])
+        #         else:
+        #             staahfile = pd.DataFrame(staahfile2)
+        #         # ---------------------------------------------------------------------------------
+        #
+        #         cmdata = pd.read_csv(
+        #             basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')),
+        #             quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
+        #         # cmdata2 = pd.read_csv(
+        #         #     basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM2.csv')),
+        #         #     quoting=csv.QUOTE_NONE, error_bad_lines=False, encoding="latin1")
+        #         cmdata2 = pd.read_csv(
+        #             basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM2.csv')),
+        #             error_bad_lines=False, encoding="latin1")
+        #         pcdata = pd.read_csv(
+        #             basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
+        #         staahfile['Rooms'] = 1
         elif name_chman[names] == 'TravelClick':
 
             # ===========================Travel Click OTA Condition===============================
@@ -428,10 +607,17 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                     pass
 
                 staahfile['Rooms'] = 1
-                    
         # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Maximojo':
-            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
+            try:
+                staahfile = pd.read_excel(
+                    basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xls')))   #A.S 21Apr2023
+
+            except:
+                staahfile = pd.read_excel(
+                    basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
+
+
             cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
             pcdata = ''
             cmdata2=''
@@ -449,19 +635,43 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                                       skiprows=1)
             cmdata = ''
             pcdata = ''
-        # --------------------------------------------------------------------------------------------------------------
+
+        #--------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'Bookingjini':
-            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')),
-                                      skiprows=0)
+            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             cmdata = ''
             pcdata = ''
-        # --------------------------------------------------------------------------------------------------------------
-        elif name_chman[names] == 'Ease Room':
-            # cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xls')))
+
+            # --------------------------------------------------------------------------------------------------------------
+        elif name_chman[names] == 'Rategain':
             staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata = ''
+            pcdata = ''
+            staahfile['Check-in'] = staahfile['Check-in'].astype('str')
+            staahfile['Check-out'] = staahfile['Check-out'].astype('str')
+
+            staahfile['Check-in'] = staahfile['Check-in'].apply(lambda x: x[0:10])
+            staahfile['Check-out'] = staahfile['Check-out'].apply(lambda x: x[0:10])
+        # --------------------------------------------------------------------------------------------------------------
+        elif name_chman[names] == 'Ease Room':
+            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')))
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
             cmdata2 = ''
             pcdata = ''
+        # --------------------------------------------------------------------------------------------------------------
+        elif name_chman[names] == 'Guestline':
+
+            cmdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
+                                  encoding='latin1')
+ #            pcdata = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
+ #                                   encoding='latin1')
+            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')),
+                                      encoding='latin1')
+            pcdata = pd.read_excel(
+               basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx'), encoding='latin1'))
+#             cmdata = pd.read_excel(
+#                 basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.xlsx'), encoding='latin1'))
+            cmdata2 = ''
         # --------------------------------------------------------------------------------------------------------------
         # elif name_chman[names] == 'eZee':
         #     checkIn = dict(zip(ezeedates['Hotel'], ezeedates['Checkin']))
@@ -494,8 +704,6 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             staahfile.dropna(axis=0, subset=['Arrival', 'Dept'], inplace=True)
-            # staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'])
-            # staahfile['Dept'] = pd.to_datetime(staahfile['Dept'])
             staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'], format=checkIn[names])
             staahfile['Dept'] = pd.to_datetime(staahfile['Dept'], format=checkOut[names])
             staahfile['Rooms'] = 1
@@ -503,9 +711,29 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             # cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
             cmdata2 = ''
 
-            pcdata = pd.read_csv(
-                 basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))  ##
+            try:
+                pcdata = pd.read_csv(
+                    basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))  ##
+            except:
+                pcdata = ''
+        # --------------------------------------------------------------------------------------------------------------
+        elif name_chman[names] == 'GuestCentric':  # S.W. 16May2024
+            staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
+            staahfile = staahfile[staahfile['Check-In'] != '0000-00-00']
+            staahfile['Channel'].fillna('Website', inplace=True)
+            staahfile['Status'] = staahfile['Status'].apply(lambda x: 1 if x == 'Confirmed' or x == 'New' else 0)
 
+            cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')),
+                                 skiprows=1)
+            pcdata = cmdata.iloc[:, :2]
+        # --------------------------------------------------------------------------------------------------------------
+        elif name_chman[names] == 'IDS':
+            rows_to_skip=40
+            staahfile=pd.read_csv(basepath+'\{}\{}\{}'.format('OTA_Data',tdayfold,names+str('_OTAData.csv')),skiprows=2,skipfooter=rows_to_skip, engine='python')
+            pcdata = pd.read_excel(basepath+'\{}\{}\{}'.format('Price_Calendar',tdayfold,names+str('_PCData.xlsx')), skiprows=4)
+            pcdata = pcdata.drop(columns=pcdata.columns[0], errors='ignore')
+            cmdata2 =''
+        # --------------------------------------------------------------------------------------------------------------
         # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'eZee':
             checkIn = dict(zip(ezeedates['Hotel'], ezeedates['Checkin']))
@@ -513,33 +741,35 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             staahfile.dropna(axis=0, subset=['Arrival', 'Dept'], inplace=True)
-            staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'], format=checkIn[names])
-            staahfile['Dept'] = pd.to_datetime(staahfile['Dept'], format=checkOut[names])
+            if names in ["Grand Hotel D' Europe","Theory9 Premium Service Apts, Bandra"]:
+                staahfile.dropna(axis=0,subset=['Arrival', 'Dept', 'Total'], inplace=True)#A.S.Jun23
+
+
+            staahfile['Arrival'] = staahfile['Arrival'].apply(lambda x: str(x)[2:12])
+            staahfile['Dept'] = staahfile['Dept'].apply(lambda x: str(x)[2:12])
+
+
+            try:
+                staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'], format=checkIn[names])
+                staahfile['Dept'] = pd.to_datetime(staahfile['Dept'], format=checkOut[names])
+            except:
+                try:
+                    staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'], dayfirst=True)
+                    staahfile['Dept'] = pd.to_datetime(staahfile['Dept'], dayfirst=True)
+                except:
+                    staahfile['Arrival'] = pd.to_datetime(staahfile['Arrival'])
+                    staahfile['Dept'] = pd.to_datetime(staahfile['Dept'])
+
             staahfile['Rooms'] = 1
             cmdata = pd.read_csv(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.csv')))
             cmdata2 = ''
 
             pcdata = pd.read_csv(
                 basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            # try:
-            #     pcdata = pd.read_csv(
-            #         basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))  ##
-            # except:
-            #     pcdata = ''
-            # ------------------------------------------------------------------------------------------------------------
-            # if names == 'Theory9 Premium Service Apts, Khar West':
-            #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            # elif names == 'The Emory Hotel':
-            #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            # elif names == 'Xanadu Collection All Suite Hotel':
-            #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            # elif names == 'Kingfisher Casa':
-            #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            # elif names == 'Leisure Lodge Beach & Golf Resort':
-            #     pcdata = pd.read_csv(basepath + '\{}\{}\{}'.format('Price_Calendar', tdayfold, names + str('_PC.csv')))
-            # else:
-            #     pcdata = ''
-        # --------------------------------------------------------------------------------------------------------------
+
+
+
+        #---------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'LeafDover':
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
             cmData1 = pd.read_excel(basepath + '\{}\{}\{}'.format('CM_Availability', tdayfold, names + str('_CM.xlsx')),
@@ -569,7 +799,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                 hnfData1 = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
                 outpath = basepath + '\{}\{}'.format('HNF', tdayfold)
 
-                leaf.lhd(cmData1, hnfData1, outpath, names, isellrange)
+                leaf.lhd(cmData1, hnfData1, outpath, names, isellrange+rng)
                 # To add Leaf Dover (ota, cm)
                 # import Report_Leaf_H as lhd
 
@@ -624,6 +854,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             cmrates2 = pd.DataFrame(cmdata.loc[:, ['Date', 'CMRate']])
             cmrates2['Date'] = pd.to_datetime(cmrates2['Date'], format="%Y-%m-%d")
 
+
         # --------------------------------------------------------------------------------------------------------------
         elif name_chman[names] == 'SiteMinder':
             staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')))
@@ -632,14 +863,18 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                 staahfile['Total Amount'] = staahfile['Total Amount'].str.split('(', 1).str[0].str.strip().astype(float)
             except:
                 staahfile['Total price'] = staahfile['Total price'].str.split(' ', 1).str[1].str.strip().astype(float)
-            staahfile['Rooms'] = 1
+
+            staahfile['Room']=staahfile['Room'].apply(lambda x: str(x).split(' ')[0])
+
+            staahfile=staahfile.rename(columns={'Room':'Rooms'})
+            # staahfile['Rooms'] = 1
             cmdata = ''
             pcdata = ''
         # ------------------------------------------------------------------------------------------------------------
-        elif name_chman[names] in ['Rategain', 'Rategain1']:
-            staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
-            cmdata = ''
-            pcdata = ''
+        # elif name_chman[names] in ['Rategain', 'Rategain1']:
+        #     staahfile = pd.read_excel(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.xlsx')))
+        #     cmdata = ''
+        #     pcdata = ''
         # ------------------------------------------------------------------------------------------------------------
         # elif name_chman[names] == 'AsiaTech':
         #     staahfile = pd.read_csv(basepath + '\{}\{}\{}'.format('OTA_Data', tdayfold, names + str('_OTAData.csv')),
@@ -726,24 +961,40 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
             rateshopfile = pd.read_csv(
                 basepath + '\{}\{}\{}'.format('RateShop', tdayfold, names[:-4] + str('_RateShop.csv')))
+            #--------------------------A.S. 4May2023--------------------------------------------------------
+              #'The Boma Nairobi BNBO', 'Boma Inn Nairobi RCH', 'Boma Inn Eldoret BIE'
+            if names in ('Naivasha Kongoni Hotel','Qaribu Inn','Ziwa Beach Resort'):
+                rateshopfile['NetRate']= rateshopfile['NetRate']/cc_value[names]
+                rateshopfile['NetRate'] = rateshopfile['NetRate'].fillna(0)
+                rateshopfile['NetRate'] = rateshopfile['NetRate'].astype('int64')
+                rateshopfile['OnsiteRate'] = rateshopfile['OnsiteRate']/cc_value[names]
+                rateshopfile['OnsiteRate'] = rateshopfile['OnsiteRate'].fillna(0)
+                rateshopfile['OnsiteRate'] = rateshopfile['OnsiteRate'].astype('int64')
+            #---------------------------------------------------------------------------------------------
+
+
 
         else:
             rsfile = pd.read_csv(basepath + '\{}\{}\{}'.format('RS_Data', tdayfold, names + str('_RSData.csv')),
                                  encoding='cp1252')
             dc = pd.read_excel(basepath + '\{}\{}'.format('Demand_Calendar', names + str('.xlsx')))
-           ##-------------------------------------------------------------------------------------------------
+           ##Reading old frame for pickup & markettrend----------------------------------------------------------------------
             try:
                 df_LR = pd.read_csv(basepath + '\{}\{}\{}'.format('OutPut_CSV', lastfoldname,
                                                                   str('iSell_') + names + str('_{}.csv'.format(LRdt))))
             except:
                 path_LR = npf.Lrdate_outputCSV(LRdt,basepath,names)
                 df_LR = pd.read_csv(path_LR)
-
-            # ------------------------------(After Read Last OutPutCSV Drop Duplicates on Date Column)---------------------------------
-            # -----------------------@03/01/2022 Added the below line code---------------------------------
-            # df_LR = df_LR.drop_duplicates(subset='Date',keep='first').reset_index(drop=True)
-
             ## ------------------------------------------------------------------------------------------------
+            # -------------------7DayBefore Report---------------------------------------
+            try:
+                df_LR7 = pd.read_csv(basepath + '\{}\{}\{}'.format('OutPut_CSV', last7foldname,
+                                                                  str('iSell_') + names + str('_{}.csv'.format(last7foldname1.strftime('%d%b%Y')))))
+            except:
+                path_LR7 = npf.Lrdate_outputCSV(LRdt,basepath,names)
+                df_LR7 = pd.read_csv(path_LR7)
+            # =================================================================================
+
             if use_Grid[names] == 1:
                 df_PG = pd.read_excel(basepath + '\{}\{}'.format('Pricing_Grid', names + str('_PG.xlsx')))
             else:
@@ -751,6 +1002,18 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
             rateshopfile = pd.read_csv(
                 basepath + '\{}\{}\{}'.format('RateShop', tdayfold, names + str('_RateShop.csv')))
+            #--------------------------A.S. 4May2023--------------------------------------------------------
+               #The Boma Nairobi BNBO', 'Boma Inn Nairobi RCH', 'Boma Inn Eldoret BIE'
+            if names in ('Naivasha Kongoni Hotel','Qaribu Inn',"Ziwa Beach Resort"):
+                rateshopfile['NetRate']= rateshopfile['NetRate']/cc_value[names]
+                rateshopfile['NetRate'] = rateshopfile['NetRate'].fillna(0)
+                rateshopfile['NetRate'] = rateshopfile['NetRate'].astype('int64')
+                rateshopfile['OnsiteRate'] = rateshopfile['OnsiteRate']/cc_value[names]
+                rateshopfile['OnsiteRate'] = rateshopfile['OnsiteRate'].fillna(0)
+                rateshopfile['OnsiteRate'] = rateshopfile['OnsiteRate'].astype('int64')
+
+                rateshopfile['Currency']=str(cc_name[names])
+            #---------------------------------------------------------------------------------------------
         # ================================================================================================================
 
         # --------------------------------------(Demand Calendar)---------------------------------
@@ -791,11 +1054,24 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         # ==============================================================================================
 
         # ---------------------------Frame('Date','Dow')-----------------------------------------------
-        tday = ddmmyy.strftime("%d-%b-%Y")
-        index = pd.date_range(tday, periods=isellrange)
+        tday=datetime.now() #A.S. Jun23
+        # rng = (tday) - (tday.replace(day=1))
+        rng = (tday) - (tday-timedelta(days=1))
+        rng = rng.days
+        tday = tday.strftime("%d-%b-%Y")
+        tday = datetime.strptime(tday,"%d-%b-%Y")
+
+        # yday=datetime.now().replace(day=1)
+        yday1 = datetime.now()-timedelta(days=1)
+
+
+        #yday = date.today()+timedelta(days=-1)
+        yday=yday1.strftime("%d-%b-%Y")
+        yday2=yday1.strftime("%Y-%m-%d")
+        index = pd.date_range(yday,periods=isellrange+rng)
         frame = pd.DataFrame({'Date': index})
         frame['Dow'] = frame['Date'].apply(lambda x: x.strftime('%a'))
-        logging.debug('Frame with {} days(isellwindow) range'.format(isellrange))
+        logging.debug('Frame with {} days(isellwindow) range'.format(isellrange+rng))
         logging.debug(frame)
 
         # ---------------------# df_total,df_ota,df_ttlsold #--------------------------------------------
@@ -804,15 +1080,16 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             pass
         else:
             logging.debug('Exploading data ...')
-            df_total, df_ota, df_ttlsold = iSell_fun_02.dfconv(defaultpath, staahfile, names, name_chman[names])
+            df_total, df_ota, df_ttlsold = iSell_fun_02.dfconv(defaultpath, staahfile, names, name_chman[names],cc_value,name_accman[names]) #A.S. cc_value added
             logging.info('Occupancy conversion done, returned (df_total,df_ota,df_ttlsold) !!!')
 
             df_ttlsold.fillna(value=0, inplace=True)
 
             # df_all
-            df_all = iSell_fun_02.occframe(df_total, isellrange)
+            df_all = iSell_fun_02.occframe(df_total, isellrange+rng)
             logging.debug('Merged df_total with iSell frame')
             df_ota2 = df_ota.pivot(index='occupancydate', columns='Channel', values='No_of_Rooms')
+            df_ota2.dropna(axis=0,how='all')#A.S. Jun2023
             df_ota2.reset_index(inplace=True)
             logging.debug('OTA Pivote Table (df_ota2) ::')
             logging.debug(df_ota2)
@@ -845,7 +1122,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         # ----------------------# df merging #---------------------------------------------
 
         # 1)---------------# Demand Calendar #------------------------------------------------------------
-        dc2 = iSell_fun_02.frame(dc, isellrange)
+        dc2 = iSell_fun_02.frame(dc, isellrange+rng)
         dc3_1 = dc2.loc[:, ['Date', 'Event']]
         dc3 = pd.merge(frame, dc3_1, on='Date', how='left')
         dc3['Capacity'] = name_cap[names]
@@ -858,54 +1135,86 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         if name_chman[names] == 'Djubo':
             cap = int(name_cap[names])
             logging.info(cap)
-            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
+            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange+rng)
 
-        elif name_chman[names] == 'Bookingjini':
+
+        elif name_chman[names] in ['GuestCentric']:
             cap = int(name_cap[names])
             logging.info(cap)
-            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
+            rmsavail, cmdf = CMAs.CM_GuestCentric(cmdata, name_rateplan[names], pcdata, name_ftr[names],
+                                                  isellrange + rng)
+
+        elif name_chman[names] == 'Bookingjini':       #saurabh & suyash
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_Bookingjini(df_ttlsold, cap, isellrange+rng)
+
+        elif name_chman[names] == "Rategain":               #saurabh & suyash
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_Rategain(df_ttlsold, cap, isellrange+rng)
 
         elif name_chman[names] == 'SiteMinder':
             cap = int(name_cap[names])
             logging.info(cap)
-            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
+            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange+rng)
 
-        elif name_chman[names] in ['StayFlexi']:
+        elif name_chman[names] == 'Guestline':
             cap = int(name_cap[names])
             logging.info(cap)
-            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
+            rmsavail, cmdf = CMAs.CM_Guestline(cmdata,name_rateplan[names],pcdata,name_ftr[names] ,isellrange)
 
-        elif name_chman[names] in ['Phobs']:
+
+        elif name_chman[names] in ['Louvre']:
             cap = int(name_cap[names])
             logging.info(cap)
-            rmsavail, cmdf = CMAs.CM_Phobs(cmdata,isellrange)
-
-        elif name_chman[names] in ['eZeeNoCM']:
-            cap = int(name_cap[names])
-            logging.info(cap)
-            rmsavail, cmdf = CMAs.CM_eZeeNoCM(otasold,name_rateplan[names],pcdata,cap,name_ftr[names],isellrange)
+            rmsavail, cmdf = CMAs.CM_Louvre(cmdata,name_rateplan[names],pcdata,name_ftr[names],isellrange+rng)
 
         elif name_chman[names] in ['Ease Room']:
             cap = int(name_cap[names])
             logging.info(cap)
-            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
+            rmsavail, cmdf = CMAs.CM_EaseRoom(cmdata, name_ftr[names], isellrange+rng)
+
+        elif name_chman[names] in ['StayFlexi']:
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange+rng)
+
+        elif name_chman[names] in ['Phobs']:
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_Phobs(cmdata,isellrange+rng)
+
+        elif name_chman[names] in ['eZeeNoCM']:
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_eZeeNoCM(name_rateplan[names],pcdata,name_ftr[names],isellrange+rng)
+
+        elif name_chman[names] in ['Ease Room']:
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange+rng)
+
+        elif name_chman[names] in ['TravelBook_NoCM']:
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange+rng)
+
 
         elif name_chman[names] in ['Synxis']:
             cap = int(name_cap[names])
             logging.info(cap)
-            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
+            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange+rng)
 
-        elif name_chman[names] in ['Rategain', 'Rategain1']:
-            cap = int(name_cap[names])
-            logging.info(cap)
-            rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange)
-
+        # elif name_chman[names] in ['Rategain', 'Rategain1']:
+        #     cap = int(name_cap[names])
+        #     logging.info(cap)
+        #     rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap, isellrange+rng)
 
         elif name_chman[names] == 'BookingCentre':
             cap = int(name_cap[names])
             logging.info(cap)
             rmsavail, cmdf = CMAs.CM_Djubo(df_ttlsold, cap)
-
 
         # elif name_chman[names] == 'Asiatech':
         #     cap = int(name_cap[names])
@@ -918,7 +1227,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                 # -------------similar to getfam----------------
                 rmsavail, cmdf = CMAs.CM_TB(staahfile, cmrates2)
             elif names == 'Best Western Clifton':
-                rmsavail, cmdf = CMAs.CM_UK(staahfile, cmrates2, name_msrate[names], isellrange)
+                rmsavail, cmdf = CMAs.CM_UK(staahfile, cmrates2, name_msrate[names], isellrange+rng)
 
 
         elif name_chman[names] in ['TravelBook', 'BW']:
@@ -927,23 +1236,57 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         elif name_chman[names] == 'RezNext':
             # attch avail, OTA_Sold and CM_Rate
             rmsavail, cmdf = CMAs.CM_RezNext(cmdata, name_msrate[names], name_ftr[names], name_rateplan[names],
-                                            isellrange)
+                                            isellrange+rng)
         elif name_chman[names] =='TravelClick':
             rmsavail, cmdf = CMAs.CM_Avails(cmdata, names, name_msrate[names], name_ftr[names], name_chman[names],
-                                            pcdata, name_rateplan[names], isellrange, cmdata2)
+                                            pcdata, name_rateplan[names], isellrange+rng, cmdata2)
+
+        elif name_chman[names] == 'IDS':
+            cap = int(name_cap[names])
+            logging.info(cap)
+            rmsavail, cmdf = CMAs.CM_IDS(name_rateplan[names], pcdata, name_ftr[names], isellrange + rng)
+            # rmsavail, cmdf = CMAs.CM_IDS(pcdata, isellrange + rng)
 
         else:
             rmsavail, cmdf = CMAs.CM_Avails(cmdata, names, name_msrate[names], name_ftr[names], name_chman[names],
-                                            pcdata, name_rateplan[names], isellrange, cmdata2)
+                                            pcdata, name_rateplan[names], isellrange+rng, cmdata2)
+
+        # # --------------------------A.S. 4May2023------------------------
+        #   #The Boma Nairobi BNBO', 'Boma Inn Nairobi RCH', 'Boma Inn Eldoret BIE
+        # if names in (''):
+        #     cmdf['Rate on CM']=cmdf['Rate on CM']/cc_value[names]
+        #     cmdf['Rate on CM'] = cmdf['Rate on CM'].astype('int64')
+        # #-----------------------------------------------------------------
+
+
 
         iSelldf1 = iSell_fun_02.merging(dc3, rmsavail)
+
+
         logging.info('Demand calendar and Availability merged ::')
         logging.debug(iSelldf1)
 
         if name_chman[names] in ['UK', 'TravelBook', 'BW']:
             iSelldf2 = iSelldf1
         else:
+
             iSelldf2 = iSell_fun_02.merging(iSelldf1, otasold)
+
+        if name_chman[names] == 'IDS':
+            iSelldf2['Rooms Avail To Sell Online'] = 0
+            pass
+        else:
+
+            #------------------------------------------Inventory Open%--------------A.S.23---------------------#
+
+            iSelldf2["Inventory Open%"] = (iSelldf2["Rooms Avail To Sell Online"] / (iSelldf2["Capacity"] - iSelldf2["OTA_Sold"])) * 100
+            iSelldf2["Inventory Open%"]=iSelldf2["Inventory Open%"].replace(np.nan,0)
+            iSelldf2["Inventory Open%"] = iSelldf2["Inventory Open%"].replace([np.inf,-np.inf], 0)
+            iSelldf2["Inventory Open%"] = iSelldf2["Inventory Open%"].astype('int')
+            df_inv = iSelldf2.loc[:, ['Date', 'Inventory Open%']]
+            # df_inv = df_inv.loc(df_inv['Inventory Open%'] < 30 and (df_inv['Date'] >= yday))
+
+            # --------------------------------------------------------------------------------------
             logging.info('OTA Sold merged ::')
             logging.debug(iSelldf2)
 
@@ -956,10 +1299,6 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             flyHNF['Sold'] = flyHNF['Capacity'] - flyHNF['Rooms Avail To Sell Online']
             flyHNF['Date'] = flyHNF['Date'].apply(lambda x: x.strftime("%d-%b-%Y"))
             flyHNF2 = pd.DataFrame(flyHNF.loc[:, ['Date', 'Sold']])
-            if (os.path.exists(basepath + '\\HNF\\' + tdayfold)):  #patch 16th Feb 2023
-                pass
-            else:
-                os.mkdir(basepath + '\\HNF\\' + tdayfold)
             flyHNF2.to_excel(basepath + '\\' + 'HNF\{}\{}_HNF.xlsx'.format(tdayfold, names))
             logging.info("HNF On the fly Calculated and dumped in today's HNF folder")
             logging.debug(flyHNF2)
@@ -968,12 +1307,25 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             pass
 
         # 3)---------------# Last Report #------------------------------------------
-        LRfinal = iSell_fun_02.dfLR(df_LR, name_chman[names])
-        LRfinal2 = iSell_fun_02.frame(LRfinal, isellrange)
+        LRfinal_2 = iSell_fun_02.dfLR(df_LR, name_chman[names])
+        LRfinal2 = iSell_fun_02.frame(LRfinal_2, isellrange+rng)
 
-        # ======================# Last SeasonalRate #=====================================
+        #-------------------7daybefore report---------------------------------------
+        if names=="YO1 Health_Resort_OTA":
+          pass
+
+        else:
+            if names == "YO1 Health Resort":
+                names1="YO1 Health Resort_OTA_Combine"
+                LRfinal_7 = iSell_fun_02.dfLR7(df_LR7, name_chman[names1])
+            else:
+                LRfinal_7 = iSell_fun_02.dfLR7(df_LR7, name_chman[names])
+
+            LRfinal7 = iSell_fun_02.frame(LRfinal_7, isellrange+rng)
+        #=================================================================================
         cmflag = name_cmflag[names]
 
+        # ======================# Last SeasonalRate #=====================================
         if cmflag == 0:
             Last_szrates = pd.DataFrame(df_LR.loc[:, ['Date', 'SeasonalRate_y']])
             Last_szrates.rename(columns={'SeasonalRate_y': 'Last_szrate'}, inplace=True)
@@ -994,15 +1346,6 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             logging.info('\tPlease Check RateOnCM column in InputCondition, It should be 1 or 0')
             sys.exit()
 
-        # 4)========================== Pickup =================================================
-        iSelldf2_1 = iSell_fun_02.merging(iSelldf2, LRfinal2)
-        #        iSelldf2_1.to_csv(r'D:\Hrishikesh\All_In_One_iSell\masters\iSelldf2_1.csv')
-        iSelldf2_1['Pickup'] = iSelldf2_1['OTA_Sold'] - iSelldf2_1['Last_OTASOLD']
-        iSelldf2_1.fillna(value=0, inplace=True)
-
-        iSelldf2 = iSelldf2_1.drop(['Last_OTASOLD', 'LAvg'], axis=1)
-
-        logging.info('\tPickup Added !!!')
 
         # 5)---------------# OTA Revenue #------------------------------------------
 
@@ -1021,9 +1364,35 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             logging.info('ADR Added !!!')
 
             # 7)--------------# Rate on CM #---------------------------------------------------
-            iSelldf4 = iSell_fun_02.merging(iSelldf3, cmdf)
 
-            logging.info('Rate on CM Added !!!')
+            iSelldf4 = iSell_fun_02.merging(iSelldf3, cmdf)
+        # 4)========================== Pickup =================================================
+        iSelldf2_1 = iSell_fun_02.merging(iSelldf4, LRfinal2)
+        iSelldf2_1['Pickup'] = iSelldf2_1['OTA_Sold'] - iSelldf2_1['Last_OTASOLD']
+        iSelldf2_1['Revenue Pickup'] = iSelldf2_1['OTA Revenue'] - iSelldf2_1['Last_OTA_Revenue']
+        iSelldf2_1['ADR Pickup'] = iSelldf2_1['ADR OTB'] - iSelldf2_1['Last_ADR_OTB']
+
+        iSelldf7_1 = iSell_fun_02.merging(iSelldf2_1, LRfinal7)
+        iSelldf7_1['Rooms Last 7 Days Pickup']=iSelldf7_1['OTA_Sold']-iSelldf7_1['Last_OTASOLD7']
+        iSelldf7_1['Revenue Last 7 Days Pickup'] = iSelldf7_1['OTA Revenue'] - iSelldf7_1['Last_OTA_Revenue7']
+        iSelldf7_1['ADR Last 7 Days Pickup'] = iSelldf7_1['ADR OTB'] - iSelldf7_1['Last_ADR_OTB7']
+
+        iSelldf7_1.fillna(value=0, inplace=True)
+
+        iSelldf4 = iSelldf7_1.drop(['Last_OTASOLD7','Last_OTASOLD', 'LAvg1'], axis=1)
+
+        logging.info('\tPickup Added !!!')
+
+#-------------------------------------------------------------------------------------
+
+
+            # if pcdata != '':#A.S. 30May23
+            #     iSelldf4 = iSell_fun_02.merging(iSelldf3, cmdf)
+            # else:
+            #     iSelldf4 = iSelldf3
+
+
+        logging.info('Rate on CM Added !!!')
 
         logging.info('\t-----Pricing Conditions------')
 
@@ -1055,6 +1424,10 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             iSelldf44, isellforgrid = mnthprice.month_minmax(names, iSelldf4, month_minR, htl_dowWt, jfacts, month_jump,
                                                              htl_cluster, jumpType[names], month_maxR,
                                                              month_useMax[names], use_ceiling[names])
+            try:
+                iSelldf44['Rate on CM']=iSelldf44['Rate on CM'].astype('float64') #A.S.May23
+            except:
+                pass
 
             # -----------------Min, min, Max, max, (4 columns) fetching after Rate on CM
             #            iSelldf44.to_csv(r'E:\All_In_One_iSell\Testing\iSelldf44_{}.csv'.format(names))
@@ -1066,13 +1439,16 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             else:
                 pgdf = grid.Gridcreator(names, isellforgrid, month_minR, htl_dowWt, clustName, month_jump, jfacts,
                                         jumpType[names], psy_fact, priceType[names])
+                # pgdf = grid.Gridcreator(names, isellforgrid, month_minR, htl_dowWt, clustName, month_jump, jfacts,
+                #                         jumpType[names], psy_fact, 'Seasonal')
 
                 if names in format2isells:
                     # -------------dump grid for format2 iSell----------------------------
-                    pgdf.to_excel(basepath + '\{}\{}'.format('Pricing_Grid', names + '_PG.xlsx'))
+                    pgdf.to_excel(basepath + '\{}\{}'.format('Pricing_Grid', names + '_Monthly_PG.xlsx'))
+                    # pgdf.to_excel(basepath + '\{}\{}'.format('Pricing_Grid', names + '_Seasonal_PG.xlsx'))
+
                 else:
                     pass
-
 
         elif priceType[names] == 'Seasonal':
             logging.info('\tPricing Type is :{}'.format(priceType[names]))
@@ -1104,7 +1480,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                                                             czonjumps, htl_cluster, jumpType[names], czonmaxrates,
                                                             cson_useMax[names])
 
-            #            isellforgrid.to_csv(r'E:\iSell_Project\All_In_One_iSell\Testing\isellforgrid.csv')
+            # isellforgrid.to_csv(r'E:\iSell_Project\All_In_One_iSell\Testing\isellforgrid.csv')
 
             logging.info('\tSeasonal Rates Fetched')
 
@@ -1113,8 +1489,11 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             else:
                 pgdf = grid.Gridcreator(names, isellforgrid, czonminratesdict, htl_dowWt, clustName, czonjumpsdict,
                                         jfacts, jumpType[names], psy_fact, priceType[names])
-
-
+                if names in format2isells:
+                    # -------------dump grid for format2 iSell----------------------------
+                    pgdf.to_excel(basepath + '\{}\{}'.format('Pricing_Grid', names + '_Seasonal_PG.xlsx'))
+                else:
+                    pass
 
         else:
             logging.info('\tPricing Type is not defined')
@@ -1146,11 +1525,11 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                         sys.exit()
 
                     if names == 'Leaf Hotel Dover':
-                        htlsold, htlavail, oooflag = iSell_fun_02.TBhnfconv(df_hnf, name_maxcap[names], isellrange)
+                        htlsold, htlavail, oooflag = iSell_fun_02.TBhnfconv(df_hnf, name_maxcap[names], isellrange+rng)
                     else:
-                        htlsold, htlavail, oooflag = iSell_fun_02.UKhnfconv(df_hnf, name_maxcap[names], isellrange)
+                        htlsold, htlavail, oooflag = iSell_fun_02.UKhnfconv(df_hnf, name_maxcap[names], isellrange+rng)
 
-                    #                    htlsold,htlavail = iSell_fun_02.UKhnfconv(df_hnf,name_maxcap[names],isellrange)
+                    #                    htlsold,htlavail = iSell_fun_02.UKhnfconv(df_hnf,name_maxcap[names],isellrange+rng)
 
                     iSelldf444_1 = iSell_fun_02.merging(iSelldf44, htlsold)
                     iSelldf444 = iSell_fun_02.merging(iSelldf444_1, htlavail)
@@ -1167,7 +1546,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                     df_hnf = pd.read_csv(basepath + '\{}\{}\{}'.format('HNF', tdayfold, names + str('_HNF.csv')),
                                          delimiter=",", index_col=False, header=0, low_memory=False,
                                          quoting=csv.QUOTE_ALL, encoding='utf8')
-                    htlsold, htlavail, oooflag = iSell_fun_02.TBhnfconv(df_hnf, name_maxcap[names], isellrange)
+                    htlsold, htlavail, oooflag = iSell_fun_02.TBhnfconv(df_hnf, name_maxcap[names], isellrange+rng)
 
                     iSelldf444_1 = iSell_fun_02.merging(iSelldf44, htlsold)
                     iSelldf444 = iSell_fun_02.merging(iSelldf444_1, htlavail)
@@ -1180,16 +1559,15 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
 
                 # -----------------II) HNF based Direct Pricing --------------------------------------
                 else:
-
                     if GridType[names] == 'Direct':
                         cmflag = name_cmflag[names]
                         df_hnf = pd.read_excel(basepath + '\{}\{}\{}'.format('HNF', tdayfold, names + str('_HNF.xlsx')))
                         logging.info("\tHNF read for {}".format(names))
                         # ----------------------calculate hotel sold and availability frames------------------------
-                        htlsold, htlavail, oooflag = iSell_fun_02.hnfconv(df_hnf, name_cap[names], isellrange)
+                        htlsold, htlavail, oooflag = iSell_fun_02.hnfconv(df_hnf, name_cap[names], isellrange+rng)
                         iSelldf444_1 = iSell_fun_02.merging(isellforgrid, htlsold)
                         iSelldf444 = iSell_fun_02.merging(iSelldf444_1, htlavail)
-                        iSelldf5, szRates = directRecs.dRecs(iSelldf444, pgdf, isellrange, Last_szrates, cmflag,
+                        iSelldf5, szRates = directRecs.dRecs(iSelldf444, pgdf, isellrange+rng, Last_szrates, cmflag,
                                                              priceType[names], name_hnf[names], name_ftr[names])
                         logging.info('\tDirect Recommendations added as per HNF updated !!!')
                         # ------getting iSelldf5 and szRates from Direct GridType-----------------------
@@ -1206,7 +1584,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                             sys.exit()
 
                         logging.info("\tHNF read for {}".format(names))
-                        htlsold, htlavail, oooflag = iSell_fun_02.hnfconv(df_hnf, name_cap[names], isellrange)
+                        htlsold, htlavail, oooflag = iSell_fun_02.hnfconv(df_hnf, name_cap[names], isellrange+rng)
 
                         iSelldf444_1 = iSell_fun_02.merging(iSelldf44, htlsold)
                         iSelldf444 = iSell_fun_02.merging(iSelldf444_1, htlavail)
@@ -1222,7 +1600,7 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
                 if GridType[names] == 'Direct':
                     # -----------------I) Direct Recommendations(Non HNF Based) -----------------------------------
                     cmflag = name_cmflag[names]
-                    iSelldf5, szRates = directRecs.dRecs(isellforgrid, pgdf, isellrange, Last_szrates, cmflag,
+                    iSelldf5, szRates = directRecs.dRecs(isellforgrid, pgdf, isellrange+rng, Last_szrates, cmflag,
                                                          priceType[names], name_hnf[names], name_ftr[names])
                     logging.info("\tDirect Recommendations added (Non HNF)")
                 else:
@@ -1249,13 +1627,85 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         # =====================================================================================================
 
         # 9)---------------------# Rate Shop #--------------------------------------
-        lrate4, rstable2, cavg = iSell_fun_02.RateShop(rsfile, isellrange)
+        lrate4, rstable2, cavg = iSell_fun_02.RateShop(rsfile, isellrange+rng,names,cc_value) #A.S. names,cc_value added 5May2023
         iSelldf6_1 = iSell_fun_02.merging(iSelldf55, lrate4)
         iSelldf6 = iSell_fun_02.merging(iSelldf6_1, rstable2)
+        ls = []
+       # #  #====================Rateshop Variance A.S. Jun2023================================
+       # #
+       #  lr=df_LR.columns.get_loc('LowestRate')
+       #  mt=df_LR.columns.get_loc('Market Trend')
+       #  rstable3=rstable2.iloc[:-1,1:]
+       #  range1=range(lr+1,mt,2)
+       #  lst=[]
+       #  for i in range1:
+       #      lst.append(i)
+       #
+       #  rstable3 = rstable2.iloc[:-1,0:]
+       #  # rtvar=df_LR.iloc[:,lr+1:mt]
+       #  rtvar = df_LR[df_LR['Date']>=(yday2)]
+       #  rtvar = rtvar.iloc[:,lst]
+       #  # rtvar=rtvar[rtvar['Date']>=yday]
+       #
+       #  rstable3.fillna(0,inplace=True)
+       #  rstable3=rstable3.astype('object')
+       #  rtvar.fillna(0,inplace=True)
+       #  rtvar=rtvar.astype('object')
+       #  rtvar=rtvar.reset_index()
+       #  rtvar = rtvar.iloc[:,1:]
+       #
+       #
+       #  #rstable3.iloc[:, 1]=rstable3.iloc[:, 1].astype('object')
+       #
+       # # abc_col=rstable3.iloc[:,1].apply(lambda x:str(x).split(' ')[0])
+       #
+       #  rstable4=pd.DataFrame()
+       #
+       #
+       #  # dfrs = pd.DataFrame(pd.date_range(start=iSelldf6.iat[0,0], end=iSelldf6.iat[-2,0]), columns=['Date'])
+       #  # #rstable4=dfrs.merge(rstable3,how='left',on='Date')
+       #  #
+       #  # rstable4 = pd.concat([dfrs,rstable3],ignore_index=True)
+       #  # rstable4.fillna(0, inplace=True)
+       #  # rstable4.drop_duplicates(subset=['Date'],inplace=True)
+       #  iSelldf6_=iSelldf6.iloc[:-2,:]
+       #  ls=[]
+       #
+       #  for i,y in enumerate(rtvar.columns,start=1):
+       #      rstable4[y]=rstable3.loc[:,y].apply(lambda x:int(str(x).split(' ')[0]))-rtvar.loc[:,y].apply(lambda x:int(str(x).split(' ')[0]))
+       #      rstable4[y].replace(0,'',inplace=True)
+       #      iSelldf6_.insert(i+lr+1,i+lr+1,(rstable4[y].to_list()))
+       #      ls.append(i+lr+1)
+       #      lr=lr+1
+       #
+       #
+       #
+       #
+       #
+
+        #==========Data add from 1st date===================================
+
+        # lr = df_LR.columns.get_loc('LowestRate')
+        # mt = df_LR.columns.get_loc('Market Trend')
+        #
+        # if iSelldf6.iat[0,0]==tday:
+        #     pass
+        # else:
+        #     df_LR1=df_LR.iloc[:, lr + 1:mt]
+        #     df_LR1=df_LR1[df_LR1['Date']<tday]
+        #
+        #     pd.merge(iSelldf6,df_LR1,how='left',on='Date')
+
+
+
+
+
+        #===================================================================
         logging.info('Rateshop added !!!')
 
         # 10)--------------------# Market Trend #-------------------------
-        lavg = LRfinal.loc[:, ['Date', 'LAvg']]
+        lavg = LRfinal2.loc[:, ['Date', 'LAvg']]
+        #iSelldf7_1 = iSell_fun_02.merging(iSelldf6, lavg)
         iSelldf7_1 = iSell_fun_02.merging(iSelldf6, lavg)
         iSelldf7 = iSell_fun_02.merging(iSelldf7_1, cavg)
         iSelldf7['Market Trend'] = iSelldf7.loc[:, 'CAvg'] - iSelldf7.loc[:, 'LAvg']
@@ -1268,7 +1718,6 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             logging.info('UK or TravelBook iSell dataframe ::')
             iSelldf8 = iSelldf7
             logging.debug(iSelldf8)
-
         else:
             iSelldf8 = iSell_fun_02.merging(iSelldf7, otabreak)
             logging.info('OTA Data added !!!')
@@ -1306,9 +1755,18 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         except:
             iSelldf9_1 = pd.DataFrame(iSelldf8)
 
-        iSelldf9 = pd.DataFrame(iSelldf9_1.iloc[:int(isellrange), :])
+        iSelldf9 = pd.DataFrame(iSelldf9_1.iloc[:int(isellrange+rng), :])
         iSelldf10 = iSelldf9.round(0)
         iSelldf10['Date'] = iSelldf10['Date'].apply(lambda x: x.strftime("%d-%b-%Y"))
+
+        # ------------------------------------Citadel Sarovar Portico Bengaluru------------------------------------------------
+
+        # if names == "Citadel Sarovar Portico Bengaluru":
+        #     iSelldf10.drop("Rooms Avail To Sell Online", axis=1, inplace=True)
+        #     iSelldf10.drop("No", axis=1, inplace=True)
+        #     iSelldf10.drop("Inventory Open%", axis=1, inplace=True)
+
+        # --------------------------------------------------------------------------------------------------------------
 
         # 11)-------------------------# Drop col list #------------------------------
         if name_hnf[names] == 'Yes':
@@ -1339,7 +1797,64 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
         #            names = names+'_OTA'
         #        else:
         #            pass
-        # ==============================================================================
+
+        # ------------------------------------------Inventory Open%--------------A.S.23---------------------
+
+        # iSelldf10["Inventory Open %"] = (iSelldf10["Rooms Avail To Sell Online"] / (
+        #             iSelldf10["Capacity"] - iSelldf10["OTA_Sold"])) * 100
+        # iSelldf10["Inventory Open %"] = iSelldf10["Inventory Open %"].astype('int')
+        # df_inv = iSelldf10.loc[:, ['Date', 'Inventory Open%']]
+        df_inv_ = iSelldf10.loc[:,['Date','Inventory Open%']]
+        df_inv = df_inv_[df_inv_['Inventory Open%']<30]
+        df_inv = df_inv.iloc[1:,:]
+        # --------------------------------------------------------------------------------------
+
+
+        # =================================A.S. 23May23==========================================
+
+
+        sum_positve_pickups = iSelldf10['Pickup'].agg(lambda count: count[count > 0].sum())
+        sum_negative_pickups = -(iSelldf10['Pickup'].agg(lambda count: count[count < 0].sum()))
+
+        total = sum_positve_pickups - sum_negative_pickups
+
+        # ---------------------------
+        xyz = df_LR[df_LR['Date'] >= yday1.strftime('%Y-%m-%d')]
+        revenue_pickup = int(iSelldf10['OTA Revenue'].sum()) - int(xyz.loc[:, 'OTA Revenue'].sum())
+        # ---------------------------
+
+
+        try:
+            adr_pickup = int((revenue_pickup)/abs(total))
+        except:
+            adr_pickup=0
+
+        text1 = "Total Pickup ({}) - Total Wash ({}) = Actual pickup ({}) Vs. Last report - until next 180 days".format(sum_positve_pickups.astype(int), +sum_negative_pickups.astype(int), total.astype(int))
+                  
+        text2 = "Total Revenue Pickup = {}".format(revenue_pickup)
+                  
+        text3 = "Total ADR Pickup = {}".format(adr_pickup)
+
+        text=[text1,text2,text3]
+        #------------------------------------------------------------------------
+
+
+
+
+        #------------------------------------------------------------------------------------
+        if name_cmflag[names] == 0:
+            pass
+
+        else:
+            iSelldf10['Rate on CM'] = iSelldf10['Rate on CM'].fillna(0)
+
+            iSelldf10['Rate on CM'] = iSelldf10['Rate on CM'].astype('float64').astype('int64')
+       #---------------------------------------------------------------------------------------
+
+        iSelldf10['Date']=iSelldf10['Date'].apply(lambda x:datetime.strptime(x,"%d-%b-%Y"))
+        iSelldf10['Date'] = iSelldf10['Date'].apply(lambda x:x.date())
+
+
         # 13)-----------------#Rate on CM check and iSell CSV dump #-------------------------------------
         if name_cmflag[names] == 0:
             iSelldf10.drop('SeasonalRate_x', axis=1, inplace=True)
@@ -1349,32 +1864,45 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             except:
                 pass
 
+
+
+
             iSelldf10.to_csv(basepath + '\\' + 'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold, names, iselldt))
             logging.info('{}_{}_iSell generated_#{} !!!----------------'.format(sr, names, name_chman[names]))
             print('{}_iSell generated_#{} !!!----------------'.format(names, name_chman[names]))
             beautiMode.isellbeautify(defaultpath, iSelldf10, names, beautipth, name_win2[names], isellrange, glossary,
                                      name_ftr[names], pgdf, finaladop, name_accman[names], rateshopfile,
-                                     name_cap[names])
+                                     name_cap[names],cm_room_type_df,tday,rng,ls)
+            # beautiMode.isellbeautify(defaultpath, iSelldf10, names, beautipth, name_win2[names], isellrange, glossary,
+            #                          name_ftr[names], pgdf, finaladop, name_accman[names], rateshopfile,
+            #                          name_cap[names])
 
 
         elif name_cmflag[names] == 1:
             if (iSelldf10['Rate on CM'].sum() == 0):
-                logging.info('iSell CSV is dumped in OutPut_CSV with BAD name as the Rate on CM column is Zero')
+                # logging.info('iSell CSV is dumped in OutPut_CSV with BAD name as the Rate on CM column is Zero')
+                # print('iSell CSV is dumped in OutPut_CSV with BAD name as the Rate on CM column is Zero')
+
                 iSelldf10.to_csv(basepath + '\\' + 'OutPut_CSV\{}\iSell_{}_{}_BAD.csv'.format(tdayfold, names, iselldt))
                 beautiMode.isellbeautify(defaultpath, iSelldf10, names, beautipth, name_win2[names], isellrange,
                                          glossary, name_ftr[names], pgdf, finaladop, name_accman[names], rateshopfile,
-                                         name_cap[names])
+                                         name_cap[names],cm_room_type_df,tday,rng,ls)
+                # beautiMode.isellbeautify(defaultpath, iSelldf10, names, beautipth, name_win2[names], isellrange,
+                #                          glossary, name_ftr[names], pgdf, finaladop, name_accman[names], rateshopfile,
+                #                          name_cap[names])
 
             else:
                 logging.info('iSell CSV is dumped in OutPut_CSV folder')
                 iSelldf10.to_csv(basepath + '\\' + 'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold, names, iselldt))
                 beautiMode.isellbeautify(defaultpath, iSelldf10, names, beautipth, name_win2[names], isellrange,
                                          glossary, name_ftr[names], pgdf, finaladop, name_accman[names], rateshopfile,
-                                         name_cap[names])
+                                         name_cap[names],cm_room_type_df,tday,rng,ls)#A.S. jun23 tday
+                # beautiMode.isellbeautify(defaultpath, iSelldf10, names, beautipth, name_win2[names], isellrange,
+                #                          glossary, name_ftr[names], pgdf, finaladop, name_accman[names], rateshopfile,
+                #                          name_cap[names])
 
 
             print('{}_iSell Generated _#{} !!!----------------'.format(names, name_chman[names]))
-            print("------------------------------------------------------------------------------------------------------------------")
             logging.info('{}_iSell Generated _#{} !!!----------------'.format(names, name_chman[names]))
         else:
             logging.info('Please set 0 or 1 to RateOnCM column of Accounts sheet')
@@ -1386,33 +1914,108 @@ def Flow(masterpth, defaultpath, LRdate, accMan, accpath, logflag, mstr_flag='No
             outcsvpath = basepath + '\\' + 'OutPut_CSV\{}'.format(tdayfold)
             combine_iSell, finaladop = form2.total_ota_merging(names[:-4], name_ftr[names], iselldt, outcsvpath)
             logging.debug(combine_iSell)
+            combine_iSell['Date'] = combine_iSell['Date'].apply(lambda x: datetime.strptime(x, "%d-%b-%Y"))
+            combine_iSell['Date'] = combine_iSell['Date'].apply(lambda x: x.date())
+            if names=="YO1 Health Resort_OTA":
+                names1="YO1 Health Resort_OTA_Combine"
+                combine_iSell.to_csv(basepath + '\\' + 'OutPut_CSV\{}\iSell_{}_{}.csv'.format(tdayfold, names1, iselldt))
+
             beautiMode.isellbeautify(defaultpath, combine_iSell, names[:-4] + '_Combine', beautipth,
                                      int(name_win2[names]), isellrange, glossary, name_ftr[names], pgdf, finaladop,
-                                     name_accman[names], rateshopfile, name_cap[names])
-        else:
-            pass
-        mapping = pd.read_excel(defaultpath + '/masters/ExpMailMapping.xlsx')
-        map = mapping[mapping['Hotel Name'] == names]
-        ### Change the lin code
-        # if mail autodelivery is not set for that property it is pass to the next #y.k.14 Dec 2022
-        if len(map) >0:
-            status_name = dict(zip(map['Hotel Name'], map['Status']))
-            status = status_name[names]
-            if status == 'Yes':
-                ema_name = dict(zip(map['Hotel Name'], map['Email Id']))
-                num_name = dict(zip(map['Hotel Name'], map['Number']))
-                email_id = ema_name[names]
-                number = num_name[names]
-                mail.send_alert_msg(beautipth, names, name_accman[names], email_id, number, iselldt, tdayfold)
-            else:
-                print('Auto_Delivery Mail Status is no for {} hotel'.format(names))
+                                     name_accman[names], rateshopfile, name_cap[names],cm_room_type_df,tday,rng,ls)
+
         else:
             pass
 
+        #=============================A.S. 16Aug23===========================================
+
+        if names=='YO1 Health Resort':
+            names='YO1 Health Resort_Combine'
+
+        spath =defaultpath+'\\InputData\\Demand\\'+f"{names}_DM.xlsx"
+
+        if path.exists(spath):
+            fileToSend = beautipth + '\\' + tdayfold + '\\' + name_accman[names]
+            to_day = date.today()
+            date1 = to_day.strftime('%d%b%Y')
+            filename = 'iSell_{}_{}.xlsx'.format(names, date1)
+            filename2 = 'iSell_{}_{}-copy.xlsx'.format(names, date1)
+
+            tpath=[fileToSend+'\\'+filename,fileToSend+'\\'+filename2]
+            #spath=f"C:\\vinash\\{names}_DM.xlsx"
+
+            def TestCopyWorksheetMacro(tpath,spath):
+            # Replace with the actual path
+
+            # target_path=tpath
+            # source_path=spath
+                iSell_fun_02.CopyWorksheetToTargetWorkbook(tpath, spath)
+
+            for i in tpath:
+                TestCopyWorksheetMacro(i,spath)
+        else:
+            pass
+
+        #=====================================================================================
+
+        # ==============================suyash16may24=======================================================
+
+        # a_name = accMan[0]
+        # gtpath = defaultpath + '\\InputData\\Group_Tracker\\' + a_name + '\\' + f"{names}_GT.xlsx"
+        gtpath = defaultpath + '\\InputData\\Group_Tracker\\'+ f"{names}_GT.xlsx"
+
+        if path.exists(gtpath):
+            fileToSend = beautipth + '\\' + tdayfold + '\\' + name_accman[names]
+            to_day = date.today()
+            date1 = to_day.strftime('%d%b%Y')
+            filename = 'iSell_{}_{}.xlsx'.format(names, date1)
+            filename2 = 'iSell_{}_{}-copy.xlsx'.format(names, date1)
+
+            opath = [fileToSend + '\\' + filename, fileToSend + '\\' + filename2]
+
+            def TestCopyWorksheetMacro(opath, gtpath):
+                iSell_fun_02.CopyWorksheetToTargetWorkbook1(opath, gtpath)
+
+            for i in opath:
+                TestCopyWorksheetMacro(i, gtpath)
+        else:
+            pass
+    #======================================================================================================
+
+        mapping = pd.read_excel(defaultpath + '/masters/ExpMailMapping.xlsx')
+        map = mapping[mapping['Hotel Name'] == names]
+        status_name = dict(zip(map['Hotel Name'], map['Status']))
+        status = status_name[names]
+
+        if status == 'Yes':
+            ema_name = dict(zip(map['Hotel Name'], map['Email Id']))
+            num_name = dict(zip(map['Hotel Name'], map['Number']))
+            email_id = ema_name[names]
+            number = num_name[names]
+            mail.send_alert_msg(beautipth, names, name_accman[names], email_id, number, iselldt, tdayfold,text) #A.S. May23-text
+            # --------------------------mail mapping for inventory----------------------
+            mapping1 = pd.read_excel(defaultpath + '/masters/InvMailMapping.xlsx')
+            map1 = mapping1[mapping1['Hotel Name'] == names]
+            status_name1 = dict(zip(map1['Hotel Name'], map1['Status']))
+            status1 = status_name1[names]
+            weekday = datetime.now().strftime('%A')
+            if (status1 == 'Yes') and (weekday in ['Monday', 'Friday']):
+                ema_name1 = dict(zip(map1['Hotel Name'], map1['Email Id']))
+                num_name1 = dict(zip(map1['Hotel Name'], map1['Number']))
+                email_id1 = ema_name1[names]
+                number1 = num_name1[names]
+                if df_inv.head(180).empty:
+                  pass
+                else:
+                  mail.inv_open_msg(names, iselldt, email_id1, number1, df_inv.head(180))
+
+        else:
+            print('Status is no for this {} hotel'.format(names))
     logging.info("################## ALL iSell Generated for {} , Thanks ! ########################".format(accMan))
-    # print("###### ALL iSell Generated for {} , Thanks ! #######".format(accMan))
-    print("-------------------------------ALL iSell Generated for {} Account, Thanks:)-------------------".format(accMan[0]))
-    print("===========================================================================================================")
+    print("###### ALL iSell Generated for {} , Thanks ! #######".format(accMan))
+    # end=time.time()
+    # print(end-start)
+
 
 
 

@@ -46,7 +46,7 @@ def Gridcreator(htl,isell,mnthminrates,wts,htlcluster,mnthjumps,jumpfact,jType,p
 
     #--------------------------jump factor sheet-------------------------------------
     logging.debug('Jump value from input condition (jType) :{}'.format(jType))
-    jumpfactdf = pd.DataFrame(jumpfact) 
+    jumpfactdf = pd.DataFrame(jumpfact)
     jumpfactdf2 = jumpfactdf.loc[:,['JumpName',jType]] 
     
     #------------------------Jump and Factor dictionary------------------------------

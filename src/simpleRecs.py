@@ -94,7 +94,8 @@ def simRecs(htl,otbdf,jump,szrates,chman,cmflag,htlcur,psy,useceiling,usefloor):
         otbdf.drop('Min_Rate',axis=1,inplace=True)
     except:
         pass    
-       
+
+
     try:
         otbdf.drop('JumpNum',axis=1,inplace=True)
     except:

@@ -72,77 +72,77 @@ def var_init(drivepth, accpath ,condn):
     if condn == 'split':
         split(condn,accman_fold, cm_splitpath, cm_backupath, cm_file)
     else:
-        backup_cm('', cm_splitpath, cm_backupath, accman_fold, cm_file)
-#        pass
+        #backup_cm('', cm_splitpath, cm_backupath, accman_fold, cm_file)
+       pass
 
     # DEFINE 'backup_cm' FUNCTION TO CREATE BACKUP AND COLLECT N SAVE ALL CHANGE FROM MANAGERS INDIVIDUAL FILE TO INPUT FILE
 
 
-def backup_cm(condition,cm_splitpath,cm_backupath, accman_fold, cm_file):
-    #    print(2)
-    #    # SHEETS NAME OF ''InputConditionMaster.xlsx' FILE
-    #    cm_sheet1 = 'Accounts'
-    #    cm_sheet2 = 'Monthly_MinRates'
-    #    cm_sheet3 = 'Monthly_MaxRates'
-    #    cm_sheet4 = 'Monthly_Jump'
-    
-    # CALCULATING TODAY'S DATE IN form '27Apr2019'
-    tdate = date.today().__format__('%d%b%Y')
-    list_dir = os.listdir(cm_backupath)  
-    #    print(list_dir)       # list of dir collect all files from backup folder
-    # 'if' will check both condition, both are true call goes in the 'if' otherwise 'else' will execute.
-    if 'backup_cm_{}.xlsx'.format(tdate) in list_dir and condition != 'split':
-        #        print(4)
-        pass
-    else:
-        #        print(5)
-        # LIST TO COLLECT EVERY DF FROM LOOP
-        df_list1 = []      # FIRST LIST TO COLLECT ALL DF FROM SHEET 1 OF INPUT FILE READ IN LOOP
-        df_list2 = []
-        df_list3 = []
-        df_list4 = []
-                
-        for i in accman_fold:
-            print(i)
-            # split_file = cm_splitpath + r'\{}\'.format(accman_fold[i]) +'InputConditionMaster_{}.xlsx'.format(i)
-            split_file = cm_splitpath + '\\' + str(accman_fold[i])+r'\All_In_One_iSell\masters\InputConditionMaster_{}.xlsx'.format(i)
-#            print(split_file)
-            backup_df1 = pd.read_excel(split_file, sheet_name=cm_sheet1)      # READ SHEET USING FILTER VALUE i
-            backup_df2 = pd.read_excel(split_file, sheet_name=cm_sheet2)      # i GET VALUE FROM LIST (cm_df_manager)
-            backup_df3 = pd.read_excel(split_file, sheet_name=cm_sheet3)
-            backup_df4 = pd.read_excel(split_file, sheet_name=cm_sheet4)
-            df_list1.append(backup_df1)                                    # APPEND DF TO DF_LIST1
-            df_list2.append(backup_df2)
-            df_list3.append(backup_df3)
-            df_list4.append(backup_df4)
-
-        df_list1 = pd.concat(df_list1)                      # CONCAT USED TO CREATE SINGLE DF FROM LIST OF DF
-        df_list1 = df_list1.drop(['Sr.No'], axis=1)          # DROP THE PREVIOUS COLUMN NAME 'srno' TO CREATE NEW INDEX
-        df_list1.index = np.arange(1, len(df_list1) + 1)    # TO START INDEX FROM 1 BY DEFAULT IT START FROM 0
-        df_1 = df_list1.reset_index().rename(columns={'index': 'Sr.No'})   # RENAME INDEX COLUMN AS 'srno'
-
-        df_list2 = pd.concat(df_list2)
-        df_list2 = df_list2.drop(['Sr.No'], axis=1)          # DROP THE PREVIOUS COLUMN NAME 'srno' TO CREATE NEW INDEX
-        df_list2.index = np.arange(1, len(df_list2) + 1)    # TO START INDEX FROM 1 BY DEFAULT IT START FROM 0
-        df_2 = df_list2.reset_index().rename(columns={'index': 'Sr.No'})
-
-        df_list3 = pd.concat(df_list3)                       # CONCAT USED TO CREATE SINGLE DF FROM LIST OF DF
-        df_list3 = df_list3.drop(['Sr.No'], axis=1)          # DROP THE PREVIOUS COLUMN NAME 'srno' TO CREATE NEW INDEX
-        df_list3.index = np.arange(1, len(df_list3) + 1)     # TO START INDEX FROM 1 BY DEFAULT IT START FROM 0
-        df_3 = df_list3.reset_index().rename(columns={'index': 'Sr.No'})    # RENAME INDEX COLUMN AS 'Sr.No'
-
-        df_list4 = pd.concat(df_list4)
-        df_list4 = df_list4.drop(['Sr.No'], axis=1)
-        df_list4.index = np.arange(1, len(df_list4) + 1)
-        df_4 = df_list4.reset_index().rename(columns={'index': 'Sr.No'})
-
-    #        try:
-        if condition == 'split':
-            backup_path = cm_backupath + '\\' + 'backup_cm_{}_beforesplit.xlsx'.format(tdate)
-        else:
-            backup_path = cm_backupath + '\\' + 'backup_cm_{}.xlsx'.format(tdate)
-        backup(backup_path, df_1, df_2, df_3, df_4, 0)           # CALL 'backup' FUNCTION PROVIDED PATH IS 'backup_path'
-        backup(cm_file, df_1, df_2, df_3, df_4, 1)                  # CALL 'backup' FUNCTION PROVIDED PATH IS  'cm_file'
+# def backup_cm(condition,cm_splitpath,cm_backupath, accman_fold, cm_file):
+#     #    print(2)
+#     #    # SHEETS NAME OF ''InputConditionMaster.xlsx' FILE
+#     #    cm_sheet1 = 'Accounts'
+#     #    cm_sheet2 = 'Monthly_MinRates'
+#     #    cm_sheet3 = 'Monthly_MaxRates'
+#     #    cm_sheet4 = 'Monthly_Jump'
+#
+#     # CALCULATING TODAY'S DATE IN form '27Apr2019'
+#     tdate = date.today().__format__('%d%b%Y')
+#     list_dir = os.listdir(cm_backupath)
+#     #    print(list_dir)       # list of dir collect all files from backup folder
+#     # 'if' will check both condition, both are true call goes in the 'if' otherwise 'else' will execute.
+#     if 'backup_cm_{}.xlsx'.format(tdate) in list_dir and condition != 'split':
+#         #        print(4)
+#         pass
+#     else:
+#         #        print(5)
+#         # LIST TO COLLECT EVERY DF FROM LOOP
+#         df_list1 = []      # FIRST LIST TO COLLECT ALL DF FROM SHEET 1 OF INPUT FILE READ IN LOOP
+#         df_list2 = []
+#         df_list3 = []
+#         df_list4 = []
+#
+#         for i in accman_fold:
+#             print(i)
+#             # split_file = cm_splitpath + r'\{}\'.format(accman_fold[i]) +'InputConditionMaster_{}.xlsx'.format(i)
+#             split_file = cm_splitpath + '\\' + str(accman_fold[i])+r'\All_In_One_iSell\masters\InputConditionMaster_{}.xlsx'.format(i)
+# #            print(split_file)
+# #             backup_df1 = pd.read_excel(split_file, sheet_name=cm_sheet1)      # READ SHEET USING FILTER VALUE i
+# #             backup_df2 = pd.read_excel(split_file, sheet_name=cm_sheet2)      # i GET VALUE FROM LIST (cm_df_manager)
+# #             backup_df3 = pd.read_excel(split_file, sheet_name=cm_sheet3)
+# #             backup_df4 = pd.read_excel(split_file, sheet_name=cm_sheet4)
+# #             df_list1.append(backup_df1)                                    # APPEND DF TO DF_LIST1
+# #             df_list2.append(backup_df2)
+# #             df_list3.append(backup_df3)
+# #             df_list4.append(backup_df4)
+#
+#         df_list1 = pd.concat(df_list1)                      # CONCAT USED TO CREATE SINGLE DF FROM LIST OF DF
+#         df_list1 = df_list1.drop(['Sr.No'], axis=1)          # DROP THE PREVIOUS COLUMN NAME 'srno' TO CREATE NEW INDEX
+#         df_list1.index = np.arange(1, len(df_list1) + 1)    # TO START INDEX FROM 1 BY DEFAULT IT START FROM 0
+#         df_1 = df_list1.reset_index().rename(columns={'index': 'Sr.No'})   # RENAME INDEX COLUMN AS 'srno'
+#
+#         df_list2 = pd.concat(df_list2)
+#         df_list2 = df_list2.drop(['Sr.No'], axis=1)          # DROP THE PREVIOUS COLUMN NAME 'srno' TO CREATE NEW INDEX
+#         df_list2.index = np.arange(1, len(df_list2) + 1)    # TO START INDEX FROM 1 BY DEFAULT IT START FROM 0
+#         df_2 = df_list2.reset_index().rename(columns={'index': 'Sr.No'})
+#
+#         df_list3 = pd.concat(df_list3)                       # CONCAT USED TO CREATE SINGLE DF FROM LIST OF DF
+#         df_list3 = df_list3.drop(['Sr.No'], axis=1)          # DROP THE PREVIOUS COLUMN NAME 'srno' TO CREATE NEW INDEX
+#         df_list3.index = np.arange(1, len(df_list3) + 1)     # TO START INDEX FROM 1 BY DEFAULT IT START FROM 0
+#         df_3 = df_list3.reset_index().rename(columns={'index': 'Sr.No'})    # RENAME INDEX COLUMN AS 'Sr.No'
+#
+#         df_list4 = pd.concat(df_list4)
+#         df_list4 = df_list4.drop(['Sr.No'], axis=1)
+#         df_list4.index = np.arange(1, len(df_list4) + 1)
+#         df_4 = df_list4.reset_index().rename(columns={'index': 'Sr.No'})
+#
+#     #        try:
+#         if condition == 'split':
+#             backup_path = cm_backupath + '\\' + 'backup_cm_{}_beforesplit.xlsx'.format(tdate)
+#         else:
+#             backup_path = cm_backupath + '\\' + 'backup_cm_{}.xlsx'.format(tdate)
+#         backup(backup_path, df_1, df_2, df_3, df_4, 0)           # CALL 'backup' FUNCTION PROVIDED PATH IS 'backup_path'
+#         backup(cm_file, df_1, df_2, df_3, df_4, 1)                  # CALL 'backup' FUNCTION PROVIDED PATH IS  'cm_file'
     # THIS CALL OVERWRITE MAIN INPUT FILE LOGIC BEHIND WRITEN IN TOP COMMENT
 
 
@@ -162,6 +162,7 @@ def backup(backup_path, df_1, df_2, df_3, df_4, c):
     df_3.to_excel(writer, sheet_name=cm_sheet3, index=False)
     df_4.to_excel(writer, sheet_name=cm_sheet4, index=False)
     writer.save()
+
     if c == 0:
         print("Daily backup generated of accountants.")
     else:
@@ -188,7 +189,7 @@ def split(condn, accman_fold, cm_splitpath, cm_backupath,  cm_file):
 
     if ch == 'Yes':
         print('Please wait all account manager master files are merging......')
-        backup_cm(condn, cm_splitpath, cm_backupath, accman_fold, cm_file)                                 # call backup_cm function then execution goes down for split
+        # backup_cm(condn, cm_splitpath, cm_backupath, accman_fold, cm_file)                                 # call backup_cm function then execution goes down for split
     else:
         print('enter correct choice')                # when the condition false execution come in else statement
         sys.exit()                                   # sys.exit() stop/end execution

@@ -1,8 +1,10 @@
+
 import pandas as pd
-import numpy  as np
+import numpy as np
 import logging
 from datetime import datetime
-
+from datetime import date, timedelta
+import win32com.client as win32
 
 def TBhnfconv(df_hnf,maxcap,isellrange):
     logging.debug('------------------------------------------------------------')
@@ -86,9 +88,14 @@ def occframe(df1,isellrange):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:occframe') 
        
-    ddmmyy = datetime.now()                  
-    tday = ddmmyy.strftime("%d-%b-%Y")               
-    index=pd.date_range(tday,periods= isellrange)
+    #ddmmyy = datetime.now()
+    ddmmyy=date.today()
+    #yday=ddmmyy+timedelta(days=-1)
+    yday = ddmmyy + timedelta(days=-1)
+    # yday = ddmmyy.replace(day=1)
+    yday = yday.strftime("%d-%b-%Y")
+
+    index=pd.date_range(yday,periods= isellrange)
     frame=pd.DataFrame({'occupancydate':index})
     df_all = pd.merge(frame,df1,on='occupancydate',how='left')
     
@@ -96,25 +103,41 @@ def occframe(df1,isellrange):
     logging.debug(df_all)
     return(df_all)
 
+#this function merges the frame with dates req frame
 def frame(df1,isellrange):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:frame') 
-    
+
+    #ddmmyy = datetime.now()
     df1 = pd.DataFrame(df1)
-    ddmmyy = datetime.now()                  
-    tday = ddmmyy.strftime("%d-%b-%Y")      
-    index=pd.date_range(tday,periods= isellrange)
-    frame=pd.DataFrame({'Date':index})
-    merged = pd.merge(frame,df1,on='Date',how='left')
+    ddmmyy = date.today()
+    yday = ddmmyy + timedelta(days=-1)
+   #  yday=ddmmyy.replace(day=1)
+    yday = yday.strftime("%d-%b-%Y")#A.S.Jun23
+
+    index = pd.date_range(yday, periods=isellrange)
+    frame = pd.DataFrame({'Date': index})
+    merged = pd.merge(frame, df1, on='Date', how='left')
+    merged = merged.drop_duplicates(subset=['Date'])
     
     logging.debug("Merged with iSellFrame on 'Date' column ::")
     logging.debug(merged)
     return(merged)
+
 def frameMax(df1, isellrange):
     df1 = pd.DataFrame(df1)
-    ddmmyy = datetime.now()
-    tday = ddmmyy.strftime("%b-%d-%Y")
-    index = pd.date_range(tday, periods=isellrange)
+    #ddmmyy = datetime.now()
+    #tday = ddmmyy.strftime("%b-%d-%Y")
+
+
+    ddmmyy = date.today()
+    tday = datetime.now()  # A.S. Aug23
+    #rng = (tday) - (tday.replace(day=1))
+
+    yday = tday + timedelta(days=-1)
+    yday = yday.strftime("%d-%b-%Y")#A.S.Jun23
+
+    index = pd.date_range(yday, periods=isellrange)
     frame = pd.DataFrame({'Date': index})
     df1 = pd.DataFrame(df1)
     # df1['Date'] = pd.to_datetime(df1['Date'], format="%Y-%d-%m")
@@ -132,7 +155,7 @@ def merging(df1,df2):
     logging.debug(mergedf)
     return(mergedf)
     
-def dfconv(stdpth,cmfile2,htl,chman):
+def dfconv(stdpth, cmfile2, htl,chman, cc_value, accman):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:dfconv') 
     #------------files required for mapping channel manager columns,DateFormats,Status----
@@ -150,19 +173,140 @@ def dfconv(stdpth,cmfile2,htl,chman):
     logging.debug('Date Format mapping:')  
     logging.debug(dtformat)    
     
-    #---------------renamed OTA data columns with standard name--------------------
-    cmfile2.rename(columns=stdcols,inplace=True)
-    cmfile2.dropna(axis=0,subset=['CheckIn','CheckOut'],inplace=True)
-    logging.debug("Dropped rows having 'CheckIn','CheckOut' values blank") 
-    
-    cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'],format="{}".format(dtformat['CheckIn']))
+    # #---------------renamed OTA data columns with standard name--------------------
+    # cmfile2.rename(columns=stdcols,inplace=True)
+    # cmfile2.dropna(axis=0,subset=['CheckIn','CheckOut'],inplace=True)
+    # logging.debug("Dropped rows having 'CheckIn','CheckOut' values blank")
+    #
+    # cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'],format="{}".format(dtformat['CheckIn']))
+    #
+    #
+    # try:
+    #     cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'],format="{}".format(dtformat['CheckOut']))
+    # except:
+    #     cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'],format="%d-%m-%Y")
+    #
+    #
+    # cmfile2['CheckIn'] = cmfile2['CheckIn'].dt.floor('d')
+    # cmfile2['CheckOut'] = cmfile2['CheckOut'].dt.floor('d')
+    #
+    # # # YK, added for datetime con to match frame and occ date.
+    # # cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'], format="{}".format(dtformat['CheckIn'])).dt.strftime(('%Y-%m-%d'))
+    # # cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'], format="{}".format(dtformat['CheckOut'])).dt.strftime(('%Y-%m-%d'))
+    # # cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'])
+    # # cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'])
+    #
+    #
+    # logging.debug("Set dateformats as per 'Date Format mapping'")
+    #
+    # logging.debug("DataFrame before exploading the dates ::")
+    # logging.debug(cmfile2)
+    #
+    # df_date=pd.concat([pd.DataFrame({
+    #         'occupancydate' : pd.date_range(row.CheckIn, row.CheckOut),
+    #         'Channel' : row.Channel,
+    #         'Status' : row.Status,
+    #         'CheckIn': row.CheckIn,
+    #         'CheckOut': row.CheckOut,
+    #         'No_of_Rooms':row.No_of_Rooms,
+    #         'Total_Amount': row.Total_Amount
+    #         },
+    # columns=['occupancydate','Channel','Status','CheckIn','CheckOut',
+    #    'No_of_Rooms','Total_Amount']) for i, row in cmfile2.iterrows()], ignore_index=True)
+    #
+    # logging.debug("DataFrame after exploading the dates ::")
+    # logging.debug(df_date)
+    #
+    # df_date['dtDif'] = (df_date['CheckOut']-df_date['occupancydate']).apply(lambda x: x/np.timedelta64(1,'D'))
+    # logging.debug("dtDif column added,where dtDif = CheckOut - occupancydate")
+    #
+    # df_date['Arrivals'] = np.where((df_date['CheckIn']==df_date['occupancydate']), 1 , 0)
+    # df_date['Arrivals'] = df_date['Arrivals']*df_date['No_of_Rooms']
+    # logging.debug("Arrivals calculated")
+    #
+    # if htl=='Shayona Apartments':
+    #     df_date['Channel'] = df_date.Channel.str.split('/').apply(lambda x:x[0])
+    #
+    # df_date['Channel'].fillna(value='YourWeb',inplace=True)
+    #
+    #
+    # logging.debug("Blank Channel replaced with YourWeb")
+    #
+    # df_date['Total_Amount'].fillna(value=0,inplace=True)
+    # #-----------A.S. 3May2023--------------------------------------------
+    # #'The Boma Nairobi BNBO', 'Boma Inn Nairobi RCH', 'Boma Inn Eldoret BIE'
+    # if htl in (' '):
+    #     df_date['Total_Amount']=df_date['Total_Amount']/cc_value[htl]
+    #     df_date['Total_Amount']=df_date['Total_Amount'].astype('int64')
+    # #---------------------------------------------------------------------
+    #
+    #
+    # logging.debug("Blank Total_Amount replaced with 0")
+    #
+    # df_date['Status'].fillna(value='Cancelled',inplace=True)
+    # logging.debug("Replaced Blank Status values with 'Cancelled'")
+    #
+    # df_date['statuscode'] = df_date['Status'].map(statuscode)
+    # logging.debug("statuscode binary column added by mapping Status in data with statuscode dictionary")
+    #
+    # df_date2 = df_date.query('(dtDif > 0)')
+    # logging.debug("data sliced as per condition (dtDif > 0) ::")
+    # logging.debug(df_date2)
+    #
+    # df_date3 = pd.DataFrame(df_date2[df_date2.statuscode == 1])
+    # logging.debug("data sliced as per condition statuscode == 1 ::")
+    # logging.debug(df_date3)
+    #
+    # #Add LOS , ADR, RPD
+    # df_date3['LOS'] = (df_date3['CheckOut'] - df_date3['CheckIn']).apply(lambda x: x/np.timedelta64(1,'D')) #Length of stay
+    # logging.debug("LOS column added where LOS = CheckOut - CheckIn")
+    #
+    #  ### updated by Y.K. 14 June Below function added for total amount & no. rooms column to conv object into required dtype.
+    # try:
+    #     # df_date3["Total_Amount"] = df_date3["Total_Amount"].str.replace(',', '').astype(float)
+    #     df_date3['Total_Amount'] = df_date3['Total_Amount'].replace(r'[^\w\s]|_|[a-z]|[A-Z]', 0, regex=True)
+    #     df_date3["Total_Amount"] = df_date3["Total_Amount"].astype(float)
+    #     df_date3["No_of_Rooms"] = df_date3["No_of_Rooms"].astype(np.int64)
+    # except:
+    #     pass
+    #
+    # df_date3['RevPD'] = df_date3.loc[:,'Total_Amount'].div(df_date3.loc[:,'LOS'])  #Rev per Day
+    # logging.debug("RevPD column added where RevPD = Total_Amount/LOS")
+    #
+    # df_date3['ADR'] = df_date3.loc[:,'Total_Amount'].div(df_date3.loc[:,'LOS']*df_date3.loc[:,'No_of_Rooms']) #Average Daily Rate
+    #
+    # logging.debug("ADR(Average Daily Rate) column added where ADR = Total_Amount/(LOS x No_of_Rooms) ::")
+    # logging.debug(df_date3)
 
+    # ---------------renamed OTA data columns with standard name--------------------
+    cmfile2.rename(columns=stdcols, inplace=True)
+    cmfile2.dropna(axis=0, subset=['CheckIn', 'CheckOut'], inplace=True)
+    logging.debug("Dropped rows having 'CheckIn','CheckOut' values blank")
+
+    if htl in ['Kongress Hotel Davos']:
+        cmfile2['CheckIn'] = cmfile2['CheckIn'].apply(lambda x: str(x)[0:11])
+        cmfile2['CheckOut'] = cmfile2['CheckOut'].apply(lambda x: str(x)[0:11])
+        cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'])
+        cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'])
+
+    if htl in ['Theory9 Premium Service Apts, Bandra_iSell', 'Theory9 Premium Service Apartments, Khar']:
+        try:
+            cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'], format="{}".format(dtformat['CheckOut']))
+            cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'], format="{}".format(dtformat['CheckIn']))
+        except:
+            cmfile2['CheckIn'] = cmfile2['CheckIn'].apply(lambda x: str(x)[2:11])
+            cmfile2['CheckOut'] = cmfile2['CheckOut'].apply(lambda x: str(x)[2:11])
 
     try:
-        cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'],format="{}".format(dtformat['CheckOut']))
+        cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'], format="{}".format(dtformat['CheckIn']))
     except:
-        cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'],format="%d-%m-%Y")
+        cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'])
 
+    try:
+        cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'], format="{}".format(dtformat['CheckOut']))
+
+    except:
+        cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'])
 
     cmfile2['CheckIn'] = cmfile2['CheckIn'].dt.floor('d')
     cmfile2['CheckOut'] = cmfile2['CheckOut'].dt.floor('d')
@@ -173,47 +317,49 @@ def dfconv(stdpth,cmfile2,htl,chman):
     # cmfile2['CheckIn'] = pd.to_datetime(cmfile2['CheckIn'])
     # cmfile2['CheckOut'] = pd.to_datetime(cmfile2['CheckOut'])
 
-
     logging.debug("Set dateformats as per 'Date Format mapping'")
-    
+
     logging.debug("DataFrame before exploading the dates ::")
     logging.debug(cmfile2)
-    
-    df_date=pd.concat([pd.DataFrame({
-            'occupancydate' : pd.date_range(row.CheckIn, row.CheckOut),
-            'Channel' : row.Channel,         
-            'Status' : row.Status,
-            'CheckIn': row.CheckIn,
-            'CheckOut': row.CheckOut,
-            'No_of_Rooms':row.No_of_Rooms,
-            'Total_Amount': row.Total_Amount           
-            },
-    columns=['occupancydate','Channel','Status','CheckIn','CheckOut',
-       'No_of_Rooms','Total_Amount']) for i, row in cmfile2.iterrows()], ignore_index=True)
-    
+
+    df_date = pd.concat([pd.DataFrame({
+        'occupancydate': pd.date_range(row.CheckIn, row.CheckOut),
+        'Channel': row.Channel,
+        'Status': row.Status,
+        'CheckIn': row.CheckIn,
+        'CheckOut': row.CheckOut,
+        'No_of_Rooms': row.No_of_Rooms,
+        'Total_Amount': row.Total_Amount
+    },
+        columns=['occupancydate', 'Channel', 'Status', 'CheckIn', 'CheckOut',
+                 'No_of_Rooms', 'Total_Amount']) for i, row in cmfile2.iterrows()], ignore_index=True)
+
     logging.debug("DataFrame after exploading the dates ::")
     logging.debug(df_date)
 
-    df_date['dtDif'] = (df_date['CheckOut']-df_date['occupancydate']).apply(lambda x: x/np.timedelta64(1,'D'))
+    df_date['dtDif'] = (df_date['CheckOut'] - df_date['occupancydate']).apply(lambda x: x / np.timedelta64(1, 'D'))
     logging.debug("dtDif column added,where dtDif = CheckOut - occupancydate")
 
-    df_date['Arrivals'] = np.where((df_date['CheckIn']==df_date['occupancydate']), 1 , 0)
-    df_date['Arrivals'] = df_date['Arrivals']*df_date['No_of_Rooms']	
+    df_date['Arrivals'] = np.where((df_date['CheckIn'] == df_date['occupancydate']), 1, 0)
+    df_date['Arrivals'] = df_date['Arrivals'] * df_date['No_of_Rooms']
     logging.debug("Arrivals calculated")
-	
-    df_date['Channel'].fillna(value='YourWeb',inplace=True)
+
+    df_date['Channel'].fillna(value='YourWeb', inplace=True)
     logging.debug("Blank Channel replaced with YourWeb")
-    
-    df_date['Total_Amount'].fillna(value=0,inplace=True)
+
+    if htl == 'Shayona Apartments':
+        df_date['Channel'] = df_date.Channel.str.split('/').apply(lambda x: x[0])
+
+    df_date['Total_Amount'].fillna(value=0, inplace=True)
     logging.debug("Blank Total_Amount replaced with 0")
-    
-    df_date['Status'].fillna(value='Cancelled',inplace=True)
+
+    df_date['Status'].fillna(value='Cancelled', inplace=True)
     logging.debug("Replaced Blank Status values with 'Cancelled'")
-     
+
     df_date['statuscode'] = df_date['Status'].map(statuscode)
     logging.debug("statuscode binary column added by mapping Status in data with statuscode dictionary")
 
-    df_date2 = df_date.query('(dtDif > 0)') 
+    df_date2 = df_date.query('(dtDif > 0)')
     logging.debug("data sliced as per condition (dtDif > 0) ::")
     logging.debug(df_date2)
 
@@ -221,11 +367,12 @@ def dfconv(stdpth,cmfile2,htl,chman):
     logging.debug("data sliced as per condition statuscode == 1 ::")
     logging.debug(df_date3)
 
-    #Add LOS , ADR, RPD
-    df_date3['LOS'] = (df_date3['CheckOut'] - df_date3['CheckIn']).apply(lambda x: x/np.timedelta64(1,'D')) #Length of stay
+    # Add LOS , ADR, RPD
+    df_date3['LOS'] = (df_date3['CheckOut'] - df_date3['CheckIn']).apply(
+        lambda x: x / np.timedelta64(1, 'D'))  # Length of stay
     logging.debug("LOS column added where LOS = CheckOut - CheckIn")
 
-     ### updated by Y.K. 14 June Below function added for total amount & no. rooms column to conv object into required dtype.
+    ### updated by Y.K. 14 June Below function added for total amount & no. rooms column to conv object into required dtype.
     try:
         df_date3['Total_Amount'] = df_date3['Total_Amount'].apply(lambda x: float(x.replace(',', '')))
         df_date3["No_of_Rooms"] = df_date3["No_of_Rooms"].astype(np.int64)
@@ -239,10 +386,13 @@ def dfconv(stdpth,cmfile2,htl,chman):
     except:
         pass
 
-    df_date3['RevPD'] = df_date3.loc[:,'Total_Amount'].div(df_date3.loc[:,'LOS'])  #Rev per Day
+    df_date3['RevPD'] = df_date3.loc[:, 'Total_Amount'].div(df_date3.loc[:, 'LOS'])  # Rev per Day
+    # df_date3['RevPD'] = df_date3.loc[:, 'Total_Amount']/(df_date3.loc[:, 'LOS'])  # Rev per Day
+
     logging.debug("RevPD column added where RevPD = Total_Amount/LOS")
 
-    df_date3['ADR'] = df_date3.loc[:,'Total_Amount'].div(df_date3.loc[:,'LOS']*df_date3.loc[:,'No_of_Rooms']) #Average Daily Rate
+    df_date3['ADR'] = df_date3.loc[:, 'Total_Amount'].div(
+        df_date3.loc[:, 'LOS'] * df_date3.loc[:, 'No_of_Rooms'])  # Average Daily Rate
 
     logging.debug("ADR(Average Daily Rate) column added where ADR = Total_Amount/(LOS x No_of_Rooms) ::")
     logging.debug(df_date3)
@@ -269,7 +419,7 @@ def dfconv(stdpth,cmfile2,htl,chman):
     return(df_total,df_ota,ttlsold)
     
 
-
+#this func returns frame of 2 col-for pickup,markettrend calculation
 def dfLR(df1,chman):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:dfLR') 
@@ -286,14 +436,17 @@ def dfLR(df1,chman):
     comp=pd.DataFrame(comp)
     comptrs=list(comp.columns)
     for htls in comptrs:
-        comp[htls] = comp[htls].str.split(" ", expand=True)
+        try:
+            comp[htls] = comp[htls].str.split(" ", expand=True)
+        except:
+            pass
     #comp = comp.convert_objects(convert_numeric=True)  
     comp.fillna(value=0,inplace=True)
     comp=pd.DataFrame(comp)
     cols=list(comp.columns)
     comp[cols]=comp[cols].apply(pd.to_numeric,errors='coerce')
     comp['LAvg'] = comp.mean(axis=1)
-    df_req = df1.loc[:,['Date','OTA_Sold']]
+    df_req = df1.loc[:,['Date','OTA_Sold','OTA Revenue','ADR OTB']]
     LRfinal = pd.concat([df_req, comp], axis=1)
     LRfinal = pd.DataFrame(LRfinal)
     try:
@@ -301,13 +454,65 @@ def dfLR(df1,chman):
     except:
         LRfinal['Date']=pd.to_datetime(LRfinal['Date'])
         
-    LRfinal2=LRfinal.loc[:,['Date','OTA_Sold','LAvg']]
-    LRfinal3=LRfinal2.rename(columns={'OTA_Sold':'Last_OTASOLD'})
+    LRfinal2=LRfinal.loc[:,['Date','OTA_Sold','LAvg','OTA Revenue','ADR OTB']]
+    LRfinal3=LRfinal2.rename(columns={'OTA_Sold':'Last_OTASOLD','OTA Revenue':'Last_OTA_Revenue','ADR OTB':'Last_ADR_OTB'})
+    LRfinal3=LRfinal3.fillna(0)
     LRfinal3['Last_OTASOLD']=LRfinal3['Last_OTASOLD'].astype(int)
-        
+    LRfinal3['Last_OTA_Revenue'] = LRfinal3['Last_OTA_Revenue'].astype(int)
+    LRfinal3['Last_ADR_OTB'] = LRfinal3['Last_ADR_OTB'].astype(int)
+
     return(LRfinal3)
 
+#----------------A.S. 13Jun23------
+# this func returns frame of 2 col-for pickup,markettrend calculation
+def dfLR7(df7, chman):
+    logging.debug('------------------------------------------------------------')
+    logging.debug('Module:iSell_fun_02, SubModule:dfLR')
 
+    if chman in ['UK', 'TravelBook', 'BW']:
+        df7.rename(columns={'Hotel Sold': 'OTA_Sold7'}, inplace=True)
+    else:
+        pass
+
+    pos1 = df7.columns.get_loc('LowestRate') + 1
+    pos2 = df7.columns.get_loc('Market Trend')
+    compp = df7.iloc[:, pos1:pos2]
+    comp = compp.dropna(axis=1, how='all')
+    comp = pd.DataFrame(comp)
+    comptrs = list(comp.columns)
+    for htls in comptrs:
+        comp[htls] = comp[htls].str.split(" ", expand=True)
+    # comp = comp.convert_objects(convert_numeric=True)
+    comp.fillna(value=0, inplace=True)
+    comp = pd.DataFrame(comp)
+    cols = list(comp.columns)
+    comp[cols] = comp[cols].apply(pd.to_numeric, errors='coerce')
+    comp['LAvg1'] = comp.mean(axis=1)
+    df_req = df7.loc[:, ['Date', 'OTA_Sold','OTA Revenue','ADR OTB']]
+    df_req=df7.rename(columns={'OTA_Sold':'OTA_Sold7'})
+    LRfinal = pd.concat([df_req, comp], axis=1)
+    LRfinal = pd.DataFrame(LRfinal)
+
+    try:
+        LRfinal['Date'] = pd.to_datetime(LRfinal['Date'], format='%d-%b-%Y')
+    except:
+        LRfinal['Date'] = pd.to_datetime(LRfinal['Date'])
+
+    LRfinal2 = LRfinal.loc[:, ['Date', 'OTA_Sold7','LAvg1','OTA Revenue','ADR OTB']]
+    LRfinal3 = LRfinal2.rename(columns={'OTA_Sold7': 'Last_OTASOLD7','OTA Revenue':'Last_OTA_Revenue7','ADR OTB':'Last_ADR_OTB7'})
+    LRfinal7=LRfinal3.fillna(0)
+    LRfinal7['Last_OTASOLD7'] = LRfinal3['Last_OTASOLD7'].astype('float64').astype('int64')
+    LRfinal7['Last_OTA_Revenue7'] = LRfinal3['Last_OTA_Revenue7'].astype('float64').astype('int64')
+    LRfinal7['Last_ADR_OTB7'] = LRfinal3['Last_ADR_OTB7'].astype('float64').astype('int64')
+
+    return (LRfinal7)
+
+
+#----------------------
+
+
+
+#avg for market trend rateshop
 def RShop(rs):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:RShop') 
@@ -324,10 +529,11 @@ def rename(df):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:rename')
     
-    df['conditionscode'].replace(3.0, 'B',inplace=True) or df['conditionscode'].replace(2.0, 'S',inplace=True) or df['conditionscode'].replace(1.0, 'R',inplace=True)
-    df['taxstatus'].replace(2.0, 'E)',inplace=True) or df['taxstatus'].replace(1.0, 'I)',inplace=True) or df['taxstatus'].replace(-1.0, 'U)',inplace=True)
-    df['WebSiteCode'].replace(2.0, '(B',inplace=True) or df['WebSiteCode'].replace(7.0, '(G',inplace=True) or df['WebSiteCode'].replace(1.0, '(E',inplace=True)  or df['WebSiteCode'].replace(1691.0, '(P',inplace=True)
+    df['conditionscode'].replace(3.0, 'B',inplace=True) or df['conditionscode'].replace(2.0, 'S',inplace=True) or df['conditionscode'].replace(1.0, 'R',inplace=True) or df['conditionscode'].replace(1, 'R',inplace=True) or df['conditionscode'].replace(2, 'S',inplace=True) or df['conditionscode'].replace(3, 'S',inplace=True)
+    df['taxstatus'].replace(2.0, 'E)',inplace=True) or df['taxstatus'].replace(1.0, 'I)',inplace=True) or df['taxstatus'].replace(-1.0, 'U)',inplace=True) or df['taxstatus'].replace(2, 'E)',inplace=True) or df['taxstatus'].replace(1, 'I)',inplace=True) or df['taxstatus'].replace(-1, 'U)',inplace=True)
+    df['WebSiteCode'].replace(2.0, '(B',inplace=True) or df['WebSiteCode'].replace(7.0, '(G',inplace=True) or df['WebSiteCode'].replace(1.0, '(E',inplace=True)  or df['WebSiteCode'].replace(1691.0, '(P',inplace=True) or df['WebSiteCode'].replace(7, '(G',inplace=True) or df['WebSiteCode'].replace(2, '(B',inplace=True) or df['WebSiteCode'].replace(1, '(E',inplace=True) or df['WebSiteCode'].replace(1691, '(P',inplace=True)
     return(df)
+
 
 def chdtype(df2):
     logging.debug('------------------------------------------------------------')
@@ -405,12 +611,13 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
     
     df_rcp_season['cma_sqrt'] =np.where(df_rcp_season['Rooms Avail To Sell Online']<=0,1, np.sqrt(df_rcp_season['Rooms Avail To Sell Online']))
     
-#    ================================================================================
+#================================================================================
     
     
-#    df_rcp_season['cap_sqrt'] = np.sqrt(df_rcp_season['max_cap'])
+#df_rcp_season['cap_sqrt'] = np.sqrt(df_rcp_season['max_cap'])
     
     df_rcp_season['cap_sqrt'] = np.where(df_rcp_season['max_cap']<=0, 1, np.sqrt(df_rcp_season['max_cap']))
+    
     df_rcp_season['cap_sqrt1'] = 1.5*df_rcp_season['cap_sqrt']
     df_rcp_season['cap_sqrt2'] = 2.5*df_rcp_season['cap_sqrt']
     df_rcp_season['ota_cap'] =  np.where((df_rcp_season['ota_max']==0),df_rcp_season['max_cap'],df_rcp_season['ota_max'])
@@ -508,10 +715,10 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
 
         try:
             recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',
-                                                    ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
+                                                    ft,'Inventory Open%','OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup', 'Rate on CM', 'rcp']])
         except:
-            recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online','OTA_Sold',
-                                                    'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
+            recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online','Inventory Open%','OTA_Sold','OTA Revenue','ADR OTB',
+                                                    'Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup', 'Rate on CM', 'rcp']])
 
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
         
@@ -547,14 +754,14 @@ def nonHNF_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usef
             pass
         #---------------------------------------------------------------------------------------       
         # df_rcp_season = df_rcp_season['Rate on CM'].astype("int64")
-        df_rcp_season['rcp']=np.where(df_rcp_season['rcp'] == df_rcp_season['Rate on CM'],np.nan,df_rcp_season['rcp'])
+        df_rcp_season['rcp']=np.where(df_rcp_season['rcp'] == df_rcp_season['Rate on CM'],np.nan,df_rcp_season['rcp']) #A.S.May23
 
-        try:
-            recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
+        try:     #A.S. May23-rateoncm
+            recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'Inventory Open%','OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup', 'Rate on CM', 'rcp']])
         except:
             recdf = pd.DataFrame(df_rcp_season.loc[:,
-                                 ['Date', 'Dow', 'Event', 'Capacity', 'Rooms Avail To Sell Online','OTA_Sold',
-                                  'Pickup', 'OTA Revenue', 'ADR OTB', 'Rate on CM', 'rcp']])
+                                 ['Date', 'Dow', 'Event', 'Capacity', 'Rooms Avail To Sell Online','Inventory Open%','OTA_Sold','OTA Revenue', 'ADR OTB',
+                                  'Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup', 'Rate on CM', 'rcp']])  #A.S. rateoncm
 
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
         
@@ -654,7 +861,7 @@ def hnf_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloo
         df_rcp_season.drop('Last_szrate',axis=1,inplace=True)
         #recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp','Season']])
         
-        recdf=df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Hotel Sold','Hotel Availability','OOO','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']]
+        recdf=df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Hotel Sold','Hotel Availability','OOO','Rooms Avail To Sell Online',ft,'Inventory Open%','OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup', 'Rate on CM', 'rcp']]
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
         
         logging.debug('Recommendations and SeasonalRate Returned ::')
@@ -685,7 +892,7 @@ def hnf_rcpalgo(dff1,ft,maxcap,htlcur,chman,lastsz,psy,cmflag,useceiling,usefloo
         
         df_rcp_season['rcp']=np.where(df_rcp_season['rcp'] == df_rcp_season['Rate on CM'],np.nan,df_rcp_season['rcp'])
         #recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp','Season']])
-        recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Hotel Sold','Hotel Availability','OOO','Rooms Avail To Sell Online',ft,'OTA_Sold', 'Pickup', 'OTA Revenue','ADR OTB', 'Rate on CM', 'rcp']])
+        recdf=pd.DataFrame(df_rcp_season.loc[:,['Date', 'Dow', 'Event', 'Capacity','Hotel Sold','Hotel Availability','OOO','Rooms Avail To Sell Online',ft,'Inventory Open%','OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup', 'Rate on CM', 'rcp']])
         recdf2=recdf.rename(columns={'rcp':'Recommended Rate'})
         #
         return(recdf2,seasonalrate)
@@ -721,18 +928,26 @@ def applyPsychologicalFactor(n,psyfact):
     else:
         return(n)
 
-def RateShop(rsfile,isellrange):
+def RateShop(rsfile,isellrange,htl,cc_value):
     logging.debug('------------------------------------------------------------')
     logging.debug('Module:iSell_fun_02, SubModule:RateShop')
-    
+   #--------------------A.S. 04May2023-------------------------------
+     #The Boma Nairobi BNBO,Boma Inn Nairobi RCH,Boma Inn Eldoret BIE
+    if htl in ('Naivasha Kongoni Hotel','Qaribu Inn','Ziwa Beach Resort'):
+        rsfile['LowestRate'] = rsfile['LowestRate'] / cc_value[htl]
+        rsfile['Rate'] = rsfile['Rate'] / cc_value[htl]
+   #-----------------------------------------------------------------
     rsfile['Date'] = pd.to_datetime(rsfile['Date'])
+
     rsfile['Rate'] = rsfile['Rate'].astype(int)
+
     rsfile['LowestRate'] = rsfile['LowestRate'].astype(int)
     lrate=rsfile.loc[:,['Date','LowestRate']]
     lrate2 = lrate[lrate['LowestRate'] != 0]
     lrate3=lrate2.loc[:,['Date','LowestRate']]
-    lrate4= frame(lrate3,isellrange)
-    lrate4.fillna(value='SOLD',inplace=True)#lrate df
+    lrate4= frame(lrate3,isellrange+1)#one added A.S.JUL23
+    #lrate4.fillna(value='SOLD',inplace=True)#lrate df
+    lrate4.fillna(value=' ', inplace=True)  #A.S. Jun23
 
     rsfile1=rsfile.loc[:,['HotelName', 'Date', 'Rate']]
     finalrs1=RShop(rsfile1)
@@ -743,6 +958,7 @@ def RateShop(rsfile,isellrange):
     rsfile4=chdtype(rsfile3)
     rsfile5=mergecol(rsfile4)
     rsfile6=rsfile5.loc[:,['HotelName', 'Date', 'Rate']]
+
     comptrs=list(rsfile6.HotelName.unique())
     rstable = rsfile6.pivot_table(index='Date',columns='HotelName', values='Rate',aggfunc=lambda x: ' '.join(x))
     rstable2 = rstable.loc[:,comptrs]
@@ -780,7 +996,7 @@ def Adopcal(df,day180,day90):
         
         df3.fillna(value=1,inplace=True)
         df4 = pd.DataFrame(df3[df3['Recommended Rate'] != 1])   
-        df5 = pd.DataFrame(df4[df4['Pickup']==0])  
+        df5 = pd.DataFrame(df4[df4['Pickup']==0])
         logging.debug('Filtered iSell dataframe as (Recommended Rate != Blank and Pickup = 0)')
         
         if df5.empty:
@@ -813,7 +1029,93 @@ def Adopcal(df,day180,day90):
     return(finaldf2)
 
 
+ #==================Demand Sheet Macros defined A.S. 25Sept23========================================================
+def CopyWorksheetToTargetWorkbook(target_workbook_path, source_workbook_path):
+    excel = win32.Dispatch("Excel.Application")
+    excel.Visible = False
+
+    # Disable alerts to prevent prompts
+    excel.DisplayAlerts = False
+
+    # Open the source workbook (ThisWorkbook refers to the workbook containing the macro)
+    source_workbook = excel.Workbooks.Open(source_workbook_path)  #
+
+    # Open the target workbook
+    try:
+        target_workbook = excel.Workbooks.Open(target_workbook_path)
+    except:
+        print("Unable to open target workbook.")
+        return
+
+    # Set references to source and target worksheets
+    source_worksheet = source_workbook.Sheets(1)  # Replace "Sheet1" with the name of the source worksheet
+    # target_worksheet = target_workbook.Sheets.Add(After=target_workbook.Sheets(target_workbook.Sheets.Count))
+    target_worksheet = target_workbook.Sheets.Add()
+
+    target_worksheet.Name = "Demand"
+    # target_worksheet.Move(Before=target_workbook.Sheets(target_workbook.Sheets.Count + 1))
+    #
+    # # Move the "Demand" worksheet to the 4th position in the target workbook
+    target_worksheet.Move(Before=target_workbook.Sheets(3))
+#---------------------------------------------------------------
+    # Copy the contents of the source worksheet to the target worksheet
+    source_worksheet.Cells.Copy(Destination=target_worksheet.Cells)
+    target_worksheet= excel.Workbooks.Open(target_workbook_path)
+    target_worksheet = target_worksheet.Sheets(1)
+
+    target_worksheet.SaveAs(target_workbook_path)
+    # Clean up
+    excel.DisplayAlerts = True
+    target_workbook.Close(SaveChanges=True)
+    source_workbook.Close(SaveChanges=True)
+
+    print("Demand sheet added successfully.")
+
+# def TestCopyWorksheetMacro():
+#     target_path = "C:\\Avinash\\Zaras.xlsx"  # Replace with the actual path
+#     source_path = "C:\\Avinash\\dc.xlsm"
+#     CopyWorksheetToTargetWorkbook(target_path, source_path)
+#
+# TestCopyWorksheetMacro()
+
+# =====================================suyash 16may24======================================
+def CopyWorksheetToTargetWorkbook1(target_workbook_path, source_workbook_path):
+    excel = win32.Dispatch("Excel.Application")
+    excel.Visible = False
+
+    # Disable alerts to prevent prompts
+    excel.DisplayAlerts = False
+
+    # Open the source workbook (ThisWorkbook refers to the workbook containing the macro)
+    source_workbook = excel.Workbooks.Open(source_workbook_path)  #
+
+    # Open the target workbook
+    try:
+        target_workbook = excel.Workbooks.Open(target_workbook_path)
+    except:
+        print("Unable to open target workbook.")
+        return
 
 
+    source_worksheet = source_workbook.Sheets(1)
+
+    target_worksheet = target_workbook.Sheets.Add()
+
+    target_worksheet.Name = "GT"
+
+    target_worksheet.Move(Before=target_workbook.Sheets(4))
+#---------------------------------------------------------------
+
+    source_worksheet.Cells.Copy(Destination=target_worksheet.Cells)
+    target_worksheet= excel.Workbooks.Open(target_workbook_path)
+    target_worksheet = target_worksheet.Sheets(1)
+
+    target_worksheet.SaveAs(target_workbook_path)
+
+    excel.DisplayAlerts = True
+    target_workbook.Close(SaveChanges=True)
+    source_workbook.Close(SaveChanges=True)
+
+    print("Group Tracker sheet added successfully.")
 
 

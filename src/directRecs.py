@@ -23,8 +23,9 @@ def dRecs(iSelldf4,pgdf,isellrange,lastszrates,cmflag,priceType,hnf,ftr):
     iSelldf6['line']=np.where(iSelldf6['line']>9,9,iSelldf6['line'])   
     
     iSelldf6['line'] = iSelldf6['line'].astype(int,errors='ignore')
-    
-    #---------------------Seasonal or Monthly priceType-------------------------------   
+    iSelldf6['line'] = iSelldf6['line'].fillna(0)
+
+    #---------------------Seasonal or Monthly priceType-------------------------------
     if priceType == 'Seasonal':
         iSelldf6['params'] = list(zip(iSelldf6['Season'],iSelldf6['Dow'],iSelldf6['line']))
     elif priceType == 'Monthly':
@@ -56,6 +57,7 @@ def dRecs(iSelldf4,pgdf,isellrange,lastszrates,cmflag,priceType,hnf,ftr):
     
     #--------------------------------Compare with RateOnCM / LastSeasonalRates----------------
     if cmflag == 1:
+        iSelldf6['Rate on CM']=iSelldf6['Rate on CM'].astype('float64').astype('int64')
         iSelldf6['Recommended Rate'] = np.where(iSelldf6['Rate on CM'] == iSelldf6['Recommended Rate'],np.nan,iSelldf6['Recommended Rate'])
         logging.debug("Recommended Rate compared with Rate on CM")
         
@@ -64,20 +66,20 @@ def dRecs(iSelldf4,pgdf,isellrange,lastszrates,cmflag,priceType,hnf,ftr):
         
         if hnf == 'Yes':
             try:
-                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',
+                                                        ftr,'Inventory Open%','OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup','Rate on CM','Recommended Rate']])
             except:
                 iSelldf7 = pd.DataFrame(iSelldf7.loc[:,
                                         ['Date', 'Dow', 'Event', 'Capacity', 'Hotel Sold', 'Hotel Availability',
-                                         'Rooms Avail To Sell Online','OTA_Sold', 'Pickup', 'OTA Revenue',
-                                         'ADR OTB', 'Rate on CM', 'Recommended Rate']])
+                                         'Rooms Avail To Sell Online','Inventory Open%','OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup', 'Rate on CM', 'Recommended Rate']])
         else:
             try:
-                 iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Rooms Avail To Sell Online',
-                                                         ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+                 iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Rooms Avail To Sell Online','Inventory Open%',
+                                                         ftr,'OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup','Rate on CM','Recommended Rate']])
             except:
                 iSelldf7 = pd.DataFrame(iSelldf7.loc[:,
-                                        ['Date', 'Dow', 'Event', 'Capacity', 'Rooms Avail To Sell Online',
-                                         'OTA_Sold', 'Pickup', 'OTA Revenue', 'ADR OTB', 'Rate on CM',
+                                        ['Date', 'Dow', 'Event', 'Capacity', 'Rooms Avail To Sell Online','Inventory Open%',
+                                         'OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup','Rate on CM',
                                          'Recommended Rate']])
 
 
@@ -106,19 +108,19 @@ def dRecs(iSelldf4,pgdf,isellrange,lastszrates,cmflag,priceType,hnf,ftr):
         
         if hnf == 'Yes':
             try:
-                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Hotel Sold','Hotel Availability','Rooms Avail To Sell Online',ftr,'Inventory Open%','OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup','Rate on CM','Recommended Rate']])
             except:
                 iSelldf7 = pd.DataFrame(iSelldf7.loc[:,
                                         ['Date', 'Dow', 'Event', 'Capacity', 'Hotel Sold', 'Hotel Availability',
-                                         'Rooms Avail To Sell Online', 'OTA_Sold', 'Pickup', 'OTA Revenue',
-                                         'ADR OTB', 'Rate on CM', 'Recommended Rate']])
+                                         'Rooms Avail To Sell Online','Inventory Open%','OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup','Rate on CM', 'Recommended Rate']])
         else:
             try:
-                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Rooms Avail To Sell Online',ftr,'OTA_Sold','Pickup','OTA Revenue','ADR OTB','Rate on CM','Recommended Rate']])
+                iSelldf7 = pd.DataFrame(iSelldf7.loc[:,['Date','Dow','Event','Capacity','Rooms Avail To Sell Online',
+                                                        ftr,'Inventory Open%','OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup','Rate on CM','Recommended Rate']])
             except:
                 iSelldf7 = pd.DataFrame(iSelldf7.loc[:,
-                                        ['Date', 'Dow', 'Event', 'Capacity', 'Rooms Avail To Sell Online',
-                                         'OTA_Sold', 'Pickup', 'OTA Revenue', 'ADR OTB', 'Rate on CM',
+                                        ['Date', 'Dow', 'Event', 'Capacity', 'Rooms Avail To Sell Online','Inventory Open%',
+                                         'OTA_Sold','OTA Revenue','ADR OTB','Pickup','Revenue Pickup','ADR Pickup','Rooms Last 7 Days Pickup','Revenue Last 7 Days Pickup','ADR Last 7 Days Pickup','Rate on CM',
                                          'Recommended Rate']])
             
         
